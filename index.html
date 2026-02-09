@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Habits Tracker - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spinner 1.5s linear infinite;
+            animation: spinner 1.5s linear infinite;
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+
+    <nav class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="font-bold text-xl text-indigo-600">Imagine App</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Entry</a>
+                        <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+                        <a href="#" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Admin</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold leading-tight text-gray-900">Admin Panel</h1>
+            <p class="mt-2 text-sm text-gray-600">Manage student roster and system settings</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white overflow-hidden shadow rounded-lg col-span-2 p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">System Status</h3>
+                <p class="mt-1 text-sm text-gray-500">Your database is connected to Google Sheets.</p>
+                <div class="mt-4 flex space-x-3">
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        Online
+                    </span>
+                    <button onclick="fetchStudents()" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Refresh Data</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Student Roster</h3>
+                <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm flex items-center transition-colors">
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Add Student
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="5" class="px-6 py-10 text-center">
+                                <div class="flex justify-center">
+                                    <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8"></div>
+                                </div>
+                                <p class="mt-2 text-sm text-gray-500">Loading students from Google Sheets...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Add New Student</h3>
+                            <div class="mt-4 space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Name</label>
+                                    <input type="text" id="inputName" placeholder="e.g. John Doe" class="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Student ID</label>
+                                    <input type="text" id="inputId" placeholder="e.g. STU001" class="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Grade</label>
+                                    <select id="inputGrade" class="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm bg-white">
+                                        <option>4th</option>
+                                        <option>5th</option>
+                                        <option>6th</option>
+                                        <option>7th</option>
+                                        <option>8th</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="submitStudent()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">Save to Sheet</button>
+                    <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Your specific Google Apps Script URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbzpGmJVhrjvYUXtokK6QMeoJdqfR21IaiVfwHm1-Jnq9TRjTgB_oQ3BQf22XDE-cSQ1/exec";
+
+        async function fetchStudents() {
+            const tbody = document.getElementById('studentTableBody');
+            // Show loading state
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-6 py-10 text-center">
+                        <div class="flex justify-center">
+                            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8"></div>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500">Syncing with Google Sheets...</p>
+                    </td>
+                </tr>`;
+
+            try {
+                const response = await fetch(API_URL + "?action=getStudents");
+                const result = await response.json();
+                renderTable(result.data);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Error loading data. <br>Ensure your Google Sheet permissions are set to 'Anyone'.</td></tr>`;
+            }
+        }
+
+        function renderTable(students) {
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = '';
+            
+            if (!students || students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">No students found. Click "Add Student" to start.</td></tr>`;
+                return;
+            }
+
+            // Reverse the array so newest students appear first
+            students.slice().reverse().forEach(student => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.student_id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.grade}</td>
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${student.status}</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="deleteStudent('${student.id}')" class="text-red-600 hover:text-red-900 font-bold">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function submitStudent() {
+            const name = document.getElementById('inputName').value;
+            const sid = document.getElementById('inputId').value;
+            const grade = document.getElementById('inputGrade').value;
+
+            if(!name || !sid) return alert("Please fill in all fields");
+
+            const btn = document.querySelector("button[onclick='submitStudent()']");
+            const originalText = btn.innerText;
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            try {
+                // We send as plain text to avoid CORS Preflight checks on Google Apps Script
+                await fetch(API_URL + "?action=addStudent", {
+                    method: "POST",
+                    body: JSON.stringify({ name: name, student_id: sid, grade: grade })
+                });
+                
+                closeModal();
+                // Clear form
+                document.getElementById('inputName').value = '';
+                document.getElementById('inputId').value = '';
+                
+                // Refresh table
+                fetchStudents(); 
+            } catch (e) {
+                console.error(e);
+                alert("Error saving student. Please try again.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function deleteStudent(id) {
+            if(!confirm("Are you sure you want to delete this student from the Sheet?")) return;
+
+            // Optimistic UI update (remove row immediately while saving)
+            // But for simplicity, we'll just reload.
+            
+            try {
+                await fetch(API_URL + "?action=deleteStudent", {
+                    method: "POST",
+                    body: JSON.stringify({ id: id })
+                });
+                fetchStudents();
+            } catch (e) {
+                alert("Error deleting student");
+            }
+        }
+
+        function openModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('addModal').classList.add('hidden');
+        }
+
+        // Load data on start
+        fetchStudents();
+    </script>
+</body>
+</html>
