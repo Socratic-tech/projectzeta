@@ -6,25 +6,44 @@
     <title>Daily Habit Entry - Berrien RESA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Smooth fade for the AI text generation */
+        /* Smooth fade for AI text */
         .fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Custom tweaks to make Tom Select match Tailwind */
+        .ts-control {
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.75rem 1rem;
+            border-color: #d1d5db; /* gray-300 */
+        }
+        .ts-wrapper.focus .ts-control {
+            border-color: #6366f1; /* indigo-500 */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+        .ts-dropdown {
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
     </style>
 </head>
 <body class="bg-[#F3F4F6] text-gray-900">
 
     <nav class="bg-white border-b border-gray-200">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-24">
+            <div class="flex justify-between h-16">
                 <div class="flex">
-                    <div class="flex-shrink-0 flex items-center py-2">
-                        <img src="https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_1/v1688065006/berrienresaorg/us2um9v88w7rv6ublprl/berrien-resa-logo.png" alt="Berrien RESA" class="h-16 w-auto">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img src="https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_1/v1688065006/berrienresaorg/us2um9v88w7rv6ublprl/berrien-resa-logo.png" alt="Berrien RESA" class="h-10 w-auto">
                     </div>
-                    <div class="hidden sm:ml-8 sm:flex sm:space-x-8 items-center">
-                        <a href="entry.html" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-full">Entry</a>
-                        <a href="index.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-full">Admin / Dashboard</a>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="entry.html" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Entry</a>
+                        <a href="index.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Admin / Dashboard</a>
                     </div>
                 </div>
             </div>
@@ -45,7 +64,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
                     <div class="relative">
-                        <select id="studentSelect" required class="block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border bg-white">
+                        <select id="studentSelect" required placeholder="Type to search student name...">
                             <option value="">Loading student list...</option>
                         </select>
                     </div>
@@ -127,8 +146,8 @@
         const submitBtn = document.getElementById('submitBtn');
         const toast = document.getElementById('toast');
         const commentBox = document.getElementById('commentBox');
+        let tomSelectInstance = null; // To store the searchable dropdown instance
 
-        // Map IDs to readable names for the AI generator
         const habitMap = {
             'h1': "Self-Reflection", 'h2': "Time Management", 'h3': "Organization",
             'h4': "Task Completion", 'h5': "Attention", 'h6': "Following Directions",
@@ -141,17 +160,34 @@
             try {
                 const response = await fetch(API_URL + "?action=getStudents");
                 const result = await response.json();
-                studentSelect.innerHTML = '<option value="">Choose a student...</option>';
+                
+                // Clear existing options
+                studentSelect.innerHTML = '<option value="">Select or type name...</option>';
+                
                 const sortedStudents = result.data.sort((a, b) => a.name.localeCompare(b.name));
 
                 sortedStudents.forEach(student => {
                     const opt = document.createElement('option');
+                    // Store ID and Name in value as stringified JSON
                     opt.value = JSON.stringify({id: student.student_id, name: student.name});
                     opt.innerText = student.name;
                     studentSelect.appendChild(opt);
                 });
+
+                // Initialize Tom Select (Searchable Dropdown)
+                if (tomSelectInstance) {
+                    tomSelectInstance.destroy(); // Clear if re-loading
+                }
+                
+                tomSelectInstance = new TomSelect("#studentSelect", {
+                    create: false,
+                    sortField: { field: "text", direction: "asc" },
+                    placeholder: "Search for a student..."
+                });
+
             } catch (error) {
                 console.error("Error loading students", error);
+                studentSelect.innerHTML = '<option>Error loading list. Check connection.</option>';
             }
         }
 
@@ -161,7 +197,6 @@
             let lowSkills = [];
             let midSkills = [];
 
-            // Loop through h1 to h12
             for(let i=1; i<=12; i++) {
                 const el = document.getElementById('h' + i);
                 const val = parseInt(el.value);
@@ -175,10 +210,12 @@
             let comment = "";
             let name = "The student";
             
-            // Try to get first name
+            // Get name from Tom Select value if available
             if(studentSelect.value) {
-                const fullName = JSON.parse(studentSelect.value).name;
-                name = fullName.split(' ')[0]; // Just the first name
+                try {
+                    const fullName = JSON.parse(studentSelect.value).name;
+                    name = fullName.split(' ')[0]; 
+                } catch(e) { name = "The student"; }
             }
 
             if(highSkills.length === 0 && lowSkills.length === 0 && midSkills.length === 0) {
@@ -193,10 +230,9 @@
                 comment = `${name} had a satisfactory day with steady performance in ${midSkills.slice(0, 3).join(", ")}.`;
             }
 
-            // Typewriter effect (instant for now, but smooth fade)
             commentBox.value = comment;
             commentBox.classList.remove('fade-in');
-            void commentBox.offsetWidth; // trigger reflow
+            void commentBox.offsetWidth; 
             commentBox.classList.add('fade-in');
         }
 
@@ -219,7 +255,7 @@
                 h4: formData.get('h4') || "", h5: formData.get('h5') || "", h6: formData.get('h6') || "",
                 h7: formData.get('h7') || "", h8: formData.get('h8') || "", h9: formData.get('h9') || "",
                 h10: formData.get('h10') || "", h11: formData.get('h11') || "", h12: formData.get('h12') || "",
-                comments: formData.get('comments') || "" // Grab the new comment field
+                comments: formData.get('comments') || "" 
             };
 
             const originalBtnText = submitBtn.innerText;
@@ -233,8 +269,10 @@
                     body: JSON.stringify(payload)
                 });
                 showToast();
+                
+                // Clear form but keep logic clean
+                if (tomSelectInstance) tomSelectInstance.clear(); // Clear the dropdown
                 habitForm.reset(); 
-                studentSelect.value = ""; 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } catch (error) {
                 alert("Error saving entry.");
