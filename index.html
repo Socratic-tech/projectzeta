@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Work Habits</title>
+    <title>Admin Dashboard - Berrien RESA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,7 +22,7 @@
         @media print {
             body * { visibility: hidden; }
             #reportCardModal, #reportCardModal * { visibility: visible; }
-            #reportCardModal { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: white; }
+            #reportCardModal { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: white; z-index: 9999; }
             .no-print { display: none !important; }
         }
     </style>
@@ -31,12 +31,12 @@
 
     <nav class="bg-white border-b border-gray-200 no-print">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
+            <div class="flex justify-between h-20">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
-                        <span class="font-bold text-xl text-indigo-700">Imagine App</span>
+                        <img src="https://www.berrienresa.org/core/fileparse.php/98/urlt/BRESA_Logo_Color.png" alt="Berrien RESA" class="h-12 w-auto">
                     </div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                    <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
                         <a href="entry.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Entry</a>
                         <a href="index.html" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Admin / Dashboard</a>
                     </div>
@@ -157,6 +157,9 @@
                 <button onclick="window.print()" class="no-print absolute top-4 right-20 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded">Print Report</button>
 
                 <div class="text-center border-b-2 border-gray-800 pb-4 mb-6">
+                    <div class="flex justify-center mb-4">
+                        <img src="https://www.berrienresa.org/core/fileparse.php/98/urlt/BRESA_Logo_Color.png" alt="Berrien RESA" class="h-16 w-auto">
+                    </div>
                     <h1 class="text-3xl font-serif font-bold text-gray-900">Student Progress Report</h1>
                     <p class="text-gray-600">Work Habits & Soft Skills Assessment</p>
                 </div>
@@ -220,7 +223,6 @@
             "Cooperation", "Social Skills", "Quality", "Pace"
         ];
 
-        // --- FETCHING DATA ---
         async function init() {
             try {
                 const sResponse = await fetch(API_URL + "?action=getStudents");
@@ -250,7 +252,6 @@
             }
         }
 
-        // --- RENDERING ROSTER ---
         function renderTable(students) {
             const tbody = document.getElementById('studentTableBody');
             tbody.innerHTML = '';
@@ -276,14 +277,10 @@
             });
         }
 
-        // --- DATA PROCESSING HELPERS ---
-        
-        // Helper: Calculate average of an array, IGNORING null/empty strings/zeros
         function calculateSmartAverage(arr) {
             let sum = 0;
             let count = 0;
             arr.forEach(val => {
-                // Check if value exists and is not empty string
                 if (val !== "" && val !== null && val !== undefined) {
                     sum += Number(val);
                     count++;
@@ -292,7 +289,6 @@
             return count === 0 ? 0 : (sum / count);
         }
 
-        // --- CHARTS LOGIC ---
         function viewProgress(studentId, studentName) {
             document.getElementById('progressModal').classList.remove('hidden');
             document.getElementById('progressModalTitle').innerText = `${studentName}'s Progress`;
@@ -308,7 +304,6 @@
             document.getElementById('noDataMessage').classList.add('hidden');
             document.getElementById('chartsContainer').classList.remove('hidden');
 
-            // 1. Trend Data
             studentEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
             const dates = studentEntries.map(e => new Date(e.date).toLocaleDateString());
             
@@ -316,8 +311,6 @@
                 return calculateSmartAverage(e.scores).toFixed(1);
             });
 
-            // 2. Skill Breakdown
-            // Create an array of arrays [[scores for skill 1], [scores for skill 2]...]
             const skillBuckets = Array.from({ length: 12 }, () => []);
 
             studentEntries.forEach(e => {
@@ -329,7 +322,6 @@
             });
 
             const skillAverages = skillBuckets.map(bucket => calculateSmartAverage(bucket).toFixed(1));
-
             renderCharts(dates, dailyAverages, skillAverages);
         }
 
@@ -371,7 +363,6 @@
             });
         }
 
-        // --- REPORT CARD LOGIC ---
         function generateReportCard(studentId, studentName) {
             const studentEntries = allEntries.filter(e => e.student_id == studentId);
             
@@ -380,13 +371,11 @@
                 return;
             }
 
-            // Fill Info
             document.getElementById('rcName').innerText = studentName;
             document.getElementById('rcId').innerText = studentId;
             document.getElementById('rcDate').innerText = new Date().toLocaleDateString();
             document.getElementById('rcCount').innerText = studentEntries.length + " entries";
 
-            // Calculate Skill Averages
             const skillBuckets = Array.from({ length: 12 }, () => []);
             studentEntries.forEach(e => {
                 e.scores.forEach((score, index) => {
@@ -403,23 +392,15 @@
                 const avg = calculateSmartAverage(skillBuckets[index]);
                 const displayAvg = avg > 0 ? avg.toFixed(1) : "N/A";
                 
-                // Color Coding Logic
-                let colorClass = "text-gray-400"; // Default for N/A
+                let colorClass = "text-gray-400";
                 let bgClass = "bg-gray-100";
                 let barWidth = "0%";
 
                 if (avg > 0) {
                     barWidth = (avg / 5 * 100) + "%";
-                    if(avg >= 3.8) { 
-                        colorClass = "text-green-700"; 
-                        bgClass = "bg-green-500"; 
-                    } else if(avg >= 2.6) { 
-                        colorClass = "text-yellow-600"; 
-                        bgClass = "bg-yellow-400"; 
-                    } else { 
-                        colorClass = "text-red-600"; 
-                        bgClass = "bg-red-500"; 
-                    }
+                    if(avg >= 3.8) { colorClass = "text-green-700"; bgClass = "bg-green-500"; }
+                    else if(avg >= 2.6) { colorClass = "text-yellow-600"; bgClass = "bg-yellow-400"; }
+                    else { colorClass = "text-red-600"; bgClass = "bg-red-500"; }
                 }
 
                 const item = document.createElement('div');
@@ -439,11 +420,8 @@
             document.getElementById('reportCardModal').classList.remove('hidden');
         }
 
-        function closeReportCard() {
-            document.getElementById('reportCardModal').classList.add('hidden');
-        }
-
-        // --- ADD/DELETE ---
+        function closeReportCard() { document.getElementById('reportCardModal').classList.add('hidden'); }
+        
         async function submitStudent() {
             const name = document.getElementById('inputName').value;
             const sid = document.getElementById('inputId').value;
