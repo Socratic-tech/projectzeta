@@ -21,8 +21,10 @@
         @media print {
             body * { visibility: hidden; }
             #reportCardModal, #reportCardModal * { visibility: visible; }
-            #reportCardModal { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: white; z-index: 9999; }
+            #reportCardModal { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: white; z-index: 9999; margin: 0; padding: 0; }
             .no-print { display: none !important; }
+            /* Hide the modal background overlay when printing */
+            .fixed.inset-0.bg-gray-500 { display: none; } 
         }
     </style>
 </head>
@@ -45,6 +47,7 @@
             <p id="loginError" class="text-red-500 mt-4 hidden">Incorrect password. Please try again.</p>
         </div>
     </div>
+
     <nav class="bg-white border-b border-gray-200 no-print">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -161,6 +164,7 @@
             <div class="bg-white w-full max-w-3xl border-2 border-gray-800 p-8 shadow-2xl relative">
                 <button onclick="closeReportCard()" class="no-print absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded">Close</button>
                 <button onclick="window.print()" class="no-print absolute top-4 right-20 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded">Print Report</button>
+                
                 <div class="text-center border-b-2 border-gray-800 pb-4 mb-6">
                     <div class="flex justify-center mb-4">
                         <img src="https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_1/v1688065006/berrienresaorg/us2um9v88w7rv6ublprl/berrien-resa-logo.png" alt="Berrien RESA" class="h-20 w-auto">
@@ -168,22 +172,39 @@
                     <h1 class="text-3xl font-serif font-bold text-gray-900">Student Progress Report</h1>
                     <p class="text-gray-600">Work Habits & Soft Skills Assessment</p>
                 </div>
-                <div class="grid grid-cols-2 gap-4 mb-8 text-sm">
+
+                <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
                     <div><p class="text-gray-500">Student Name</p><p class="font-bold text-lg" id="rcName">--</p></div>
                     <div><p class="text-gray-500">Student ID</p><p class="font-bold text-lg" id="rcId">--</p></div>
                     <div><p class="text-gray-500">Report Date</p><p class="font-bold" id="rcDate">--</p></div>
                     <div><p class="text-gray-500">Total Entries</p><p class="font-bold" id="rcCount">--</p></div>
                 </div>
+
+                <div class="mb-8 bg-indigo-50 border-l-4 border-indigo-500 p-4">
+                    <h3 class="text-indigo-900 font-bold mb-2">Teacher's Executive Summary</h3>
+                    <p id="rcAutoSummary" class="text-gray-700 leading-relaxed text-sm">
+                        Generating summary...
+                    </p>
+                </div>
+
                 <div class="mb-8">
                     <h3 class="text-lg font-bold border-b border-gray-300 mb-4 pb-1">Performance Summary</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4" id="rcGrid"></div>
                 </div>
+
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold border-b border-gray-300 mb-4 pb-1">Recent Teacher Comments</h3>
+                    <div id="rcComments" class="space-y-3 text-sm text-gray-700 italic bg-gray-50 p-4 rounded border border-gray-100 min-h-[4rem]">
+                        </div>
+                </div>
+
                 <div class="border-t border-gray-300 pt-4 text-xs text-gray-500 flex justify-between">
                     <div><span class="inline-block w-3 h-3 bg-red-100 border border-red-500 mr-1"></span> Needs Improvement (1.0-2.5)</div>
                     <div><span class="inline-block w-3 h-3 bg-yellow-100 border border-yellow-500 mr-1"></span> Satisfactory (2.6-3.7)</div>
                     <div><span class="inline-block w-3 h-3 bg-green-100 border border-green-500 mr-1"></span> Excellent (3.8-5.0)</div>
                 </div>
-                <div class="mt-12 pt-8 flex justify-between">
+
+                <div class="mt-8 pt-8 flex justify-between">
                     <div class="border-t border-gray-400 w-1/3 text-center text-sm text-gray-500">Teacher Signature</div>
                     <div class="border-t border-gray-400 w-1/3 text-center text-sm text-gray-500">Parent Signature</div>
                 </div>
@@ -192,6 +213,7 @@
     </div>
 
     <script>
+        // REPLACE THIS URL WITH YOUR GOOGLE SCRIPT URL
         const API_URL = "https://script.google.com/macros/s/AKfycbzpGmJVhrjvYUXtokK6QMeoJdqfR21IaiVfwHm1-Jnq9TRjTgB_oQ3BQf22XDE-cSQ1/exec";
 
         let allStudents = [];
@@ -316,6 +338,8 @@
             return count === 0 ? 0 : (sum / count);
         }
 
+        // --- CHARTS LOGIC ---
+
         function viewProgress(studentId, studentName) {
             document.getElementById('progressModal').classList.remove('hidden');
             document.getElementById('progressModalTitle').innerText = `${studentName}'s Progress`;
@@ -329,19 +353,23 @@
             document.getElementById('noDataMessage').classList.add('hidden');
             document.getElementById('chartsContainer').classList.remove('hidden');
 
+            // Sort by date for the line chart
             studentEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
             const dates = studentEntries.map(e => new Date(e.date).toLocaleDateString());
             const dailyAverages = studentEntries.map(e => calculateSmartAverage(e.scores).toFixed(1));
 
+            // Aggregate buckets for bar chart
             const skillBuckets = Array.from({ length: 12 }, () => []);
             studentEntries.forEach(e => { e.scores.forEach((score, index) => { if (score !== "" && score !== null) skillBuckets[index].push(score); }); });
             const skillAverages = skillBuckets.map(bucket => calculateSmartAverage(bucket).toFixed(1));
+            
             renderCharts(dates, dailyAverages, skillAverages);
         }
 
         function renderCharts(dates, dailyAverages, skillAverages) {
             const trendCtx = document.getElementById('trendChart').getContext('2d');
             const skillsCtx = document.getElementById('skillsChart').getContext('2d');
+            
             if (trendChartInstance) trendChartInstance.destroy();
             if (skillsChartInstance) skillsChartInstance.destroy();
 
@@ -361,15 +389,22 @@
             });
         }
 
+        // --- REPORT CARD LOGIC ---
+
         function generateReportCard(studentId, studentName) {
             const studentEntries = allEntries.filter(e => e.student_id == studentId);
             if(studentEntries.length === 0) { alert("No data available."); return; }
 
+            // Basic Info
             document.getElementById('rcName').innerText = studentName;
             document.getElementById('rcId').innerText = studentId;
             document.getElementById('rcDate').innerText = new Date().toLocaleDateString();
             document.getElementById('rcCount').innerText = studentEntries.length + " entries";
 
+            // 1. GENERATE THE SUMMARY PARAGRAPH
+            document.getElementById('rcAutoSummary').innerHTML = generateSummaryText(studentName, studentEntries);
+
+            // 2. GENERATE THE SCORES GRID
             const skillBuckets = Array.from({ length: 12 }, () => []);
             studentEntries.forEach(e => { e.scores.forEach((score, index) => { if (score !== "" && score !== null) skillBuckets[index].push(score); }); });
 
@@ -393,9 +428,93 @@
                 item.innerHTML = `<div class="w-1/3 text-sm font-medium text-gray-700">${name}</div><div class="w-1/3 px-2"><div class="h-2 w-full bg-gray-200 rounded-full overflow-hidden"><div class="h-full ${bgClass}" style="width: ${barWidth}"></div></div></div><div class="w-1/6 text-right font-bold ${colorClass}">${displayAvg}</div>`;
                 gridContainer.appendChild(item);
             });
+
+            // 3. GENERATE COMMENTS LIST
+            // Sort entries descending by date to show newest first
+            const sortedEntries = studentEntries.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Filter entries that actually have comments
+            const entriesWithComments = sortedEntries.filter(e => e.comments && e.comments.trim() !== "").slice(0, 3);
+            
+            const commentsContainer = document.getElementById('rcComments');
+            commentsContainer.innerHTML = "";
+
+            if (entriesWithComments.length > 0) {
+                entriesWithComments.forEach(e => {
+                    const dateStr = new Date(e.date).toLocaleDateString();
+                    const p = document.createElement('p');
+                    p.innerHTML = `<span class="text-xs font-bold text-gray-500 mr-2">[${dateStr}]</span> ${e.comments}`;
+                    commentsContainer.appendChild(p);
+                });
+            } else {
+                commentsContainer.innerHTML = "<p class='text-gray-400'>No teacher comments recorded for this period.</p>";
+            }
+
             document.getElementById('reportCardModal').classList.remove('hidden');
         }
 
+        // --- AUTOMATED SUMMARY LOGIC ---
+        function generateSummaryText(studentName, entries) {
+            if (!entries || entries.length === 0) return "No data available to generate a summary.";
+
+            const habitTotals = new Array(12).fill(0);
+            const habitCounts = new Array(12).fill(0);
+
+            entries.forEach(e => {
+                e.scores.forEach((score, index) => {
+                    if (score !== "" && score !== null) {
+                        habitTotals[index] += Number(score);
+                        habitCounts[index]++;
+                    }
+                });
+            });
+
+            const habitResults = habitNames.map((name, index) => {
+                return {
+                    name: name,
+                    avg: habitCounts[index] > 0 ? (habitTotals[index] / habitCounts[index]) : 0
+                };
+            });
+
+            const activeHabits = habitResults.filter(h => h.avg > 0);
+            activeHabits.sort((a, b) => b.avg - a.avg); // Descending
+
+            if (activeHabits.length === 0) return "Insufficient data to generate summary.";
+
+            const topHabits = activeHabits.slice(0, 3);
+            const bottomHabits = activeHabits.slice(-2).reverse();
+            const overallAvg = (activeHabits.reduce((acc, curr) => acc + curr.avg, 0) / activeHabits.length).toFixed(1);
+
+            let summary = "";
+            const fName = studentName.split(' ')[0];
+
+            // Opening
+            if (overallAvg >= 3.8) {
+                summary += `<strong>${fName}</strong> has demonstrated outstanding performance during this period, with an overall average of <strong>${overallAvg}</strong>. `;
+            } else if (overallAvg >= 2.6) {
+                summary += `<strong>${fName}</strong> has shown consistent effort during this period, maintaining an overall average of <strong>${overallAvg}</strong>. `;
+            } else {
+                summary += `<strong>${fName}</strong> has faced some challenges during this period, with a current average of <strong>${overallAvg}</strong>. `;
+            }
+
+            // Strengths
+            if (topHabits[0].avg >= 4) {
+                summary += `They consistently demonstrate strengths in <strong>${topHabits[0].name}</strong> and <strong>${topHabits[1].name}</strong>. `;
+            } else {
+                summary += `Their strongest areas are currently <strong>${topHabits[0].name}</strong> and <strong>${topHabits[1].name}</strong>. `;
+            }
+
+            // Weaknesses
+            if (bottomHabits[0].avg < 3.0) {
+                summary += `Continued focus is recommended in the areas of <strong>${bottomHabits[0].name}</strong> and <strong>${bottomHabits[1].name}</strong> to support further growth.`;
+            } else {
+                summary += `They have maintained a well-rounded skill set across all measured categories.`;
+            }
+
+            return summary;
+        }
+
+        // --- GENERAL UTILS ---
         function closeReportCard() { document.getElementById('reportCardModal').classList.add('hidden'); }
         async function submitStudent() {
             const name = document.getElementById('inputName').value; const sid = document.getElementById('inputId').value; const grade = document.getElementById('inputGrade').value;
