@@ -3,24 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vocational Tracker</title>
+    <title>Vocational Entry</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* Custom Range Slider Styling */
+        input[type=range] {
+            height: 28px;
+            -webkit-appearance: none;
+            margin: 10px 0;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 10px; cursor: pointer;
+            background: #e2e8f0; border-radius: 5px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 24px; width: 24px; border-radius: 50%;
+            background: #2563eb; cursor: pointer;
+            -webkit-appearance: none; margin-top: -7px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans">
+<body class="bg-slate-100 text-slate-900 font-sans pb-20">
 
     <nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4">
+        <div class="max-w-3xl mx-auto px-4">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center gap-2">
                     <span class="material-icons text-yellow-400">assignment</span>
-                    <span class="font-bold text-xl tracking-tight">Vocational Entry</span>
+                    <span class="font-bold text-lg tracking-tight">Vocational Entry</span>
                 </div>
-                <div class="flex gap-4">
-                    <button onclick="toggleSettings()" class="text-blue-200 hover:text-white transition">
+                <div class="flex gap-3">
+                    <button onclick="toggleSettings()" class="text-blue-200 hover:text-white">
                         <span class="material-icons">settings</span>
                     </button>
-                    <a href="admin.html" class="bg-blue-800 hover:bg-blue-700 px-3 py-1 rounded text-xs font-bold uppercase tracking-wide transition">
+                    <a href="admin.html" class="bg-blue-800 hover:bg-blue-700 px-3 py-1 rounded text-xs font-bold uppercase tracking-wide">
                         Admin
                     </a>
                 </div>
@@ -29,111 +50,132 @@
     </nav>
 
     <div id="settingsPanel" class="hidden bg-slate-800 text-white p-4">
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-3xl mx-auto">
             <label class="text-xs uppercase font-bold text-gray-400">Database Connection URL</label>
             <div class="flex gap-2 mt-1">
-                <input type="text" id="apiUrlInput" placeholder="Paste Google Script URL here..." 
+                <input type="text" id="apiUrlInput" placeholder="Paste Google Script URL..." 
                     class="flex-1 bg-black/30 text-sm p-2 rounded border border-slate-600 focus:border-blue-500 outline-none font-mono text-green-400">
                 <button onclick="saveUrl()" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded text-xs font-bold uppercase">Save</button>
             </div>
         </div>
     </div>
 
-    <div class="max-w-3xl mx-auto px-4 py-8">
-        
+    <div class="max-w-3xl mx-auto px-4 py-6">
         <form id="entryForm" onsubmit="submitEntry(event)" class="space-y-6">
 
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Student & Site</h2>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
+                    <span class="material-icons text-blue-600">person</span> Student Details
+                </h2>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Student</label>
-                        <select id="studentSelect" required class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="">Loading students...</option>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Student Name</label>
+                        <select id="studentSelect" required class="w-full p-3 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">Loading...</option>
                         </select>
                     </div>
-
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Job Site</label>
-                        <select id="siteSelect" required class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="">Loading sites...</option>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Job Site</label>
+                        <select id="siteSelect" required class="w-full p-3 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">Loading...</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Date</label>
-                        <input type="date" id="dateInput" required class="w-full p-3 border rounded-lg bg-gray-50 outline-none">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Date</label>
+                        <input type="date" id="dateInput" required class="w-full p-3 border rounded-lg bg-slate-50 outline-none">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Evaluator Name</label>
-                        <input type="text" id="evaluatorInput" placeholder="e.g. Mr. Smith" required 
-                            class="w-full p-3 border rounded-lg bg-gray-50 outline-none">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Evaluator</label>
+                        <input type="text" id="evaluatorInput" placeholder="Your Name" required 
+                            class="w-full p-3 border rounded-lg bg-slate-50 outline-none">
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                <h2 class="text-lg font-bold text-gray-800 mb-2 border-b pb-2">Skills Assessment</h2>
-                <p class="text-xs text-gray-500 mb-6 uppercase tracking-wider font-bold">Rate from 1 (Low) to 5 (High)</p>
-                
-                <div id="skillsContainer" class="space-y-6">
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <h3 class="text-xs font-bold text-blue-800 uppercase mb-3 text-center">Scoring Guide (0 - 4)</h3>
+                <div class="grid grid-cols-5 gap-1 text-center">
+                    <div class="bg-white p-2 rounded shadow-sm">
+                        <div class="font-bold text-red-500 text-lg">0</div>
+                        <div class="text-[10px] leading-tight text-slate-500 font-bold">Refusal</div>
+                    </div>
+                    <div class="bg-white p-2 rounded shadow-sm">
+                        <div class="font-bold text-orange-500 text-lg">1</div>
+                        <div class="text-[10px] leading-tight text-slate-500 font-bold">Physical Assist</div>
+                    </div>
+                    <div class="bg-white p-2 rounded shadow-sm">
+                        <div class="font-bold text-yellow-500 text-lg">2</div>
+                        <div class="text-[10px] leading-tight text-slate-500 font-bold">Modeling</div>
+                    </div>
+                    <div class="bg-white p-2 rounded shadow-sm">
+                        <div class="font-bold text-blue-500 text-lg">3</div>
+                        <div class="text-[10px] leading-tight text-slate-500 font-bold">Verbal Prompt</div>
+                    </div>
+                    <div class="bg-white p-2 rounded shadow-sm">
+                        <div class="font-bold text-green-600 text-lg">4</div>
+                        <div class="text-[10px] leading-tight text-slate-500 font-bold">Independent</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-slate-800 mb-6 border-b pb-2 flex items-center gap-2">
+                    <span class="material-icons text-purple-600">psychology</span> Skills Assessment
+                </h2>
+                <div id="skillsContainer" class="space-y-8">
                     </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Notes</h2>
-                <textarea id="commentsInput" rows="3" placeholder="Additional observations..." 
-                    class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
+                    <span class="material-icons text-slate-600">note</span> Notes
+                </h2>
+                <textarea id="commentsInput" rows="3" placeholder="Specific details about today's performance..." 
+                    class="w-full p-3 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
             </div>
 
             <button type="submit" id="submitBtn" 
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform active:scale-95 flex justify-center items-center gap-2">
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform active:scale-95 flex justify-center items-center gap-2 text-lg">
                 <span class="material-icons">send</span> SUBMIT ENTRY
             </button>
-
         </form>
     </div>
 
     <script>
-        // --- 1. CONFIGURATION: MUST MATCH GOOGLE SCRIPT EXACTLY ---
+        // --- 1. CONFIGURATION ---
         const SKILLS_LIST = [
-            "Punctual",
-            "Prepared with Necessary Materials",
-            "Demonstrates appropriate hygiene/dress",
-            "Initiates familiar tasks",
-            "Maintains a productive work rate",
-            "Complete tasks in a logical order",
-            "Demonstrates adaptability",
-            "Work is completed to quality standards",
-            "Maintains clean and organized work space",
-            "Awareness of surroundings and good decision making",
-            "Appropriate and respectful social interactions",
-            "Displays effective communication skills",
-            "Accepts constructive criticism",
-            "Demonstrates a positive attitude",
-            "Asks for help appropriately",
-            "Demonstrates self-reflection"
+            "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
+            "Initiates familiar tasks", "Maintains a productive work rate", "Complete tasks in a logical order",
+            "Demonstrates adaptability", "Work is completed to quality standards", "Maintains clean and organized work space",
+            "Awareness of surroundings and good decision making", "Appropriate and respectful social interactions",
+            "Displays effective communication skills", "Accepts constructive criticism", "Demonstrates a positive attitude",
+            "Asks for help appropriately", "Demonstrates self-reflection"
         ];
+
+        const SCORES = {
+            0: { label: "Refusal / N/A", color: "text-red-500" },
+            1: { label: "Physical Assist", color: "text-orange-500" },
+            2: { label: "Modeling / Gesture", color: "text-yellow-600" },
+            3: { label: "Verbal Prompts", color: "text-blue-500" },
+            4: { label: "Independent", color: "text-green-600" }
+        };
 
         let API_URL = localStorage.getItem('vocational_backend_url') || "";
 
-        // --- 2. INITIALIZATION ---
+        // --- 2. INIT ---
         window.onload = function() {
-            // Set Date to Today
             document.getElementById('dateInput').valueAsDate = new Date();
-            
-            // Generate Skill Sliders
             renderSkills();
 
-            // Load Data if URL exists
             if (API_URL) {
                 document.getElementById('apiUrlInput').value = API_URL;
                 loadDropdowns();
             } else {
-                toggleSettings(); // Open settings if no URL
+                toggleSettings();
             }
         };
 
@@ -146,7 +188,7 @@
             if (url) {
                 localStorage.setItem('vocational_backend_url', url);
                 API_URL = url;
-                alert("URL Saved!");
+                alert("Connected!");
                 loadDropdowns();
                 toggleSettings();
             }
@@ -160,20 +202,41 @@
             SKILLS_LIST.forEach((skill, index) => {
                 const html = `
                     <div class="skill-row">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">${skill}</label>
-                        <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                            <span class="text-xs font-bold text-gray-400 w-4">1</span>
-                            <input type="range" min="1" max="5" value="3" step="1" 
-                                id="skill_${index}" 
-                                oninput="document.getElementById('val_${index}').innerText = this.value"
-                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
-                            <span class="text-xs font-bold text-gray-400 w-4">5</span>
-                            <span id="val_${index}" class="ml-2 w-8 text-center font-bold text-blue-600 text-lg bg-white shadow rounded">3</span>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">${skill}</label>
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1 relative">
+                                <input type="range" min="0" max="4" value="4" step="1" 
+                                    id="skill_${index}" 
+                                    oninput="updateLabel(${index}, this.value)"
+                                    class="w-full">
+                                <div class="flex justify-between text-[10px] text-gray-400 font-mono mt-1 px-1">
+                                    <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span>
+                                </div>
+                            </div>
+                            
+                            <div class="w-24 text-right">
+                                <span id="num_${index}" class="block text-2xl font-bold text-green-600">4</span>
+                                <span id="lbl_${index}" class="block text-[10px] font-bold text-green-600 uppercase leading-tight">Independent</span>
+                            </div>
                         </div>
                     </div>
                 `;
                 container.innerHTML += html;
             });
+        }
+
+        function updateLabel(index, value) {
+            const def = SCORES[value];
+            
+            // Update Number
+            const numSpan = document.getElementById(`num_${index}`);
+            numSpan.innerText = value;
+            numSpan.className = `block text-2xl font-bold ${def.color}`;
+
+            // Update Text Label
+            const lblSpan = document.getElementById(`lbl_${index}`);
+            lblSpan.innerText = def.label;
+            lblSpan.className = `block text-[10px] font-bold uppercase leading-tight ${def.color}`;
         }
 
         async function loadDropdowns() {
@@ -195,24 +258,20 @@
                 jData.data.forEach(site => {
                     jSelect.innerHTML += `<option value="${site}">${site}</option>`;
                 });
-
             } catch (err) {
                 console.error(err);
-                alert("Error loading lists. Check your URL in settings.");
             }
         }
 
-        // --- 4. SUBMIT FUNCTION ---
+        // --- 4. SUBMIT ---
         async function submitEntry(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const originalText = btn.innerHTML;
             
-            // Visual Loading State
             btn.disabled = true;
             btn.innerHTML = `<span class="material-icons animate-spin">refresh</span> Saving...`;
 
-            // 1. Gather Basic Data
             const payload = {
                 action: "addEntry",
                 student_id: document.getElementById('studentSelect').value,
@@ -223,15 +282,12 @@
                 scores: {}
             };
 
-            // 2. Gather Skill Scores (Matching Keys Exactly)
             SKILLS_LIST.forEach((skill, index) => {
                 const val = document.getElementById(`skill_${index}`).value;
-                payload.scores[skill] = parseInt(val); // Ensure it's a number
+                payload.scores[skill] = parseInt(val);
             });
 
-            // 3. Send to Google Script
             try {
-                // Using no-cors/text-plain to bypass security blocks
                 await fetch(API_URL, {
                     method: "POST",
                     mode: "no-cors",
@@ -239,20 +295,20 @@
                     body: JSON.stringify(payload)
                 });
 
-                // Success Feedback
                 btn.classList.remove("bg-blue-600", "hover:bg-blue-700");
                 btn.classList.add("bg-green-600", "hover:bg-green-700");
-                btn.innerHTML = `<span class="material-icons">check_circle</span> SUCCESS!`;
+                btn.innerHTML = `<span class="material-icons">check_circle</span> SAVED!`;
                 
-                // Reset Form after 1.5 seconds
                 setTimeout(() => {
                     document.getElementById('entryForm').reset();
-                    // Reset sliders to 3
-                    document.querySelectorAll('input[type="range"]').forEach(r => r.value = 3);
-                    document.querySelectorAll('[id^="val_"]').forEach(s => s.innerText = "3");
-                    document.getElementById('dateInput').valueAsDate = new Date(); // Reset date
+                    document.getElementById('dateInput').valueAsDate = new Date();
+                    // Reset all sliders to 4 (Independent)
+                    SKILLS_LIST.forEach((_, i) => {
+                        const slider = document.getElementById(`skill_${i}`);
+                        slider.value = 4;
+                        updateLabel(i, 4);
+                    });
                     
-                    // Reset Button
                     btn.disabled = false;
                     btn.classList.add("bg-blue-600", "hover:bg-blue-700");
                     btn.classList.remove("bg-green-600", "hover:bg-green-700");
@@ -260,7 +316,7 @@
                 }, 1500);
 
             } catch (err) {
-                alert("Failed to save: " + err.message);
+                alert("Failed: " + err.message);
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
