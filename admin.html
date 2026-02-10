@@ -7,72 +7,82 @@
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans pb-10">
 
-    <nav class="bg-white shadow border-b border-gray-200 mb-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <h1 class="text-xl font-bold text-indigo-600">Vocational Tracker</h1>
+    <div id="authModal" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-96 text-center">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Login Required</h2>
+            <input type="password" id="authInput" class="w-full border p-3 rounded mb-4 text-center text-xl tracking-widest" placeholder="Enter PIN">
+            <button onclick="attemptLogin()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 transition">Unlock System</button>
+            <p id="authError" class="text-red-500 text-sm mt-3 hidden">Incorrect PIN.</p>
+        </div>
+    </div>
+
+    <div id="appContent" class="hidden">
+        
+        <nav class="bg-white shadow border-b border-gray-200 mb-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center"><h1 class="text-xl font-bold text-indigo-600">Vocational Tracker</h1></div>
+                        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <a href="index.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+                            <a href="entry.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">New Entry</a>
+                            <a href="report.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Reports</a>
+                            <a href="admin.html" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Admin</a>
+                        </div>
                     </div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="index.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
-                        <a href="entry.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">New Entry</a>
-                        <a href="report.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Reports</a>
-                        <a href="admin.html" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Admin</a>
-                    </div>
+                    <div class="flex items-center"><button onclick="logout()" class="text-gray-500 hover:text-red-600 text-sm font-medium">Logout</button></div>
                 </div>
             </div>
-        </div>
-    </nav>
+        </nav>
 
-    <div class="max-w-4xl mx-auto space-y-6">
-
-        <div class="bg-white p-6 rounded shadow border-l-4 border-indigo-600">
-            <h2 class="text-xl font-bold mb-4">API Connection</h2>
-            <div class="flex gap-2">
-                <input type="text" id="apiUrl" class="flex-1 border p-2 rounded" placeholder="Paste your Google Apps Script Web App URL here">
-                <button onclick="saveApi()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Save</button>
-            </div>
-            <p id="status" class="mt-2 text-sm text-gray-500"></p>
-        </div>
-
-        <div class="bg-white p-6 rounded shadow">
-            <h2 class="text-xl font-bold mb-4">Manage Students</h2>
-            
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="newStudentName" class="flex-1 border p-2 rounded" placeholder="New Student Name">
-                <button onclick="addStudent()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
+        <div class="max-w-4xl mx-auto space-y-6">
+            <div class="bg-white p-6 rounded shadow border-l-4 border-indigo-600">
+                <h2 class="text-xl font-bold mb-4">API Connection</h2>
+                <div class="flex gap-2"><input type="text" id="apiUrl" class="flex-1 border p-2 rounded" placeholder="Paste Google Apps Script URL"><button onclick="saveApi()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Save</button></div>
+                <p id="status" class="mt-2 text-sm text-gray-500"></p>
             </div>
 
-            <ul id="studentList" class="divide-y divide-gray-200 border rounded">
-                <li class="p-3 text-center text-gray-400">Loading...</li>
-            </ul>
-        </div>
-
-        <div class="bg-white p-6 rounded shadow">
-            <h2 class="text-xl font-bold mb-4">Manage Job Sites</h2>
-            
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="newJobSite" class="flex-1 border p-2 rounded" placeholder="New Job Site Name">
-                <button onclick="addJobSite()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add</button>
+            <div class="bg-white p-6 rounded shadow">
+                <h2 class="text-xl font-bold mb-4">Manage Students</h2>
+                <div class="flex gap-2 mb-4"><input type="text" id="newStudentName" class="flex-1 border p-2 rounded" placeholder="New Student Name"><button onclick="addStudent()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button></div>
+                <ul id="studentList" class="divide-y divide-gray-200 border rounded"><li class="p-3 text-center text-gray-400">Loading...</li></ul>
             </div>
 
-            <ul id="jobSiteList" class="divide-y divide-gray-200 border rounded">
-                <li class="p-3 text-center text-gray-400">Loading...</li>
-            </ul>
+            <div class="bg-white p-6 rounded shadow">
+                <h2 class="text-xl font-bold mb-4">Manage Job Sites</h2>
+                <div class="flex gap-2 mb-4"><input type="text" id="newJobSite" class="flex-1 border p-2 rounded" placeholder="New Job Site Name"><button onclick="addJobSite()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add</button></div>
+                <ul id="jobSiteList" class="divide-y divide-gray-200 border rounded"><li class="p-3 text-center text-gray-400">Loading...</li></ul>
+            </div>
         </div>
 
     </div>
 
     <script>
+        const APP_PASSWORD = "karenrocks";
         const API_KEY = 'bresa_api_url';
         let API_URL = localStorage.getItem(API_KEY);
 
-        // -- INIT --
-        document.getElementById('apiUrl').value = API_URL || "";
-        if(API_URL) loadData();
+        function checkAuth() {
+            if (sessionStorage.getItem('auth') === 'true') {
+                document.getElementById('authModal').classList.add('hidden');
+                document.getElementById('appContent').classList.remove('hidden');
+                initAdmin();
+            }
+        }
+        function attemptLogin() {
+            if (document.getElementById('authInput').value === APP_PASSWORD) {
+                sessionStorage.setItem('auth', 'true');
+                checkAuth();
+            } else { document.getElementById('authError').classList.remove('hidden'); }
+        }
+        function logout() { sessionStorage.removeItem('auth'); window.location.reload(); }
+        document.getElementById('authInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') attemptLogin(); });
 
-        // -- API SETUP --
+        function initAdmin() {
+            document.getElementById('apiUrl').value = API_URL || "";
+            if(API_URL) loadData();
+        }
+
         function saveApi() {
             const url = document.getElementById('apiUrl').value.trim();
             if(!url) return alert("Please enter a URL");
@@ -82,96 +92,52 @@
             loadData();
         }
 
-        // -- DATA LOADING --
         async function loadData() {
             try {
-                // Fetch Students
                 const sRes = await fetch(API_URL + "?action=getStudents");
                 const sData = await sRes.json();
                 renderStudents(sData.data);
-
-                // Fetch Job Sites
                 const jRes = await fetch(API_URL + "?action=getJobSites");
                 const jData = await jRes.json();
                 renderJobSites(jData.data);
-                
                 document.getElementById('status').innerText = "Connected ✅";
                 document.getElementById('status').className = "mt-2 text-sm text-green-600 font-bold";
             } catch(e) {
-                document.getElementById('status').innerText = "Error connecting to API. Check URL.";
+                document.getElementById('status').innerText = "Error connecting to API.";
                 document.getElementById('status').className = "mt-2 text-sm text-red-600 font-bold";
-                console.error(e);
             }
         }
 
-        // -- RENDERERS --
         function renderStudents(list) {
-            const ul = document.getElementById('studentList');
-            ul.innerHTML = "";
-            if(!list || list.length === 0) {
-                ul.innerHTML = '<li class="p-3 text-gray-500 text-center">No students found.</li>';
-                return;
-            }
-            list.forEach(s => {
-                ul.innerHTML += `
-                    <li class="p-3 flex justify-between items-center hover:bg-gray-50">
-                        <span>${s.name}</span>
-                        <span class="text-xs text-gray-400">ID: ${s.student_id}</span>
-                    </li>
-                `;
-            });
+            const ul = document.getElementById('studentList'); ul.innerHTML = "";
+            if(!list || list.length === 0) return ul.innerHTML = '<li class="p-3 text-gray-500 text-center">No students found.</li>';
+            list.forEach(s => { ul.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-gray-50"><span>${s.name}</span><span class="text-xs text-gray-400">ID: ${s.student_id}</span></li>`; });
         }
 
         function renderJobSites(list) {
-            const ul = document.getElementById('jobSiteList');
-            ul.innerHTML = "";
-            if(!list || list.length === 0) {
-                ul.innerHTML = '<li class="p-3 text-gray-500 text-center">No job sites found.</li>';
-                return;
-            }
-            list.forEach(site => {
-                ul.innerHTML += `
-                    <li class="p-3 flex justify-between items-center hover:bg-gray-50">
-                        <span>${site}</span>
-                        <button onclick="deleteJobSite('${site}')" class="text-red-500 hover:underline text-xs">Remove</button>
-                    </li>
-                `;
-            });
+            const ul = document.getElementById('jobSiteList'); ul.innerHTML = "";
+            if(!list || list.length === 0) return ul.innerHTML = '<li class="p-3 text-gray-500 text-center">No job sites found.</li>';
+            list.forEach(site => { ul.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-gray-50"><span>${site}</span><button onclick="deleteJobSite('${site}')" class="text-red-500 hover:underline text-xs">Remove</button></li>`; });
         }
 
-        // -- ACTIONS --
         async function addStudent() {
-            const name = document.getElementById('newStudentName').value;
-            if(!name) return;
+            const name = document.getElementById('newStudentName').value; if(!name) return;
             document.getElementById('newStudentName').value = "";
-            
-            await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "addStudent", name: name })
-            });
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "addStudent", name: name }) });
             loadData();
         }
-
         async function addJobSite() {
-            const site = document.getElementById('newJobSite').value;
-            if(!site) return;
+            const site = document.getElementById('newJobSite').value; if(!site) return;
             document.getElementById('newJobSite').value = "";
-            
-            await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "addJobSite", site_name: site })
-            });
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "addJobSite", site_name: site }) });
             loadData();
         }
-
         async function deleteJobSite(siteName) {
             if(!confirm("Remove " + siteName + "?")) return;
-            await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "deleteJobSite", site_name: siteName })
-            });
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "deleteJobSite", site_name: siteName }) });
             loadData();
         }
+        checkAuth();
     </script>
 </body>
 </html>
