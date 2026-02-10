@@ -16,7 +16,7 @@
             height: 100vh; 
             display: flex; 
             flex-direction: column; 
-            overflow: hidden; /* This locks the screen but kills printing (fixed below) */
+            overflow: hidden; 
         }
 
         .custom-scroll::-webkit-scrollbar { width: 6px; }
@@ -27,10 +27,8 @@
         .signature-section { display: none; }
         #printHistoryTable { display: none; }
 
-
-        /* --- PRINT STYLES (The Magic Fix) --- */
+        /* --- PRINT STYLES --- */
         @media print {
-            /* 1. Reset the "App" constraints so pages can flow */
             body, #mainLayout, #contentArea {
                 height: auto !important;
                 overflow: visible !important;
@@ -38,55 +36,41 @@
                 background: white !important;
                 position: static !important;
             }
-
-            /* 2. Hide Screen-Only Elements */
             nav, #sidebarCol, .no-print, button, #loadingIndicator, select {
                 display: none !important;
             }
-
-            /* 3. Layout Adjustments for Paper */
             #contentArea {
                 padding: 0 !important;
                 margin: 0 !important;
                 width: 100% !important;
             }
-
             #summaryView, #detailView {
                 max-width: 100% !important;
                 margin: 0 !important;
                 box-shadow: none !important;
                 border: none !important;
             }
-
-            /* 4. Chart Sizing */
             .chart-container {
-                height: 300px !important; /* Force smaller height for print so it fits */
+                height: 300px !important; 
                 border: 1px solid #ccc;
                 page-break-inside: avoid;
             }
-
-            /* 5. Force Table & Signatures to Show */
             #printHistoryTable {
                 display: block !important;
                 width: 100%;
                 margin-top: 2rem;
                 page-break-before: auto;
             }
-
             .signature-section {
                 display: flex !important;
                 justify-content: space-between;
                 margin-top: 50px;
                 padding-top: 20px;
-                page-break-inside: avoid; /* Keep signatures together */
+                page-break-inside: avoid;
             }
-
-            /* Table Styling for Print */
             table { width: 100%; border-collapse: collapse; font-size: 10pt; }
             th, td { border: 1px solid #94a3b8; padding: 8px; text-align: left; }
             th { background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; font-weight: bold; }
-            
-            /* Clean up cards */
             .card { border: 1px solid #ccc !important; box-shadow: none !important; }
         }
     </style>
@@ -130,9 +114,18 @@
                 </select>
             </div>
             
-            <div class="p-3 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
-                <span class="text-xs font-bold text-slate-500 uppercase">Visit History</span>
-                <span id="visitCount" class="text-xs bg-slate-300 px-2 py-0.5 rounded-full text-slate-700">0</span>
+            <div class="p-3 bg-slate-100 border-b border-slate-200 flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-slate-500 uppercase">Visit History</span>
+                    <span id="visitCount" class="text-xs bg-slate-300 px-2 py-0.5 rounded-full text-slate-700">0</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] uppercase font-bold text-slate-400">Sort:</label>
+                    <select id="sortOrder" onchange="renderVisitList()" class="flex-1 text-xs p-1 border rounded bg-white">
+                        <option value="date">Date (Newest)</option>
+                        <option value="site">Job Site (A-Z)</option>
+                    </select>
+                </div>
             </div>
 
             <div class="flex-1 overflow-y-auto custom-scroll p-2 space-y-2" id="visitList">
@@ -299,31 +292,58 @@
                 document.getElementById('summaryView').classList.add('hidden');
                 document.getElementById('detailView').classList.add('hidden');
                 list.innerHTML = "<div class='text-center text-slate-400 mt-10'>Select Student</div>";
+                document.getElementById('visitCount').innerText = "0";
                 return;
             }
 
-            currentEntries = allEntries.filter(e => e.student_id == sid).sort((a,b) => parseDate(b.date) - parseDate(a.date));
+            // Filter specific student data
+            currentEntries = allEntries.filter(e => e.student_id == sid);
             document.getElementById('visitCount').innerText = currentEntries.length;
 
-            list.innerHTML = `
+            // Render list (which handles sorting)
+            renderVisitList();
+            showSummary();
+        }
+
+        function renderVisitList() {
+            const list = document.getElementById('visitList');
+            const sortMode = document.getElementById('sortOrder').value;
+
+            // Sort Logic
+            currentEntries.sort((a, b) => {
+                if (sortMode === 'date') {
+                    // Newest Date First
+                    return parseDate(b.date) - parseDate(a.date);
+                } else {
+                    // Site A-Z, then Newest Date First
+                    const siteComp = a.job_site.localeCompare(b.job_site);
+                    return siteComp !== 0 ? siteComp : parseDate(b.date) - parseDate(a.date);
+                }
+            });
+
+            // Re-build Sidebar List
+            let html = `
                 <div onclick="showSummary()" class="cursor-pointer p-3 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 mb-4 font-bold text-blue-700 flex gap-2">
                     <span class="material-icons text-sm">dashboard</span> Overview
                 </div>`;
             
-            if(currentEntries.length === 0) list.innerHTML += "<div class='text-center text-slate-400'>No visits found.</div>";
+            if(currentEntries.length === 0) html += "<div class='text-center text-slate-400'>No visits found.</div>";
 
             currentEntries.forEach((e, i) => {
-                list.innerHTML += `
+                html += `
                     <div onclick="showDetail(${i})" class="cursor-pointer p-3 rounded-lg border border-slate-200 bg-white hover:border-blue-400 mb-2 shadow-sm">
                         <div class="flex justify-between font-bold text-sm text-slate-700">
                             <span>${fmtDate(parseDate(e.date))}</span>
                             <span class="text-[10px] uppercase text-slate-400">${e.job_site.substring(0,12)}</span>
                         </div>
-                        <div class="text-xs text-slate-500">${e.evaluator}</div>
+                        <div class="text-xs text-slate-500 flex justify-between mt-1">
+                             <span>${e.evaluator}</span>
+                             <span class="text-slate-300 text-[10px] uppercase">${sortMode === 'site' ? 'Sorted by Site' : ''}</span>
+                        </div>
                     </div>`;
             });
 
-            showSummary();
+            list.innerHTML = html;
         }
 
         function showSummary() {
@@ -346,15 +366,16 @@
             let sums = {}, counts = {}, grandSum = 0, grandCount = 0;
             SKILLS.forEach(s => { sums[s]=0; counts[s]=0; });
 
-            // POPULATE PRINT TABLE
+            // POPULATE PRINT TABLE (Always Chronological for print readability)
             const printBody = document.getElementById('printHistoryBody');
             printBody.innerHTML = "";
+            const printEntries = [...filtered].sort((a,b) => parseDate(b.date) - parseDate(a.date));
 
-            if(filtered.length === 0) {
+            if(printEntries.length === 0) {
                 printBody.innerHTML = "<tr><td colspan='5' class='text-center italic'>No records in this period.</td></tr>";
             }
 
-            filtered.forEach(e => {
+            printEntries.forEach(e => {
                 let daySum = 0, dayCount = 0;
                 SKILLS.forEach(s => {
                     const val = parseFloat(e.scores[s]);
@@ -366,7 +387,6 @@
                 });
                 const dailyAvg = dayCount ? (daySum/dayCount).toFixed(1) : "-";
 
-                // We display 60 chars of comments max for the table row
                 printBody.innerHTML += `
                     <tr>
                         <td>${fmtDate(parseDate(e.date))}</td>
@@ -404,6 +424,7 @@
         }
 
         function showDetail(i) {
+            // Note: index 'i' corresponds to the sorted 'currentEntries' array
             const e = currentEntries[i];
             document.getElementById('summaryView').classList.add('hidden');
             document.getElementById('detailView').classList.remove('hidden');
