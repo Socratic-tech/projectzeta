@@ -9,10 +9,10 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         @media print {
-            .no-print { display: none; }
-            .print-only { display: block; }
-            body { background: white; }
-            .card { border: none; shadow: none; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; -webkit-print-color-adjust: exact; }
+            .card { border: none; shadow: none; break-inside: avoid; }
         }
     </style>
 </head>
@@ -30,7 +30,7 @@
                         <span class="material-icons text-sm">dashboard</span> Dashboard
                     </a>
                     <button onclick="window.print()" class="bg-white text-indigo-700 font-bold px-4 py-2 rounded hover:bg-gray-100 transition flex items-center gap-1">
-                        <span class="material-icons text-sm">print</span> Print
+                        <span class="material-icons text-sm">print</span> Print Report
                     </button>
                 </div>
             </div>
@@ -42,7 +42,6 @@
         <div id="errorBanner" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm" role="alert">
             <h3 class="font-bold text-lg"><span class="material-icons align-bottom">error</span> Connection Failed</h3>
             <p id="errorText">Could not load data.</p>
-            <div id="debugInfo" class="mt-2 text-xs font-mono bg-red-50 p-2 rounded border border-red-200 hidden"></div>
             <div class="mt-3">
                 <a href="admin.html" class="text-sm font-bold underline hover:text-red-900">Go to Admin Settings to fix URL</a>
             </div>
@@ -51,61 +50,71 @@
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 no-print">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
-                    <select id="studentSelect" onchange="updateDashboard()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-gray-50">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Select Student</label>
+                    <select id="studentSelect" onchange="updateDashboard()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 border bg-gray-50 outline-none">
                         <option value="">Loading students...</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Time Period</label>
-                    <select id="timeRange" onchange="updateDashboard()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-gray-50">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Time Period</label>
+                    <select id="timeRange" onchange="updateDashboard()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 border bg-gray-50 outline-none">
                         <option value="30">Last 30 Days</option>
                         <option value="90">Last 3 Months</option>
                         <option value="180">Last 6 Months</option>
-                        <option value="365">Last Year</option>
                         <option value="all">All Time</option>
                     </select>
                 </div>
             </div>
         </div>
 
+        <div id="loadingIndicator" class="text-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-700 mx-auto mb-4"></div>
+            <p class="text-gray-500">Syncing with database...</p>
+        </div>
+
         <div id="reportContent" class="hidden">
-            <div class="mb-8 border-b pb-4">
-                <h1 id="studentNameTitle" class="text-3xl font-bold text-gray-900">Student Name</h1>
-                <p class="text-gray-500">Progress Summary</p>
+            
+            <div class="mb-8 border-b pb-4 flex justify-between items-end">
+                <div>
+                    <h1 id="studentNameTitle" class="text-3xl font-bold text-gray-900">Student Name</h1>
+                    <p class="text-gray-500">Vocational Skills Progress Report</p>
+                </div>
+                <div class="text-right text-sm text-gray-400">
+                    Generated: <span id="reportDate"></span>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500 card">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-blue-50 text-blue-600 mr-4"><span class="material-icons text-3xl">history_edu</span></div>
-                        <div><p class="text-sm text-gray-500 font-medium">Total Evaluations</p><p id="totalLogs" class="text-2xl font-bold text-gray-900">0</p></div>
+                        <div><p class="text-xs text-gray-500 font-bold uppercase">Evaluations</p><p id="totalLogs" class="text-2xl font-bold text-gray-900">0</p></div>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500 card">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-green-50 text-green-600 mr-4"><span class="material-icons text-3xl">star</span></div>
-                        <div><p class="text-sm text-gray-500 font-medium">Average Score</p><p id="avgScore" class="text-2xl font-bold text-gray-900">0.0</p></div>
+                        <div><p class="text-xs text-gray-500 font-bold uppercase">Average Score</p><p id="avgScore" class="text-2xl font-bold text-gray-900">0.0</p></div>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500 card">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-purple-50 text-purple-600 mr-4"><span class="material-icons text-3xl">thumb_up</span></div>
-                        <div><p class="text-sm text-gray-500 font-medium">Strongest Skill</p><p id="topSkill" class="text-lg font-bold text-gray-900 leading-tight">N/A</p></div>
+                        <div><p class="text-xs text-gray-500 font-bold uppercase">Strongest Skill</p><p id="topSkill" class="text-lg font-bold text-gray-900 leading-tight">N/A</p></div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 page-break-inside-avoid">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Skill Proficiency Profile</h3>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 break-inside-avoid card">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Skill Proficiency Profile (1-5 Scale)</h3>
                 <div class="relative h-96 w-full">
                     <canvas id="skillsChart"></canvas>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8 page-break-inside-avoid">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8 break-inside-avoid card">
                 <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-bold text-gray-800">Recent Comments</h3>
+                    <h3 class="text-lg font-bold text-gray-800">Recent Evaluator Comments</h3>
                 </div>
                 <div class="p-6">
                     <ul id="commentsList" class="space-y-4"></ul>
@@ -113,32 +122,27 @@
             </div>
         </div>
 
-        <div id="loadingIndicator" class="text-center py-20">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-700 mx-auto mb-4"></div>
-            <p class="text-gray-500">Connecting to Google Database...</p>
-        </div>
-
     </div>
 
     <script>
-        // 1. CONFIGURATION: Matched to your Backend (Correct Spelling)
+        // 1. CONFIGURATION: EXACT MATCH TO DATABASE
         const SKILLS_LIST = [
-          "Punctual",
-          "Prepared with Necessary Materials",
-          "Demonstrates appropriate hygiene/dress",
-          "Initiates familiar tasks",
-          "Maintains a productive work rate",
-          "Complete tasks in a logical order",
-          "Demonstrates adaptability",
-          "Work is completed to quality standards",
-          "Maintains clean and organized work space",
-          "Awareness of surroundings and good decision making",
-          "Appropriate and respectful social interactions", 
-          "Displays effective communication skills",
-          "Accepts constructive criticism",
-          "Demonstrates a positive attitude",
-          "Asks for help appropriately",
-          "Demonstrates self-reflection"
+            "Punctual",
+            "Prepared with Necessary Materials",
+            "Demonstrates appropriate hygiene/dress",
+            "Initiates familiar tasks",
+            "Maintains a productive work rate",
+            "Complete tasks in a logical order",
+            "Demonstrates adaptability",
+            "Work is completed to quality standards",
+            "Maintains clean and organized work space",
+            "Awareness of surroundings and good decision making",
+            "Appropriate and respectful social interactions",
+            "Displays effective communication skills",
+            "Accepts constructive criticism",
+            "Demonstrates a positive attitude",
+            "Asks for help appropriately",
+            "Demonstrates self-reflection"
         ];
 
         let allEntries = [];
@@ -147,23 +151,33 @@
 
         // 2. INITIALIZATION
         window.addEventListener('load', async () => {
-            // Retrieve URL and clean it up (trim spaces/quotes)
+            document.getElementById('reportDate').innerText = new Date().toLocaleDateString();
+            
             let apiUrl = localStorage.getItem('vocational_backend_url');
             if (apiUrl) apiUrl = apiUrl.trim().replace(/['"]+/g, '');
 
             if (!apiUrl) {
-                showError("No database URL found.", "Please go to 'Admin' and paste your Google Script URL.");
+                showError("No database connection.", "Please go to the Admin Dashboard and connect your Google Script.");
                 return;
             }
 
             try {
+                // CACHE BUSTER: Add &t=Date to force fresh data
+                const timestamp = Date.now();
+                
                 // Fetch Students
-                const sResponse = await fetch(`${apiUrl}?action=getStudents`);
-                if (!sResponse.ok) throw new Error(`Student Fetch Failed: ${sResponse.status}`);
+                const sResponse = await fetch(`${apiUrl}?action=getStudents&t=${timestamp}`);
+                if (!sResponse.ok) throw new Error("Connection Refused");
                 const sData = await sResponse.json();
                 
-                if (sData.status === "error") throw new Error(sData.message);
+                // Fetch Entries
+                const eResponse = await fetch(`${apiUrl}?action=getEntries&t=${timestamp}`);
+                if (!eResponse.ok) throw new Error("Connection Refused");
+                const eData = await eResponse.json();
 
+                if (sData.status === "error" || eData.status === "error") throw new Error("Database Error");
+
+                // Populate Student Dropdown
                 const select = document.getElementById('studentSelect');
                 select.innerHTML = '<option value="">-- Select a Student --</option>';
                 
@@ -175,29 +189,16 @@
                     select.appendChild(opt);
                 });
 
-                // Fetch Entries
-                const eResponse = await fetch(`${apiUrl}?action=getEntries`);
-                if (!eResponse.ok) throw new Error(`Entries Fetch Failed: ${eResponse.status}`);
-                const eData = await eResponse.json();
-                
-                if (eData.status === "error") throw new Error(eData.message);
-                
                 allEntries = eData.data;
                 document.getElementById('loadingIndicator').classList.add('hidden');
 
             } catch (err) {
-                document.getElementById('loadingIndicator').classList.add('hidden');
+                showError("Data Load Failed", "We couldn't reach Google Sheets. Check your internet or the Admin URL settings.");
                 console.error(err);
-                // Show detailed error on screen
-                let debugMsg = err.toString();
-                if (err.message.includes("Unexpected token")) {
-                    debugMsg += " (This usually means the Script URL is wrong or the Script crashed)";
-                }
-                showError("Failed to connect to Google Sheets.", debugMsg);
             }
         });
 
-        // 3. CORE LOGIC
+        // 3. REPORT GENERATION
         function updateDashboard() {
             const studentId = document.getElementById('studentSelect').value;
             const range = document.getElementById('timeRange').value;
@@ -212,7 +213,7 @@
             document.getElementById('studentNameTitle').innerText = studentsMap[studentId];
             container.classList.remove('hidden');
 
-            // Filter Data
+            // Filter Data by Date and Student
             const cutoffDate = new Date();
             if (range !== 'all') {
                 cutoffDate.setDate(cutoffDate.getDate() - parseInt(range));
@@ -220,15 +221,15 @@
 
             const filtered = allEntries.filter(e => {
                 const entryDate = new Date(e.date);
-                return e.student_id.toString() === studentId && (range === 'all' || entryDate >= cutoffDate);
+                // Fix date offset issue by treating date string as local YYYY-MM-DD
+                const dateParts = e.date.split('-');
+                const localDate = new Date(dateParts[0], dateParts[1]-1, dateParts[2]); 
+                
+                return e.student_id.toString() === studentId && (range === 'all' || localDate >= cutoffDate);
             });
 
             if (filtered.length === 0) {
-                document.getElementById('totalLogs').innerText = "0";
-                document.getElementById('avgScore').innerText = "N/A";
-                document.getElementById('topSkill').innerText = "No Data";
-                document.getElementById('commentsList').innerHTML = "<li class='text-gray-400 italic'>No records found for this period.</li>";
-                if(chartInstance) chartInstance.destroy();
+                showEmptyState();
                 return;
             }
 
@@ -242,9 +243,10 @@
 
             filtered.forEach(entry => {
                 SKILLS_LIST.forEach(skill => {
-                    if (entry.scores && entry.scores[skill] !== "" && entry.scores[skill] !== undefined) {
+                    // Exact String Matching
+                    if (entry.scores && entry.scores[skill] !== undefined) {
                         const score = parseFloat(entry.scores[skill]);
-                        if (!isNaN(score)) {
+                        if (!isNaN(score) && score > 0) {
                             skillSums[skill] += score;
                             skillCounts[skill]++;
                             totalScoreSum += score;
@@ -254,11 +256,11 @@
                 });
             });
 
-            // Update DOM Stats
+            // Update Header Stats
             document.getElementById('totalLogs').innerText = filtered.length;
             document.getElementById('avgScore').innerText = totalScoreCount > 0 ? (totalScoreSum / totalScoreCount).toFixed(1) : "0.0";
 
-            // Determine Top Skill & Prepare Chart Data
+            // Prepare Chart Data
             let chartLabels = [];
             let chartData = [];
             let bestSkillName = "N/A";
@@ -266,10 +268,10 @@
 
             SKILLS_LIST.forEach(skill => {
                 const avg = skillCounts[skill] > 0 ? (skillSums[skill] / skillCounts[skill]) : 0;
-                chartLabels.push(skill);
+                chartLabels.push(skill); // Shorten label if needed
                 chartData.push(avg.toFixed(1));
 
-                if (avg > bestSkillAvg) {
+                if (avg > bestSkillAvg && avg > 0) {
                     bestSkillAvg = avg;
                     bestSkillName = skill;
                 }
@@ -277,51 +279,57 @@
 
             document.getElementById('topSkill').innerText = bestSkillName;
 
-            // Render Chart
             renderChart(chartLabels, chartData);
 
-            // Render Comments (Last 5)
+            // Render Comments
             const commentsList = document.getElementById('commentsList');
             commentsList.innerHTML = "";
+            
+            // Sort by Date Descending
             const recentEntries = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
 
             recentEntries.forEach(e => {
-                if (e.comments) {
+                if (e.comments && e.comments.trim() !== "") {
                     const li = document.createElement('li');
                     li.className = "border-b border-gray-100 last:border-0 pb-2";
                     li.innerHTML = `
                         <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">${formatDate(e.date)}</span>
-                            <span class="text-xs text-gray-400">Site: ${e.job_site}</span>
+                            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">${e.date}</span>
+                            <span class="text-xs text-gray-400 uppercase tracking-wide">${e.job_site}</span>
                         </div>
                         <p class="text-sm text-gray-700 italic">"${e.comments}"</p>
+                        <p class="text-xs text-right text-gray-400 mt-1">- ${e.evaluator || 'Evaluator'}</p>
                     `;
                     commentsList.appendChild(li);
                 }
             });
             
             if (commentsList.children.length === 0) {
-                commentsList.innerHTML = "<li class='text-gray-400 italic'>No written comments in this period.</li>";
+                commentsList.innerHTML = "<li class='text-gray-400 italic text-center py-4'>No written comments recorded for this period.</li>";
             }
+        }
+
+        function showEmptyState() {
+            document.getElementById('totalLogs').innerText = "0";
+            document.getElementById('avgScore').innerText = "N/A";
+            document.getElementById('topSkill').innerText = "-";
+            document.getElementById('commentsList').innerHTML = "<li class='text-gray-400 italic text-center'>No records found. Try a different date range.</li>";
+            if(chartInstance) chartInstance.destroy();
         }
 
         function renderChart(labels, data) {
             const ctx = document.getElementById('skillsChart').getContext('2d');
-            
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
+            if (chartInstance) chartInstance.destroy();
 
             chartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Average Score (1-5)',
+                        label: 'Average Score',
                         data: data,
-                        backgroundColor: 'rgba(79, 70, 229, 0.6)',
-                        borderColor: 'rgba(79, 70, 229, 1)',
-                        borderWidth: 1,
+                        backgroundColor: data.map(v => v >= 4 ? 'rgba(34, 197, 94, 0.7)' : v >= 3 ? 'rgba(79, 70, 229, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
+                        borderColor: 'rgba(0,0,0,0)',
                         borderRadius: 4
                     }]
                 },
@@ -330,28 +338,18 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { min: 0, max: 5, grid: { color: '#f3f4f6' } },
-                        y: { grid: { display: false }, ticks: { autoSkip: false, font: { size: 11 } } }
+                        x: { min: 0, max: 5, grid: { color: '#f3f4f6' }, title: {display: true, text: 'Score (1-5)'} },
+                        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
                     },
                     plugins: { legend: { display: false } }
                 }
             });
         }
 
-        function formatDate(dateString) {
-            const options = { month: 'short', day: 'numeric', year: 'numeric' };
-            return new Date(dateString).toLocaleDateString(undefined, options);
-        }
-
         function showError(title, detail) {
             document.getElementById('loadingIndicator').classList.add('hidden');
             document.getElementById('errorBanner').classList.remove('hidden');
-            document.getElementById('errorText').innerText = title;
-            if(detail) {
-                const debug = document.getElementById('debugInfo');
-                debug.innerText = detail;
-                debug.classList.remove('hidden');
-            }
+            document.getElementById('errorText').innerText = detail;
         }
     </script>
 </body>
