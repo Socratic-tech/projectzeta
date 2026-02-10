@@ -30,7 +30,7 @@
                         <span class="material-icons text-sm">dashboard</span> Dashboard
                     </a>
                     <button onclick="window.print()" class="bg-white text-indigo-700 font-bold px-4 py-2 rounded hover:bg-gray-100 transition flex items-center gap-1">
-                        <span class="material-icons text-sm">print</span> Print Report
+                        <span class="material-icons text-sm">print</span> Print
                     </button>
                 </div>
             </div>
@@ -39,25 +39,22 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <div id="errorBanner" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm" role="alert">
-            <h3 class="font-bold text-lg"><span class="material-icons align-bottom">error</span> Connection Failed</h3>
+        <div id="errorBanner" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm">
+            <h3 class="font-bold text-lg">Connection Error</h3>
             <p id="errorText">Could not load data.</p>
-            <div class="mt-3">
-                <a href="admin.html" class="text-sm font-bold underline hover:text-red-900">Go to Admin Settings to fix URL</a>
-            </div>
         </div>
 
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 no-print">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Select Student</label>
-                    <select id="studentSelect" onchange="updateDashboard()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 border bg-gray-50 outline-none">
-                        <option value="">Loading students...</option>
+                    <select id="studentSelect" onchange="updateDashboard()" class="w-full p-3 border rounded bg-gray-50 outline-none">
+                        <option value="">Loading...</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Time Period</label>
-                    <select id="timeRange" onchange="updateDashboard()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 border bg-gray-50 outline-none">
+                    <select id="timeRange" onchange="updateDashboard()" class="w-full p-3 border rounded bg-gray-50 outline-none">
                         <option value="30">Last 30 Days</option>
                         <option value="90">Last 3 Months</option>
                         <option value="180">Last 6 Months</option>
@@ -69,7 +66,7 @@
 
         <div id="loadingIndicator" class="text-center py-20">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-700 mx-auto mb-4"></div>
-            <p class="text-gray-500">Syncing with database...</p>
+            <p class="text-gray-500">Syncing database...</p>
         </div>
 
         <div id="reportContent" class="hidden">
@@ -86,27 +83,21 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500 card">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-blue-50 text-blue-600 mr-4"><span class="material-icons text-3xl">history_edu</span></div>
-                        <div><p class="text-xs text-gray-500 font-bold uppercase">Evaluations</p><p id="totalLogs" class="text-2xl font-bold text-gray-900">0</p></div>
-                    </div>
+                    <p class="text-xs text-gray-500 font-bold uppercase">Evaluations</p>
+                    <p id="totalLogs" class="text-2xl font-bold text-gray-900">0</p>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500 card">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-50 text-green-600 mr-4"><span class="material-icons text-3xl">star</span></div>
-                        <div><p class="text-xs text-gray-500 font-bold uppercase">Average Score</p><p id="avgScore" class="text-2xl font-bold text-gray-900">0.0</p></div>
-                    </div>
+                    <p class="text-xs text-gray-500 font-bold uppercase">Average Score</p>
+                    <p id="avgScore" class="text-2xl font-bold text-gray-900">0.0</p>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500 card">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-purple-50 text-purple-600 mr-4"><span class="material-icons text-3xl">thumb_up</span></div>
-                        <div><p class="text-xs text-gray-500 font-bold uppercase">Strongest Skill</p><p id="topSkill" class="text-lg font-bold text-gray-900 leading-tight">N/A</p></div>
-                    </div>
+                    <p class="text-xs text-gray-500 font-bold uppercase">Strongest Skill</p>
+                    <p id="topSkill" class="text-lg font-bold text-gray-900 leading-tight">N/A</p>
                 </div>
             </div>
 
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 break-inside-avoid card">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Skill Proficiency Profile (1-5 Scale)</h3>
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Skill Proficiency (1-5 Scale)</h3>
                 <div class="relative h-96 w-full">
                     <canvas id="skillsChart"></canvas>
                 </div>
@@ -114,91 +105,87 @@
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8 break-inside-avoid card">
                 <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-bold text-gray-800">Recent Evaluator Comments</h3>
+                    <h3 class="text-lg font-bold text-gray-800">Recent Comments</h3>
                 </div>
                 <div class="p-6">
                     <ul id="commentsList" class="space-y-4"></ul>
                 </div>
             </div>
         </div>
-
     </div>
 
     <script>
-        // 1. CONFIGURATION: EXACT MATCH TO DATABASE
+        // --- CONFIGURATION ---
         const SKILLS_LIST = [
-            "Punctual",
-            "Prepared with Necessary Materials",
-            "Demonstrates appropriate hygiene/dress",
-            "Initiates familiar tasks",
-            "Maintains a productive work rate",
-            "Complete tasks in a logical order",
-            "Demonstrates adaptability",
-            "Work is completed to quality standards",
-            "Maintains clean and organized work space",
-            "Awareness of surroundings and good decision making",
-            "Appropriate and respectful social interactions",
-            "Displays effective communication skills",
-            "Accepts constructive criticism",
-            "Demonstrates a positive attitude",
-            "Asks for help appropriately",
-            "Demonstrates self-reflection"
+            "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
+            "Initiates familiar tasks", "Maintains a productive work rate", "Complete tasks in a logical order",
+            "Demonstrates adaptability", "Work is completed to quality standards", "Maintains clean and organized work space",
+            "Awareness of surroundings and good decision making", "Appropriate and respectful social interactions",
+            "Displays effective communication skills", "Accepts constructive criticism", "Demonstrates a positive attitude",
+            "Asks for help appropriately", "Demonstrates self-reflection"
         ];
 
         let allEntries = [];
         let studentsMap = {};
         let chartInstance = null;
 
-        // 2. INITIALIZATION
+        // --- THE DATE FIXER ---
+        // Converts "2023-10-25T..." or "2023-10-25" into a pure Local Date object
+        function parseDate(dateStr) {
+            if (!dateStr) return new Date();
+            // If it's a full ISO string (from Google), take the first 10 chars (YYYY-MM-DD)
+            const cleanStr = dateStr.substring(0, 10);
+            const parts = cleanStr.split('-');
+            // Create date using Local Time (Year, MonthIndex, Day)
+            // Month is 0-indexed in JS (0=Jan, 9=Oct)
+            return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+
+        // --- INIT ---
         window.addEventListener('load', async () => {
             document.getElementById('reportDate').innerText = new Date().toLocaleDateString();
             
             let apiUrl = localStorage.getItem('vocational_backend_url');
-            if (apiUrl) apiUrl = apiUrl.trim().replace(/['"]+/g, '');
-
             if (!apiUrl) {
-                showError("No database connection.", "Please go to the Admin Dashboard and connect your Google Script.");
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                document.getElementById('errorBanner').classList.remove('hidden');
+                document.getElementById('errorText').innerText = "Please go to Admin and connect the database.";
                 return;
             }
 
             try {
-                // CACHE BUSTER: Add &t=Date to force fresh data
-                const timestamp = Date.now();
+                // Cache Buster to get fresh data
+                const t = Date.now();
                 
-                // Fetch Students
-                const sResponse = await fetch(`${apiUrl}?action=getStudents&t=${timestamp}`);
-                if (!sResponse.ok) throw new Error("Connection Refused");
-                const sData = await sResponse.json();
-                
-                // Fetch Entries
-                const eResponse = await fetch(`${apiUrl}?action=getEntries&t=${timestamp}`);
-                if (!eResponse.ok) throw new Error("Connection Refused");
-                const eData = await eResponse.json();
+                const [sRes, eRes] = await Promise.all([
+                    fetch(`${apiUrl}?action=getStudents&t=${t}`),
+                    fetch(`${apiUrl}?action=getEntries&t=${t}`)
+                ]);
 
-                if (sData.status === "error" || eData.status === "error") throw new Error("Database Error");
+                const sData = await sRes.json();
+                const eData = await eRes.json();
 
-                // Populate Student Dropdown
+                if (sData.status === 'error' || eData.status === 'error') throw new Error("Database Error");
+
+                // Load Students
                 const select = document.getElementById('studentSelect');
-                select.innerHTML = '<option value="">-- Select a Student --</option>';
-                
-                sData.data.forEach(stu => {
-                    studentsMap[stu.student_id] = stu.name;
-                    let opt = document.createElement('option');
-                    opt.value = stu.student_id;
-                    opt.innerText = stu.name;
-                    select.appendChild(opt);
+                select.innerHTML = '<option value="">-- Select Student --</option>';
+                sData.data.forEach(s => {
+                    studentsMap[s.student_id] = s.name;
+                    select.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
                 });
 
                 allEntries = eData.data;
                 document.getElementById('loadingIndicator').classList.add('hidden');
 
             } catch (err) {
-                showError("Data Load Failed", "We couldn't reach Google Sheets. Check your internet or the Admin URL settings.");
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                document.getElementById('errorBanner').classList.remove('hidden');
                 console.error(err);
             }
         });
 
-        // 3. REPORT GENERATION
+        // --- DASHBOARD LOGIC ---
         function updateDashboard() {
             const studentId = document.getElementById('studentSelect').value;
             const range = document.getElementById('timeRange').value;
@@ -209,147 +196,116 @@
                 return;
             }
 
-            // Set Title
             document.getElementById('studentNameTitle').innerText = studentsMap[studentId];
             container.classList.remove('hidden');
 
-            // Filter Data by Date and Student
-            const cutoffDate = new Date();
+            // --- FILTERING WITH FIXED DATES ---
+            const today = new Date();
+            // Reset hours to ensure fair comparison
+            today.setHours(0,0,0,0);
+            
+            const cutoffDate = new Date(today);
             if (range !== 'all') {
-                cutoffDate.setDate(cutoffDate.getDate() - parseInt(range));
+                cutoffDate.setDate(today.getDate() - parseInt(range));
             }
 
             const filtered = allEntries.filter(e => {
-                const entryDate = new Date(e.date);
-                // Fix date offset issue by treating date string as local YYYY-MM-DD
-                const dateParts = e.date.split('-');
-                const localDate = new Date(dateParts[0], dateParts[1]-1, dateParts[2]); 
+                if(e.student_id.toString() !== studentId) return false;
+                if(range === 'all') return true;
                 
-                return e.student_id.toString() === studentId && (range === 'all' || localDate >= cutoffDate);
+                const entryDate = parseDate(e.date);
+                return entryDate >= cutoffDate;
             });
 
             if (filtered.length === 0) {
-                showEmptyState();
+                // Empty State
+                document.getElementById('totalLogs').innerText = "0";
+                document.getElementById('avgScore').innerText = "-";
+                document.getElementById('topSkill').innerText = "-";
+                document.getElementById('commentsList').innerHTML = "<li class='text-gray-400 italic text-center'>No records found in this period.</li>";
+                if(chartInstance) chartInstance.destroy();
                 return;
             }
 
-            // Calculate Metrics
+            // --- CALCULATIONS ---
             let skillSums = {};
             let skillCounts = {};
             SKILLS_LIST.forEach(s => { skillSums[s] = 0; skillCounts[s] = 0; });
-
-            let totalScoreSum = 0;
-            let totalScoreCount = 0;
+            let grandSum = 0, grandCount = 0;
 
             filtered.forEach(entry => {
                 SKILLS_LIST.forEach(skill => {
-                    // Exact String Matching
-                    if (entry.scores && entry.scores[skill] !== undefined) {
-                        const score = parseFloat(entry.scores[skill]);
-                        if (!isNaN(score) && score > 0) {
-                            skillSums[skill] += score;
-                            skillCounts[skill]++;
-                            totalScoreSum += score;
-                            totalScoreCount++;
-                        }
+                    const score = parseFloat(entry.scores[skill]);
+                    if (!isNaN(score) && score > 0) {
+                        skillSums[skill] += score;
+                        skillCounts[skill]++;
+                        grandSum += score;
+                        grandCount++;
                     }
                 });
             });
 
-            // Update Header Stats
+            // Update Metrics
             document.getElementById('totalLogs').innerText = filtered.length;
-            document.getElementById('avgScore').innerText = totalScoreCount > 0 ? (totalScoreSum / totalScoreCount).toFixed(1) : "0.0";
+            document.getElementById('avgScore').innerText = grandCount ? (grandSum / grandCount).toFixed(1) : "0.0";
 
-            // Prepare Chart Data
-            let chartLabels = [];
-            let chartData = [];
-            let bestSkillName = "N/A";
-            let bestSkillAvg = -1;
-
+            // Prepare Chart
+            let labels = [], data = [], bestAvg = -1, bestName = "N/A";
             SKILLS_LIST.forEach(skill => {
-                const avg = skillCounts[skill] > 0 ? (skillSums[skill] / skillCounts[skill]) : 0;
-                chartLabels.push(skill); // Shorten label if needed
-                chartData.push(avg.toFixed(1));
-
-                if (avg > bestSkillAvg && avg > 0) {
-                    bestSkillAvg = avg;
-                    bestSkillName = skill;
-                }
+                const avg = skillCounts[skill] ? (skillSums[skill] / skillCounts[skill]) : 0;
+                labels.push(skill);
+                data.push(avg.toFixed(1));
+                if (avg > bestAvg && avg > 0) { bestAvg = avg; bestName = skill; }
             });
+            document.getElementById('topSkill').innerText = bestName;
 
-            document.getElementById('topSkill').innerText = bestSkillName;
+            renderChart(labels, data);
 
-            renderChart(chartLabels, chartData);
-
-            // Render Comments
-            const commentsList = document.getElementById('commentsList');
-            commentsList.innerHTML = "";
+            // Render Comments (Sorted by Date Descending)
+            const list = document.getElementById('commentsList');
+            list.innerHTML = "";
+            const sorted = filtered.sort((a,b) => parseDate(b.date) - parseDate(a.date)).slice(0, 5);
             
-            // Sort by Date Descending
-            const recentEntries = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
-
-            recentEntries.forEach(e => {
-                if (e.comments && e.comments.trim() !== "") {
-                    const li = document.createElement('li');
-                    li.className = "border-b border-gray-100 last:border-0 pb-2";
-                    li.innerHTML = `
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">${e.date}</span>
-                            <span class="text-xs text-gray-400 uppercase tracking-wide">${e.job_site}</span>
-                        </div>
-                        <p class="text-sm text-gray-700 italic">"${e.comments}"</p>
-                        <p class="text-xs text-right text-gray-400 mt-1">- ${e.evaluator || 'Evaluator'}</p>
+            sorted.forEach(e => {
+                if (e.comments) {
+                    const d = parseDate(e.date);
+                    const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+                    
+                    list.innerHTML += `
+                        <li class="border-b border-gray-100 pb-2 mb-2">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="font-bold text-indigo-600">${dateStr}</span>
+                                <span class="text-gray-400">${e.job_site}</span>
+                            </div>
+                            <p class="text-sm italic text-gray-700">"${e.comments}"</p>
+                            <p class="text-xs text-right text-gray-400 mt-1">- ${e.evaluator}</p>
+                        </li>
                     `;
-                    commentsList.appendChild(li);
                 }
             });
-            
-            if (commentsList.children.length === 0) {
-                commentsList.innerHTML = "<li class='text-gray-400 italic text-center py-4'>No written comments recorded for this period.</li>";
-            }
-        }
-
-        function showEmptyState() {
-            document.getElementById('totalLogs').innerText = "0";
-            document.getElementById('avgScore').innerText = "N/A";
-            document.getElementById('topSkill').innerText = "-";
-            document.getElementById('commentsList').innerHTML = "<li class='text-gray-400 italic text-center'>No records found. Try a different date range.</li>";
-            if(chartInstance) chartInstance.destroy();
+            if (!list.innerHTML) list.innerHTML = "<li class='text-gray-400 italic text-center'>No comments.</li>";
         }
 
         function renderChart(labels, data) {
             const ctx = document.getElementById('skillsChart').getContext('2d');
             if (chartInstance) chartInstance.destroy();
-
             chartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Average Score',
-                        data: data,
-                        backgroundColor: data.map(v => v >= 4 ? 'rgba(34, 197, 94, 0.7)' : v >= 3 ? 'rgba(79, 70, 229, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
-                        borderColor: 'rgba(0,0,0,0)',
+                        label: 'Score', data: data,
+                        backgroundColor: data.map(v => v >= 4 ? '#22c55e' : v >= 3 ? '#4f46e5' : '#ef4444'),
                         borderRadius: 4
                     }]
                 },
                 options: {
                     indexAxis: 'y',
-                    responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        x: { min: 0, max: 5, grid: { color: '#f3f4f6' }, title: {display: true, text: 'Score (1-5)'} },
-                        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
-                    },
+                    scales: { x: { min: 0, max: 5 }, y: { ticks: { autoSkip: false, font: {size: 10} } } },
                     plugins: { legend: { display: false } }
                 }
             });
-        }
-
-        function showError(title, detail) {
-            document.getElementById('loadingIndicator').classList.add('hidden');
-            document.getElementById('errorBanner').classList.remove('hidden');
-            document.getElementById('errorText').innerText = detail;
         }
     </script>
 </body>
