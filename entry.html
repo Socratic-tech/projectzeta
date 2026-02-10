@@ -2,225 +2,161 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vocational Entry</title>
+    <title>New Entry</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    <style>
-        body { font-family: sans-serif; background-color: #F3F4F6; }
-        .btn-score { transition: 0.1s; border: 1px solid #e5e7eb; }
-        .btn-score.selected { ring: 2px; ring-offset: 1px; border-color: transparent; color: white; font-weight: bold; }
-        .score-0.selected { background-color: #EF4444; } 
-        .score-1.selected { background-color: #F97316; } 
-        .score-2.selected { background-color: #EAB308; } 
-        .score-3.selected { background-color: #84CC16; } 
-        .score-4.selected { background-color: #10B981; }
-    </style>
 </head>
-<body class="pb-20">
+<body class="bg-gray-100 text-gray-900 font-sans pb-10">
 
-    <div class="bg-indigo-600 pb-20 pt-6">
-        <div class="max-w-4xl mx-auto px-4">
-            <div class="flex justify-between items-center text-white mb-6">
-                <h1 class="text-2xl font-bold">New Evaluation</h1>
-                <a href="home.html" class="text-indigo-100 hover:text-white text-sm">Cancel</a>
+    <nav class="bg-white shadow border-b border-gray-200 mb-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-xl font-bold text-indigo-600">Vocational Tracker</h1>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="index.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+                        <a href="entry.html" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">New Entry</a>
+                        <a href="report.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Reports</a>
+                        <a href="admin.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Admin</a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </nav>
 
-    <main class="-mt-16 max-w-4xl mx-auto px-4">
-        <div class="bg-white rounded-lg shadow-lg p-6 space-y-6">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+        <h2 class="text-2xl font-bold mb-4 border-b pb-2">New Daily Log</h2>
+        
+        <form id="entryForm" onsubmit="submitForm(event)">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded border border-gray-200">
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Student</label>
-                    <select id="studentSelect" placeholder="Select Student..."></select>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Date</label>
-                    <input type="date" id="entryDate" class="w-full border p-2 rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Evaluator</label>
-                    <input type="text" id="evaluatorName" class="w-full border p-2 rounded" placeholder="Your Name">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Job Site</label>
-                    <select id="jobSiteSelect" class="w-full border p-2 rounded">
-                        <option value="">Loading sites...</option>
+                    <label class="block text-sm font-bold mb-1">Student</label>
+                    <select id="studentId" required class="w-full border p-2 rounded">
+                        <option value="">Loading...</option>
                     </select>
                 </div>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 pt-4 border-t">
-                <div class="bg-red-50 text-red-800 p-2 rounded border border-red-100 text-xs text-center">
-                    <span class="font-bold text-lg block">0</span> Unsatisfactory / Not at all
+                <div>
+                    <label class="block text-sm font-bold mb-1">Job Site</label>
+                    <select id="jobSite" required class="w-full border p-2 rounded">
+                        <option value="">Loading...</option>
+                    </select>
                 </div>
-                <div class="bg-orange-50 text-orange-800 p-2 rounded border border-orange-100 text-xs text-center">
-                    <span class="font-bold text-lg block">1</span> Poor / Direct Prompting
+                <div>
+                    <label class="block text-sm font-bold mb-1">Date</label>
+                    <input type="date" id="date" required class="w-full border p-2 rounded">
                 </div>
-                <div class="bg-yellow-50 text-yellow-800 p-2 rounded border border-yellow-100 text-xs text-center">
-                    <span class="font-bold text-lg block">2</span> Satisfactory / Indirect Prompting
-                </div>
-                <div class="bg-lime-50 text-lime-800 p-2 rounded border border-lime-100 text-xs text-center">
-                    <span class="font-bold text-lg block">3</span> Good / Independent
-                </div>
-                <div class="bg-green-50 text-green-800 p-2 rounded border border-green-100 text-xs text-center">
-                    <span class="font-bold text-lg block">4</span> Exceptional / Teaching
+                <div>
+                    <label class="block text-sm font-bold mb-1">Evaluator</label>
+                    <input type="text" id="evaluator" placeholder="Mrs. Smith" required class="w-full border p-2 rounded">
                 </div>
             </div>
 
-            <div id="skillsContainer" class="space-y-0 divide-y divide-gray-100 pt-4 border-t"></div>
-
-            <div class="pt-4">
-                <label class="block text-sm font-bold text-gray-700 mb-1">Notes</label>
-                <textarea id="comments" rows="3" class="w-full border p-2 rounded"></textarea>
+            <div class="mb-6">
+                <h3 class="font-bold text-lg mb-2">Skill Assessment (0-4)</h3>
+                <p class="text-xs text-gray-500 mb-4">0=Unsatisfactory, 1=Poor, 2=Satisfactory, 3=Good, 4=Exceptional</p>
+                
+                <div id="skillsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    </div>
             </div>
 
-            <button onclick="submitEntry()" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700">Submit Evaluation</button>
+            <div class="mb-6">
+                <label class="block font-bold mb-1">Comments / Notes</label>
+                <textarea id="comments" rows="3" class="w-full border p-2 rounded" placeholder="Specific details about today's performance..."></textarea>
+            </div>
 
-        </div>
-    </main>
+            <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 transition">
+                Submit Log
+            </button>
+        </form>
+    </div>
 
     <script>
         const API_URL = localStorage.getItem('bresa_api_url');
-        
-        // --- 16 SKILLS ---
-        const habitNames = [
-            "Punctual",
-            "Prepared with Necessary Materials",
-            "Demonstrates appropriate hygiene/dress",
-            "Initiates familiar tasks",
-            "Maintains a productive work rate",
-            "Complete tasks in a logical order",
-            "Demonstrates adaptability",
-            "Work is completed to quality standards",
-            "Maintains clean and organized work space",
-            "Awareness of surroundings / decision making",
-            "Appropriate and respectful social interactions",
-            "Displays effective communication skills",
-            "Accepts constructive criticism",
-            "Demonstrates a positive attitude",
-            "Asks for help appropriately",
-            "Demonstrates self-reflection"
+        const SKILLS = [
+            "Punctual", "Prepared", "Hygiene/Dress", "Task Initiation", 
+            "Work Rate", "Logical Order", "Adaptability", "Quality Standards", 
+            "Clean Workspace", "Awareness/Safety", "Social Interactions", "Communication", 
+            "Constructive Criticism", "Positive Attitude", "Asks for Help", "Self-Reflection"
         ];
-        
-        // Descriptors for tooltips
-        const descriptions = [
-            "Unsatisfactory / Not at all",
-            "Poor / Direct prompting",
-            "Satisfactory / Indirect prompting",
-            "Good / Independent",
-            "Exceptional / Helping or teaching"
-        ];
-        
-        let scores = new Array(habitNames.length).fill(null); 
-        let studentData = [];
 
         async function init() {
-            if(!API_URL) return alert("System not setup.");
-            document.getElementById('entryDate').valueAsDate = new Date();
+            if(!API_URL) return alert("Please set API URL in Admin");
+            
+            document.getElementById('date').valueAsDate = new Date();
 
+            // Load Students & Sites
             try {
-                // Get Students
-                const sRes = await fetch(API_URL + "?action=getStudents");
+                const [sRes, jRes] = await Promise.all([
+                    fetch(API_URL + "?action=getStudents"),
+                    fetch(API_URL + "?action=getJobSites")
+                ]);
                 const sData = await sRes.json();
-                studentData = sData.data;
-
-                const sSelect = document.getElementById('studentSelect');
-                sSelect.innerHTML = '<option value="">Select...</option>';
-                studentData.forEach(s => {
-                    sSelect.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
-                });
-                new TomSelect("#studentSelect");
-
-                // Get Job Sites
-                const jRes = await fetch(API_URL + "?action=getJobSites");
                 const jData = await jRes.json();
-                const jSelect = document.getElementById('jobSiteSelect');
-                jSelect.innerHTML = '<option value="">Select Job Site...</option>';
-                if(jData.data.length > 0) {
-                    jData.data.forEach(site => {
-                        jSelect.innerHTML += `<option value="${site}">${site}</option>`;
-                    });
-                } else {
-                    jSelect.innerHTML += `<option value="Unknown">No sites configured</option>`;
-                }
+
+                const sSel = document.getElementById('studentId');
+                sSel.innerHTML = '<option value="">Select Student...</option>';
+                sData.data.forEach(s => sSel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`);
+
+                const jSel = document.getElementById('jobSite');
+                jSel.innerHTML = '<option value="">Select Site...</option>';
+                if(jData.data) jData.data.forEach(j => jSel.innerHTML += `<option value="${j}">${j}</option>`);
 
             } catch(e) { console.error(e); }
-            
-            renderSkills();
-        }
 
-        function renderSkills() {
+            // Render Skills
             const container = document.getElementById('skillsContainer');
-            habitNames.forEach((name, idx) => {
-                const row = document.createElement('div');
-                row.className = "flex flex-col md:flex-row md:items-center justify-between py-3";
-                
-                const label = document.createElement('div');
-                label.className = "text-sm font-medium text-gray-800 w-full md:w-1/2 mb-2 md:mb-0";
-                label.innerText = (idx + 1) + ". " + name;
-                
-                const btnGroup = document.createElement('div');
-                btnGroup.className = "flex space-x-2 md:justify-end w-full md:w-1/2";
-                
-                [0, 1, 2, 3, 4].forEach(val => {
-                    const btn = document.createElement('button');
-                    btn.innerText = val;
-                    btn.title = descriptions[val]; // Add tooltip
-                    btn.className = `btn-score h-10 w-full md:w-12 rounded bg-white text-gray-600 font-medium shadow-sm hover:bg-gray-50`;
-                    btn.onclick = () => {
-                        scores[idx] = val;
-                        Array.from(btnGroup.children).forEach(b => b.classList.remove('selected', 'score-0', 'score-1', 'score-2', 'score-3', 'score-4'));
-                        btn.classList.add('selected', `score-${val}`);
-                    };
-                    btnGroup.appendChild(btn);
-                });
-
-                row.appendChild(label);
-                row.appendChild(btnGroup);
-                container.appendChild(row);
+            SKILLS.forEach((skill, index) => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between bg-white p-3 rounded border shadow-sm">
+                        <label class="text-sm font-medium w-1/2">${skill}</label>
+                        <div class="flex space-x-1">
+                            ${[0,1,2,3,4].map(n => `
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="skill_${index}" value="${n}" class="peer sr-only">
+                                    <div class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 hover:bg-gray-100 transition text-sm font-bold">
+                                        ${n}
+                                    </div>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
             });
         }
 
-        async function submitEntry() {
-            const studentId = document.getElementById('studentSelect').value;
-            const date = document.getElementById('entryDate').value;
-            const evaluator = document.getElementById('evaluatorName').value;
-            const jobSite = document.getElementById('jobSiteSelect').value;
-            
-            if(!studentId || !date) return alert("Please fill in Student and Date.");
-            
-            // Check if user missed any scores (optional)
-            if(scores.some(s => s === null)) {
-                 if(!confirm("You haven't scored all items. Submit anyway?")) return;
-            }
-
-            const studentObj = studentData.find(s => s.student_id == studentId);
-            const studentName = studentObj ? studentObj.name : "Unknown";
-
+        async function submitForm(e) {
+            e.preventDefault();
             const btn = document.getElementById('submitBtn');
             btn.disabled = true; btn.innerText = "Saving...";
 
-            const payload = {
-                action: 'logEntry',
-                student_id: studentId,
-                student_name: studentName,
-                evaluator: evaluator,
-                job_site: jobSite,
-                comments: document.getElementById('comments').value,
-                scores: scores
-            };
-
-            await fetch(API_URL, {
-                method: 'POST', mode: 'no-cors',
-                body: JSON.stringify(payload)
+            const scores = SKILLS.map((_, i) => {
+                const el = document.querySelector(`input[name="skill_${i}"]:checked`);
+                return el ? el.value : "";
             });
 
-            alert("Entry Saved!");
-            location.reload(); 
+            const payload = {
+                action: "addEntry",
+                student_id: document.getElementById('studentId').value,
+                job_site: document.getElementById('jobSite').value,
+                date: document.getElementById('date').value,
+                evaluator: document.getElementById('evaluator').value,
+                comments: document.getElementById('comments').value,
+                scores: JSON.stringify(scores) // Send as JSON array string
+            };
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                alert("Saved Successfully!");
+                window.location.href = 'index.html';
+            } catch(err) {
+                alert("Error saving: " + err);
+                btn.disabled = false; btn.innerText = "Submit Log";
+            }
         }
 
         init();
