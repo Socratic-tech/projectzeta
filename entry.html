@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Entry</title>
+    <title>Vocational Entry</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
@@ -53,6 +53,24 @@
                 </div>
             </div>
 
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 pt-4 border-t">
+                <div class="bg-red-50 text-red-800 p-2 rounded border border-red-100 text-xs text-center">
+                    <span class="font-bold text-lg block">0</span> Unsatisfactory / Not at all
+                </div>
+                <div class="bg-orange-50 text-orange-800 p-2 rounded border border-orange-100 text-xs text-center">
+                    <span class="font-bold text-lg block">1</span> Poor / Direct Prompting
+                </div>
+                <div class="bg-yellow-50 text-yellow-800 p-2 rounded border border-yellow-100 text-xs text-center">
+                    <span class="font-bold text-lg block">2</span> Satisfactory / Indirect Prompting
+                </div>
+                <div class="bg-lime-50 text-lime-800 p-2 rounded border border-lime-100 text-xs text-center">
+                    <span class="font-bold text-lg block">3</span> Good / Independent
+                </div>
+                <div class="bg-green-50 text-green-800 p-2 rounded border border-green-100 text-xs text-center">
+                    <span class="font-bold text-lg block">4</span> Exceptional / Teaching
+                </div>
+            </div>
+
             <div id="skillsContainer" class="space-y-0 divide-y divide-gray-100 pt-4 border-t"></div>
 
             <div class="pt-4">
@@ -68,7 +86,7 @@
     <script>
         const API_URL = localStorage.getItem('bresa_api_url');
         
-        // --- 16 SKILLS (Clean Workspace added at #9) ---
+        // --- 16 SKILLS ---
         const habitNames = [
             "Punctual",
             "Prepared with Necessary Materials",
@@ -78,14 +96,23 @@
             "Complete tasks in a logical order",
             "Demonstrates adaptability",
             "Work is completed to quality standards",
-            "Maintains clean and organized work space", // <--- NEW ADDITION
-            "Awareness of surroundings and good decision making",
+            "Maintains clean and organized work space",
+            "Awareness of surroundings / decision making",
             "Appropriate and respectful social interactions",
             "Displays effective communication skills",
             "Accepts constructive criticism",
             "Demonstrates a positive attitude",
             "Asks for help appropriately",
             "Demonstrates self-reflection"
+        ];
+        
+        // Descriptors for tooltips
+        const descriptions = [
+            "Unsatisfactory / Not at all",
+            "Poor / Direct prompting",
+            "Satisfactory / Indirect prompting",
+            "Good / Independent",
+            "Exceptional / Helping or teaching"
         ];
         
         let scores = new Array(habitNames.length).fill(null); 
@@ -142,6 +169,7 @@
                 [0, 1, 2, 3, 4].forEach(val => {
                     const btn = document.createElement('button');
                     btn.innerText = val;
+                    btn.title = descriptions[val]; // Add tooltip
                     btn.className = `btn-score h-10 w-full md:w-12 rounded bg-white text-gray-600 font-medium shadow-sm hover:bg-gray-50`;
                     btn.onclick = () => {
                         scores[idx] = val;
@@ -164,8 +192,11 @@
             const jobSite = document.getElementById('jobSiteSelect').value;
             
             if(!studentId || !date) return alert("Please fill in Student and Date.");
-            // Optional: Uncomment next line if you want to FORCE all scores to be filled
-            // if(scores.some(s => s === null)) return alert("Please score all items.");
+            
+            // Check if user missed any scores (optional)
+            if(scores.some(s => s === null)) {
+                 if(!confirm("You haven't scored all items. Submit anyway?")) return;
+            }
 
             const studentObj = studentData.find(s => s.student_id == studentId);
             const studentName = studentObj ? studentObj.name : "Unknown";
