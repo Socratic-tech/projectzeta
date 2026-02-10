@@ -2,157 +2,352 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Vocational Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        .login-overlay {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.95);
+            display: flex; justify-content: center; align-items: center; z-index: 50;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans pb-10">
+<body class="bg-gray-100 font-sans text-gray-900">
 
-    <div id="authModal" class="fixed inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-96 text-center">
-            
-            <div id="setupView" class="hidden">
-                <h2 class="text-2xl font-bold mb-4 text-indigo-600">Connect Database</h2>
-                <p class="text-sm text-gray-500 mb-4">Paste your Web App URL to begin.</p>
-                <input type="text" id="setupUrl" class="w-full border p-3 rounded mb-4 text-sm" placeholder="https://script.google.com/...">
-                <button onclick="saveSetup()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 transition">Connect</button>
-            </div>
-
-            <div id="loginView" class="hidden">
-                <h2 class="text-2xl font-bold mb-4 text-gray-800">Admin Login</h2>
-                <input type="password" id="authInput" class="w-full border p-3 rounded mb-4 text-center text-xl tracking-widest" placeholder="Enter PIN">
-                <button id="loginBtn" onclick="attemptLogin()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 transition">Unlock System</button>
-                <p id="authError" class="text-red-500 text-sm mt-3 hidden">Incorrect PIN.</p>
-                <button onclick="clearSetup()" class="text-xs text-gray-400 mt-6 underline">Reset Connection</button>
-            </div>
-
+    <div id="loginOverlay" class="login-overlay">
+        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full border border-gray-200 text-center">
+            <span class="material-icons text-6xl text-indigo-600 mb-4">admin_panel_settings</span>
+            <h2 class="text-2xl font-bold mb-2">Admin Access</h2>
+            <p class="text-gray-500 mb-6 text-sm">Enter your password to manage settings.</p>
+            <input type="password" id="passwordInput" placeholder="Password" 
+                class="w-full p-3 border rounded mb-4 focus:ring-2 focus:ring-indigo-500 outline-none"
+                onkeypress="if(event.key === 'Enter') checkPassword()">
+            <button onclick="checkPassword()" 
+                class="w-full bg-indigo-600 text-white py-3 rounded font-bold hover:bg-indigo-700 transition">
+                Unlock Dashboard
+            </button>
+            <p id="loginError" class="text-red-500 text-sm mt-3 hidden">Incorrect Password</p>
         </div>
     </div>
 
-    <div id="appContent" class="hidden">
-        <nav class="bg-white shadow border-b border-gray-200 mb-6">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <a href="index.html" class="flex items-center text-gray-500 hover:text-indigo-600 mr-4">
-                            <span class="material-icons">arrow_back</span>
-                        </a>
-                        <h1 class="text-xl font-bold text-indigo-600">Admin Panel</h1>
-                    </div>
-                    <div class="flex items-center"><button onclick="logout()" class="text-gray-500 hover:text-red-600 text-sm font-medium">Logout</button></div>
+    <nav class="bg-indigo-800 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <span class="material-icons">settings_applications</span>
+                    <span class="font-bold text-xl">Admin Control Panel</span>
+                </div>
+                <div class="flex gap-4">
+                    <a href="index.html" class="hover:bg-indigo-700 px-3 py-2 rounded transition flex items-center gap-1">
+                        <span class="material-icons text-sm">dashboard</span> Dashboard
+                    </a>
+                    <a href="report.html" class="hover:bg-indigo-700 px-3 py-2 rounded transition flex items-center gap-1">
+                        <span class="material-icons text-sm">analytics</span> Reports
+                    </a>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded text-sm font-bold ml-4">
+                        Logout
+                    </button>
                 </div>
             </div>
-        </nav>
+        </div>
+    </nav>
 
-        <div class="max-w-4xl mx-auto space-y-6">
-            <div class="bg-white p-6 rounded shadow">
-                <h2 class="text-xl font-bold mb-4">Manage Students</h2>
-                <div class="flex gap-2 mb-4"><input type="text" id="newStudentName" class="flex-1 border p-2 rounded" placeholder="New Student Name"><button onclick="addStudent()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button></div>
-                <ul id="studentList" class="divide-y divide-gray-200 border rounded"><li class="p-3 text-center text-gray-400">Loading...</li></ul>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <div class="bg-slate-800 text-white p-6 rounded-xl shadow-lg mb-8 border border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <span class="material-icons text-blue-400">wifi_tethering</span> 
+                    System Connection
+                </h2>
+                <button onclick="runDiagnostics()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition shadow-md flex items-center gap-2">
+                    <span class="material-icons text-sm">play_arrow</span> RUN DIAGNOSTIC
+                </button>
             </div>
 
-            <div class="bg-white p-6 rounded shadow">
-                <h2 class="text-xl font-bold mb-4">Manage Job Sites</h2>
-                <div class="flex gap-2 mb-4"><input type="text" id="newJobSite" class="flex-1 border p-2 rounded" placeholder="New Job Site Name"><button onclick="addJobSite()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add</button></div>
-                <ul id="jobSiteList" class="divide-y divide-gray-200 border rounded"><li class="p-3 text-center text-gray-400">Loading...</li></ul>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-xs text-gray-400 uppercase font-bold tracking-wider block mb-1">Database API URL</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="apiUrlInput" placeholder="Paste Google Script URL here..." 
+                            class="flex-1 bg-black/30 text-gray-300 text-sm p-2 rounded border border-slate-600 focus:border-blue-500 outline-none font-mono">
+                        <button onclick="saveUrl()" class="bg-green-600 hover:bg-green-500 px-3 py-2 rounded text-xs font-bold uppercase">Save</button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">
+                        Must end in <code class="bg-black/20 px-1 rounded text-gray-400">/exec</code>. Get this from Google Script -> Deploy.
+                    </p>
+                </div>
+
+                <div id="diagnosticLog" class="bg-black/50 p-4 rounded-lg font-mono text-xs h-32 overflow-y-auto border border-slate-700 space-y-1">
+                    <div class="text-gray-500 italic">System ready. Click 'Run Diagnostic' to test...</div>
+                </div>
             </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-             <div class="bg-white p-6 rounded shadow border-l-4 border-yellow-400">
-                <h2 class="text-xl font-bold mb-2">Security Settings</h2>
-                <p class="text-gray-600 text-sm mb-4">To change the password, go to the <strong>Settings</strong> tab in your Google Sheet and edit cell <strong>B2</strong>.</p>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <span class="material-icons text-indigo-600">people</span> Students
+                    </h3>
+                </div>
+                
+                <form onsubmit="addStudent(event)" class="flex gap-2 mb-6">
+                    <input type="text" id="newStudentName" placeholder="Enter student name..." required
+                        class="flex-1 p-2 border rounded focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 font-bold">
+                        Add
+                    </button>
+                </form>
+
+                <div class="max-h-64 overflow-y-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 text-gray-500 font-medium border-b">
+                            <tr>
+                                <th class="p-3">Name</th>
+                                <th class="p-3 text-right">ID</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <tr><td colspan="2" class="p-4 text-center text-gray-400">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <span class="material-icons text-green-600">store</span> Job Sites
+                    </h3>
+                </div>
+
+                <form onsubmit="addJobSite(event)" class="flex gap-2 mb-6">
+                    <input type="text" id="newSiteName" placeholder="Enter job site name..." required
+                        class="flex-1 p-2 border rounded focus:ring-2 focus:ring-green-500 outline-none">
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-bold">
+                        Add
+                    </button>
+                </form>
+
+                <div class="max-h-64 overflow-y-auto">
+                    <ul id="sitesList" class="space-y-2">
+                        <li class="text-gray-400 text-center py-4">Loading...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span class="material-icons text-orange-500">build</span> Database Tools
+                </h3>
+                <div class="flex gap-4">
+                    <button onclick="window.open(localStorage.getItem('vocational_backend_url').replace('/exec','/edit'), '_blank')" 
+                        class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded border transition">
+                        <span class="material-icons text-sm">open_in_new</span> Open Google Sheet
+                    </button>
+                    <button onclick="if(confirm('This will clear all local data. Continue?')) { localStorage.clear(); location.reload(); }" 
+                        class="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded border border-red-200 transition">
+                        <span class="material-icons text-sm">delete_forever</span> Reset App Settings
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
-        const API_KEY = 'bresa_api_url';
-        let API_URL = localStorage.getItem(API_KEY);
+        // --- AUTHENTICATION ---
+        const ADMIN_PASS = "1234"; // Simple client-side lock (Secure via Google Script in production)
+        
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            if (input === ADMIN_PASS) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                loadDashboard();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
 
-        function checkAuth() {
-            // IF NO URL -> Show Setup
-            if (!API_URL) {
-                document.getElementById('setupView').classList.remove('hidden');
-                document.getElementById('loginView').classList.add('hidden');
+        function logout() {
+            location.reload();
+        }
+
+        // --- CORE FUNCTIONS ---
+        let API_URL = "";
+
+        async function loadDashboard() {
+            API_URL = localStorage.getItem('vocational_backend_url');
+            if (API_URL) {
+                document.getElementById('apiUrlInput').value = API_URL;
+                await refreshData();
+            } else {
+                logResult("Welcome! Please paste your Script URL above.", "warning");
+            }
+        }
+
+        function saveUrl() {
+            const url = document.getElementById('apiUrlInput').value.trim();
+            if (!url.startsWith("https://script.google.com/")) {
+                alert("Invalid URL. It must start with https://script.google.com/");
                 return;
             }
-            // IF URL exists -> Show Login
-            document.getElementById('setupView').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
+            localStorage.setItem('vocational_backend_url', url);
+            API_URL = url;
+            logResult("URL Saved!", "success");
+            runDiagnostics();
+        }
 
-            if (sessionStorage.getItem('auth') === 'true') {
-                document.getElementById('authModal').classList.add('hidden');
-                document.getElementById('appContent').classList.remove('hidden');
-                loadData();
+        async function refreshData() {
+            try {
+                // Students
+                const sResp = await fetch(`${API_URL}?action=getStudents`);
+                const sData = await sResp.json();
+                renderStudents(sData.data || []);
+
+                // Sites
+                const jResp = await fetch(`${API_URL}?action=getJobSites`);
+                const jData = await jResp.json();
+                renderSites(jData.data || []);
+
+            } catch (err) {
+                console.error(err);
+                logResult("Failed to load data. Try running diagnostics.", "error");
             }
         }
 
-        // 1. SAVE URL (First Time)
-        function saveSetup() {
-            const url = document.getElementById('setupUrl').value.trim();
-            if(!url) return alert("Please enter URL");
-            localStorage.setItem(API_KEY, url);
-            API_URL = url;
-            checkAuth(); // Now switch to Login View
-        }
-
-        // 2. CHECK PASSWORD (Every Time)
-        async function attemptLogin() {
-            const input = document.getElementById('authInput').value;
-            const btn = document.getElementById('loginBtn');
-            const err = document.getElementById('authError');
-            btn.disabled = true; btn.innerText = "Verifying..."; err.classList.add('hidden');
-
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "verifyPassword", password: input }) });
-                const data = await res.json();
-                if (data.status === "success") { sessionStorage.setItem('auth', 'true'); checkAuth(); } 
-                else { err.classList.remove('hidden'); btn.disabled = false; btn.innerText = "Unlock System"; }
-            } catch (e) { alert("Connection Error"); btn.disabled = false; btn.innerText = "Unlock System"; }
-        }
-
-        function logout() { sessionStorage.removeItem('auth'); window.location.reload(); }
-        function clearSetup() { if(confirm("Disconnect from current database?")) { localStorage.removeItem(API_KEY); window.location.reload(); } }
-        document.getElementById('authInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') attemptLogin(); });
-
-        async function loadData() {
-            try {
-                const sRes = await fetch(API_URL + "?action=getStudents");
-                const sData = await sRes.json();
-                renderStudents(sData.data);
-                const jRes = await fetch(API_URL + "?action=getJobSites");
-                const jData = await jRes.json();
-                renderJobSites(jData.data);
-            } catch(e) { console.error(e); }
-        }
-
+        // --- RENDERERS ---
         function renderStudents(list) {
-            const ul = document.getElementById('studentList'); ul.innerHTML = "";
-            if(!list || list.length === 0) return ul.innerHTML = '<li class="p-3 text-gray-500 text-center">No students found.</li>';
-            list.forEach(s => { ul.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-gray-50"><span>${s.name}</span><span class="text-xs text-gray-400">ID: ${s.student_id}</span></li>`; });
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = list.length ? "" : "<tr><td colspan='2' class='p-4 text-center text-gray-400 italic'>No students found</td></tr>";
+            
+            list.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 font-medium text-gray-900">${s.name}</td>
+                    <td class="p-3 text-right text-xs font-mono text-gray-400">${s.student_id}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
-        function renderJobSites(list) {
-            const ul = document.getElementById('jobSiteList'); ul.innerHTML = "";
-            if(!list || list.length === 0) return ul.innerHTML = '<li class="p-3 text-gray-500 text-center">No job sites found.</li>';
-            list.forEach(site => { ul.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-gray-50"><span>${site}</span><button onclick="deleteJobSite('${site}')" class="text-red-500 hover:underline text-xs">Remove</button></li>`; });
+
+        function renderSites(list) {
+            const ul = document.getElementById('sitesList');
+            ul.innerHTML = list.length ? "" : "<li class='text-gray-400 italic text-center'>No job sites found</li>";
+            
+            list.forEach(site => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center bg-gray-50 p-3 rounded border hover:bg-white transition";
+                li.innerHTML = `
+                    <span class="font-medium text-gray-800">${site}</span>
+                    <button onclick="deleteSite('${site}')" class="text-red-400 hover:text-red-600">
+                        <span class="material-icons text-lg">delete</span>
+                    </button>
+                `;
+                ul.appendChild(li);
+            });
         }
-        async function addStudent() {
-            const name = document.getElementById('newStudentName').value; if(!name) return;
+
+        // --- ACTIONS ---
+        async function addStudent(e) {
+            e.preventDefault();
+            const name = document.getElementById('newStudentName').value;
+            if(!name) return;
+
+            await sendPost({ action: "addStudent", name: name });
             document.getElementById('newStudentName').value = "";
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "addStudent", name: name }) });
-            loadData();
+            refreshData();
         }
-        async function addJobSite() {
-            const site = document.getElementById('newJobSite').value; if(!site) return;
-            document.getElementById('newJobSite').value = "";
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "addJobSite", site_name: site }) });
-            loadData();
+
+        async function addJobSite(e) {
+            e.preventDefault();
+            const name = document.getElementById('newSiteName').value;
+            if(!name) return;
+
+            await sendPost({ action: "addJobSite", site_name: name });
+            document.getElementById('newSiteName').value = "";
+            refreshData();
         }
-        async function deleteJobSite(siteName) {
-            if(!confirm("Remove " + siteName + "?")) return;
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "deleteJobSite", site_name: siteName }) });
-            loadData();
+
+        async function deleteSite(name) {
+            if(confirm(`Delete ${name}?`)) {
+                await sendPost({ action: "deleteJobSite", site_name: name });
+                refreshData();
+            }
         }
-        checkAuth();
+
+        async function sendPost(data) {
+            logResult(`Sending ${data.action}...`, "info");
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Google Script Limitation workaround
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                // Wait briefly because no-cors is opaque
+                setTimeout(() => logResult("Command Sent (Check sheet if not updated)", "success"), 1000);
+            } catch (err) {
+                logResult("Post Failed: " + err.message, "error");
+            }
+        }
+
+        // --- DIAGNOSTICS ---
+        function logResult(msg, type) {
+            const log = document.getElementById('diagnosticLog');
+            const color = type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : type === 'warning' ? 'text-yellow-400' : 'text-gray-300';
+            const div = document.createElement('div');
+            div.className = color;
+            div.innerText = `> ${msg}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function runDiagnostics() {
+            const log = document.getElementById('diagnosticLog');
+            log.innerHTML = '';
+            const url = document.getElementById('apiUrlInput').value.trim();
+
+            if (!url) {
+                logResult("Error: URL is empty.", "error");
+                return;
+            }
+
+            logResult("Testing connection...", "info");
+
+            try {
+                // 1. Test Students (Simple GET)
+                const sT0 = performance.now();
+                const sResp = await fetch(`${url}?action=getStudents`);
+                if (!sResp.ok) throw new Error(`HTTP Error ${sResp.status}`);
+                const sData = await sResp.json();
+                const sT1 = performance.now();
+                
+                logResult(`Students API: OK (${Math.round(sT1-sT0)}ms)`, "success");
+
+                // 2. Test Entries (Complex GET - often fails if DB structure is wrong)
+                logResult("Testing Entries Database...", "info");
+                const eResp = await fetch(`${url}?action=getEntries`);
+                const eData = await eResp.json();
+                
+                if (eData.status === 'error') {
+                    logResult(`ENTRIES ERROR: ${eData.message}`, "error");
+                    logResult("Hint: Delete 'Entries' tab in Google Sheets to fix.", "warning");
+                } else {
+                    logResult(`Entries API: OK (${eData.data.length} records)`, "success");
+                }
+
+            } catch (err) {
+                logResult(`CONNECTION FAILED: ${err.message}`, "error");
+                if (err.message.includes("Failed to fetch")) {
+                    logResult("CORS Error: Did you Deploy as 'Anyone'?", "warning");
+                }
+            }
+        }
     </script>
 </body>
 </html>
