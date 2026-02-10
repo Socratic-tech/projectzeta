@@ -2,460 +2,266 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Setup Guide - Vocational Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Setup Guide</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        .cartoon-card { background-color: #F0F9FF; border: 2px dashed #3B82F6; border-radius: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; position: relative; overflow: hidden; }
-        .icon-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 1rem; z-index: 10; }
-        .bg-pattern { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.1; background-image: radial-gradient(#3B82F6 1px, transparent 1px); background-size: 20px 20px; z-index: 0; }
-        
-        @keyframes pulse-shield {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .code-block {
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
-        .shield-icon { animation: pulse-shield 3s infinite ease-in-out; }
     </style>
-    <script>
-        function copyCode() {
-            const codeText = document.getElementById('scriptCode').innerText;
-            navigator.clipboard.writeText(codeText).then(() => {
-                const btn = document.getElementById('copyBtn');
-                btn.innerText = "Copied!";
-                btn.classList.replace("bg-indigo-600", "bg-green-600");
-                setTimeout(() => {
-                    btn.innerText = "Copy Script Code";
-                    btn.classList.replace("bg-green-600", "bg-indigo-600");
-                }, 2000);
-            });
-        }
-    </script>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans pb-20">
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col">
 
-    <nav class="bg-white shadow border-b border-gray-200 mb-8 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <h1 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
-                        <span class="material-icons">build_circle</span> Setup Wizard
-                    </h1>
-                </div>
-                <div class="flex items-center">
-                    <a href="index.html" class="text-gray-500 hover:text-indigo-600 font-medium flex items-center gap-1">
-                        <span class="material-icons text-sm">arrow_back</span> Dashboard
-                    </a>
-                </div>
+    <nav class="bg-slate-800 border-b border-slate-700 p-4 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-icons text-blue-400">build</span>
+                <span class="font-bold text-xl">System Setup</span>
             </div>
+            <a href="index.html" class="text-slate-400 hover:text-white text-sm">Return to App</a>
         </div>
     </nav>
 
-    <div class="max-w-4xl mx-auto px-4">
-        
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold text-gray-900">Let's Get Connected!</h1>
-            <p class="mt-4 text-xl text-gray-500">Follow these steps to generate your new database.</p>
+    <div class="max-w-4xl mx-auto p-6 space-y-12">
+
+        <div class="text-center space-y-4">
+            <h1 class="text-3xl font-bold">Vocational Tracking System Setup</h1>
+            <p class="text-slate-400">Follow these 3 steps to configure your Google Sheet backend.</p>
         </div>
 
-        <section class="mb-12 bg-teal-50 border-l-4 border-teal-500 p-6 rounded-r-xl shadow-sm flex flex-col md:flex-row gap-6 items-center">
-            <div class="flex-shrink-0">
-                <div class="bg-white p-4 rounded-full shadow-sm border border-teal-100">
-                    <span class="material-icons text-5xl text-teal-500 shield-icon">security</span>
-                </div>
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">1</div>
+                <h2 class="text-xl font-bold">Create 4 Sheets (Tabs)</h2>
             </div>
-            <div>
-                <h3 class="text-xl font-bold text-teal-900 mb-2">🔒 Your Student Data is 100% Private</h3>
-                <p class="text-teal-800 text-sm leading-relaxed mb-2">
-                    <strong>We do not see your data.</strong> This tool is a "static interface." When you enter data, it goes directly from this device to <strong>your personal Google Spreadsheet</strong>.
-                </p>
-            </div>
-        </section>
-
-        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">1</span>
-                Create the Spreadsheet
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div class="prose text-gray-600">
-                    <p class="mb-3">1. Go to <a href="https://sheets.google.com" target="_blank" class="text-indigo-600 font-bold hover:underline">sheets.google.com</a>.</p>
-                    <p class="mb-3">2. Click the giant <strong class="text-green-600">+</strong> to start a blank sheet.</p>
-                    <p class="mb-3">3. Rename it to: <br><span class="font-mono bg-gray-100 text-indigo-700 px-2 py-1 rounded border border-gray-300 mt-1 inline-block">Vocational Tracker Database</span></p>
-                </div>
-                <div class="cartoon-card bg-green-50 border-green-300">
-                    <div class="bg-pattern"></div>
-                    <div class="icon-circle bg-green-500 text-white">
-                        <span class="material-icons text-4xl">table_view</span>
-                    </div>
-                    <div class="z-10 text-center font-bold text-green-800">"New Spreadsheet"</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">2</span>
-                Open Script Editor
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div class="text-gray-600">
-                    <p class="mb-4">In your new Google Sheet, look at the top menu.</p>
-                    <p class="mb-2">1. Click <strong>Extensions</strong>.</p>
-                    <p class="mb-2">2. Click <strong>Apps Script</strong>.</p>
-                </div>
-                <div class="cartoon-card bg-yellow-50 border-yellow-300">
-                    <div class="bg-pattern"></div>
-                    <div class="icon-circle bg-yellow-500 text-white">
-                        <span class="material-icons text-4xl">extension</span>
-                    </div>
-                    <div class="z-10 text-center text-sm font-bold text-gray-700">Apps Script</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">3</span>
-                Copy & Paste Code (Corrected Spelling)
-            </h2>
             
-            <p class="text-gray-600 mb-4">Delete the default code and paste this entire block.</p>
+            <p class="text-slate-400 mb-4">Open a new Google Sheet and create exactly these 4 tabs at the bottom:</p>
 
-            <div class="relative mb-6 group">
-                <button id="copyBtn" onclick="copyCode()" class="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-indigo-700 transition shadow-lg z-20 flex items-center gap-1">
-                    <span class="material-icons text-xs">content_copy</span> Copy Script Code
+            <div class="grid gap-6 md:grid-cols-2">
+                <div class="bg-slate-900 p-4 rounded border border-slate-600">
+                    <h3 class="font-bold text-green-400 mb-2">Tab 1: "Entries"</h3>
+                    <p class="text-xs text-slate-500 mb-2">Copy these exact headers into Row 1 (A1 to V1):</p>
+                    <ul class="text-xs space-y-1 text-slate-300 list-disc pl-4">
+                        <li><strong>A1:</strong> Entry ID</li>
+                        <li><strong>B1:</strong> Date</li>
+                        <li><strong>C1:</strong> Student ID</li>
+                        <li><strong>D1:</strong> Job Site</li>
+                        <li><strong>E1:</strong> Evaluator</li>
+                        <li><strong>F1-U1 (Skills):</strong> <em>See list below (Must match exactly)</em></li>
+                        <li><strong>V1:</strong> Comments</li>
+                    </ul>
+                    <div class="mt-3 p-2 bg-black rounded text-[10px] text-green-300 font-mono border border-green-900">
+                        Punctual, Prepared with Necessary Materials, Demonstrates appropriate hygiene/dress, Initiates familiar tasks, Maintains a productive work rate, Complete tasks in a logical order, Demonstrates adaptability, Work is completed to quality standards, Maintains clean and organized work space, Awareness of surroundings and good decision making, Appropriate and respectful social interactions, Displays effective communication skills, Accepts constructive criticism, Demonstrates a positive attitude, Asks for help appropriately, Demonstrates self-reflection
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded border border-slate-600">
+                    <h3 class="font-bold text-purple-400 mb-2">Tab 2: "Students"</h3>
+                    <ul class="text-xs space-y-1 text-slate-300 list-disc pl-4">
+                        <li><strong>A1:</strong> Student ID</li>
+                        <li><strong>B1:</strong> Name</li>
+                        <li><strong>C1:</strong> Grade</li>
+                    </ul>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded border border-slate-600">
+                    <h3 class="font-bold text-orange-400 mb-2">Tab 3: "JobSites"</h3>
+                    <ul class="text-xs space-y-1 text-slate-300 list-disc pl-4">
+                        <li><strong>A1:</strong> Site Name</li>
+                    </ul>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded border border-slate-600">
+                    <h3 class="font-bold text-gray-400 mb-2">Tab 4: "Settings"</h3>
+                    <ul class="text-xs space-y-1 text-slate-300 list-disc pl-4">
+                        <li><strong>A1:</strong> Admin Password Label</li>
+                        <li><strong>B1:</strong> (Leave Empty)</li>
+                        <li><strong>A2:</strong> Password Value</li>
+                        <li><strong>B2:</strong> <em>[Type your admin password here]</em></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">2</div>
+                <h2 class="text-xl font-bold">Install the Script</h2>
+            </div>
+
+            <ol class="list-decimal pl-5 space-y-2 text-slate-300 mb-4">
+                <li>In your Google Sheet, go to <strong>Extensions > Apps Script</strong>.</li>
+                <li>Delete any code currently in the editor.</li>
+                <li>Copy the code below and paste it in.</li>
+                <li>Click the disk icon (Save).</li>
+            </ol>
+
+            <div class="relative group">
+                <button onclick="copyCode()" class="absolute top-2 right-2 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1 rounded shadow">
+                    COPY CODE
                 </button>
-                <div class="h-64 overflow-y-auto bg-gray-900 text-gray-300 p-4 rounded-lg shadow-inner border border-gray-700 text-xs font-mono leading-relaxed relative">
-                    <pre id="scriptCode">
-// 1. CONFIGURATION: The 16 Skills (Spelling Corrected)
-const SKILLS_LIST = [
-  "Punctual",
-  "Prepared with Necessary Materials",
-  "Demonstrates appropriate hygiene/dress",
-  "Initiates familiar tasks",
-  "Maintains a productive work rate",
-  "Complete tasks in a logical order",
-  "Demonstrates adaptability",
-  "Work is completed to quality standards",
-  "Maintains clean and organized work space",
-  "Awareness of surroundings and good decision making",
-  "Appropriate and respectful social interactions", // Fixed Spelling
-  "Displays effective communication skills",
-  "Accepts constructive criticism",
-  "Demonstrates a positive attitude",
-  "Asks for help appropriately",
-  "Demonstrates self-reflection"
-];
+                <textarea id="scriptCode" class="w-full h-64 bg-slate-950 text-green-400 font-mono text-xs p-4 rounded border border-slate-600 focus:outline-none" readonly>
+// CONFIGURATION
+const SPREADSHEET_ID = ""; 
+const SHEET_NAME_ENTRIES = "Entries";
+const SHEET_NAME_STUDENTS = "Students";
+const SHEET_NAME_SETTINGS = "Settings";
+const SHEET_NAME_JOBSITES = "JobSites";
 
 function doGet(e) {
   const action = e.parameter.action;
+  if (action === "checkAdmin") return checkAdminPassword(e.parameter.password);
   if (action === "getStudents") return getStudents();
   if (action === "getJobSites") return getJobSites();
   if (action === "getEntries") return getEntries();
-  return responseJSON({ status: "error", message: "Invalid action" });
+  return responseJSON({status: "error", message: "Invalid Action"});
 }
 
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
-    const action = data.action;
-    
-    // Password Check
-    if (action === "verifyPassword") return verifyPassword(data);
-
-    // Initial Setup Check (runs on every write to ensure sheets exist)
-    ensureSheetsExist();
-
-    if (action === "addEntry") return addEntry(data);
-    if (action === "addStudent") return addStudent(data);
-    if (action === "addJobSite") return addJobSite(data);
-    if (action === "deleteJobSite") return deleteJobSite(data);
-    
-    return responseJSON({ status: "error" });
-  } catch (error) { 
-    return responseJSON({ status: "error", message: error.toString() }); 
+    const act = data.action;
+    if (act === "addEntry") return addEntry(data);
+    if (act === "addStudent") return addStudent(data);
+    if (act === "deleteStudent") return deleteStudent(data);
+    if (act === "addJobSite") return addJobSite(data);
+    if (act === "deleteJobSite") return deleteJobSite(data);
+    return responseJSON({status: "error", message: "Invalid Action"});
+  } catch (err) {
+    return responseJSON({status: "error", message: err.toString()});
   }
 }
 
-// --- CORE FUNCTIONS ---
+// --- LOGIC ---
 
-function verifyPassword(data) {
-  ensureSheetsExist();
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("Settings");
-  const storedPassword = sheet.getRange("B2").getValue().toString();
-  
-  if (String(data.password) === storedPassword) {
-    return responseJSON({ status: "success" });
-  } else {
-    return responseJSON({ status: "error" });
-  }
-}
-
-function getStudents() {
-  ensureSheetsExist();
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
-  const data = sheet.getDataRange().getValues();
-  const students = [];
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0]) students.push({ student_id: data[i][0], name: data[i][1] });
-  }
-  return responseJSON({ data: students });
+function checkAdminPassword(inputPass) {
+  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_SETTINGS);
+  const realPass = sheet.getRange("B2").getValue().toString();
+  return responseJSON({result: (inputPass === realPass ? "success" : "error")});
 }
 
 function getJobSites() {
-  ensureSheetsExist();
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("JobSites");
+  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_JOBSITES);
+  if (!sheet) return responseJSON({status: "error", message: "Sheet missing"});
   const data = sheet.getDataRange().getValues();
-  const sites = [];
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0]) sites.push(data[i][0]);
-  }
-  return responseJSON({ data: sites.sort() });
-}
-
-function getEntries() {
-  ensureSheetsExist();
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Entries");
-  const data = sheet.getDataRange().getValues();
-  const entries = [];
-  
-  // Columns Mapping:
-  // 0:Timestamp, 1:Date, 2:Student, 3:Site, 4:Evaluator
-  // 5 to 20: The 16 Skills
-  // 21: Comments
-  
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][2]) { 
-      let scores = {};
-      
-      // RE-BUNDLE: Grab columns and put them back into a JSON object 
-      // so the Website Reports page can read them correctly.
-      SKILLS_LIST.forEach((skill, index) => {
-         // data[i][5 + index] is the cell containing the score
-         scores[skill] = data[i][5 + index]; 
-      });
-
-      entries.push({
-        timestamp: data[i][0], 
-        date: data[i][1], 
-        student_id: data[i][2],
-        job_site: data[i][3], 
-        evaluator: data[i][4], 
-        scores: scores, // The website receives the object it expects
-        comments: data[i][21] 
-      });
-    }
-  }
-  return responseJSON({ data: entries });
-}
-
-function addEntry(data) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Entries");
-  
-  // UNPACK: Take the JSON from the website and split it into columns
-  let row = [new Date(), data.date, data.student_id, data.job_site, data.evaluator];
-  
-  SKILLS_LIST.forEach(skill => {
-    // If the website sent a score for this skill, save it. Otherwise leave blank.
-    row.push(data.scores[skill] || ""); 
-  });
-  
-  row.push(data.comments);
-  
-  sheet.appendRow(row);
-  return responseJSON({ status: "success" });
-}
-
-function addStudent(data) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
-  const id = "STU" + Date.now(); 
-  sheet.appendRow([id, data.name]);
-  return responseJSON({ status: "success", id: id });
+  if (data.length > 0) data.shift(); 
+  const sites = data.flat().filter(s => s !== "" && s !== null);
+  return responseJSON({status: "success", data: sites});
 }
 
 function addJobSite(data) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("JobSites");
-  sheet.appendRow([data.site_name]);
-  return responseJSON({ status: "success" });
+  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_JOBSITES);
+  sheet.appendRow([data.site_name]); 
+  return responseJSON({status: "success"});
 }
 
 function deleteJobSite(data) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("JobSites");
+  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_JOBSITES);
   const rows = sheet.getDataRange().getValues();
-  for (let i = rows.length - 1; i >= 0; i--) {
-    if (rows[i][0] === data.site_name) sheet.deleteRow(i + 1);
-  }
-  return responseJSON({ status: "success" });
-}
-
-function responseJSON(data) {
-  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
-}
-
-// --- AUTO SETUP & FORMATTING ---
-
-function ensureSheetsExist() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  
-  setupSheet(ss, "Students", ["Student ID", "Name"], [150, 250]);
-  setupSheet(ss, "JobSites", ["Site Name"], [250]);
-  setupSheet(ss, "Settings", ["Config Name", "Value"], [150, 150]);
-  
-  // Dynamic Headers for Entries
-  const entryHeaders = ["Timestamp", "Date", "Student ID", "Job Site", "Evaluator", ...SKILLS_LIST, "Comments"];
-  
-  // Dynamic Widths (Meta=Standard, Skills=Narrow, Comments=Wide)
-  const entryWidths = [160, 100, 150, 150, 150, ...new Array(16).fill(100), 400];
-  
-  setupSheet(ss, "Entries", entryHeaders, entryWidths);
-  
-  // Default Password
-  const setSheet = ss.getSheetByName("Settings");
-  if (setSheet.getLastRow() === 1) {
-    setSheet.appendRow(["Admin Password", "1234"]);
-    setSheet.appendRow(["Note", "Change cell B2 to update password"]);
-  }
-}
-
-function setupSheet(ss, name, headers, widths) {
-  let sheet = ss.getSheetByName(name);
-  if (!sheet) {
-    sheet = ss.insertSheet(name);
-    sheet.appendRow(headers);
-    const range = sheet.getRange(1, 1, 1, headers.length);
-    range.setFontWeight("bold");
-    range.setBackground("#f3f4f6");
-    range.setWrap(true); 
-    range.setVerticalAlignment("middle");
-    sheet.setFrozenRows(1);
-    if (widths) {
-      widths.forEach((w, i) => sheet.setColumnWidth(i + 1, w));
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i][0] == data.site_name) {
+      sheet.deleteRow(i + 1);
+      return responseJSON({status: "success"});
     }
   }
+  return responseJSON({status: "error", message: "Not found"});
 }
-                    </pre>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 p-3 rounded">
-                <span class="material-icons text-gray-400">save</span>
-                <span>Click the <strong>Floppy Disk Icon</strong> to Save. Name it "Vocational Backend".</span>
-            </div>
-        </section>
 
-        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">4</span>
-                Deploy (The Important Part!)
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div>
-                    <p class="text-gray-600 mb-4">Click <strong>Deploy</strong> (top right) → <strong>New Deployment</strong>.</p>
-                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r">
-                        <h3 class="font-bold text-red-800 text-sm mb-2">MATCH THESE SETTINGS:</h3>
-                        <ul class="space-y-3 text-sm">
-                            <li class="flex items-center">
-                                <span class="material-icons text-gray-400 mr-2 text-sm">settings</span>
-                                <span>Type: <strong>Web App</strong> (Click the gear)</span>
-                            </li>
-                            <li class="flex items-center">
-                                <span class="material-icons text-gray-400 mr-2 text-sm">person</span>
-                                <span>Execute as: <strong class="text-green-600">Me</strong></span>
-                            </li>
-                            <li class="flex items-center">
-                                <span class="material-icons text-red-500 mr-2 text-sm">lock_open</span>
-                                <span>Access: <strong class="bg-red-200 px-1 rounded text-red-900">Anyone</strong></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+function getStudents() {
+  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_STUDENTS);
+  const data = sheet.getDataRange().getValues();
+  data.shift(); 
+  const students = data.map(row => ({ student_id: row[0], name: row[1], grade: row[2] })).filter(s => s.student_id !== "");
+  return responseJSON({status: "success", data: students});
+}
 
-                <div class="cartoon-card bg-purple-50 border-purple-300">
-                    <div class="bg-pattern"></div>
-                    <div class="icon-circle bg-purple-500 text-white">
-                        <span class="material-icons text-4xl">rocket_launch</span>
-                    </div>
-                    <div class="z-10 bg-white p-3 rounded shadow-lg w-full max-w-xs space-y-2">
-                        <div class="flex justify-between text-xs text-gray-500"><span>Who has access:</span> <span class="font-bold text-red-500">Anyone</span></div>
-                        <div class="h-2 bg-gray-100 rounded overflow-hidden"><div class="h-full bg-purple-500 w-2/3"></div></div>
-                        <div class="text-center font-bold text-purple-700 text-sm">Deploying...</div>
-                    </div>
-                </div>
+function addStudent(data) {
+  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_STUDENTS);
+  sheet.appendRow([Utilities.getUuid(), data.name, data.grade]);
+  return responseJSON({status: "success"});
+}
+
+function deleteStudent(data) {
+  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_STUDENTS);
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i][0] == data.student_id) {
+      sheet.deleteRow(i + 1);
+      return responseJSON({status: "success"});
+    }
+  }
+  return responseJSON({status: "error"});
+}
+
+function addEntry(data) {
+  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_ENTRIES);
+  const headers = sheet.getRange("1:1").getValues()[0];
+  let newRow = [
+    Utilities.getUuid(), data.date, data.student_id, data.job_site, data.evaluator
+  ];
+  // Skills F(5) to U(20)
+  for (let i = 5; i <= 20; i++) {
+    newRow[i] = data.scores[headers[i]] || "";
+  }
+  // Comments V(21)
+  newRow[21] = data.comments;
+  sheet.appendRow(newRow);
+  return responseJSON({status: "success"});
+}
+
+function getEntries() {
+  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_ENTRIES);
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const entries = data.map(row => {
+    let entry = {
+      entry_id: row[0], date: row[1], student_id: row[2], 
+      job_site: row[3], evaluator: row[4], scores: {}, comments: row[21] || ""
+    };
+    for (let i = 5; i <= 20; i++) {
+      if(headers[i]) entry.scores[headers[i]] = row[i];
+    }
+    return entry;
+  });
+  return responseJSON({status: "success", data: entries});
+}
+
+function getSpreadsheet() { return SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet(); }
+function responseJSON(data) { return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON); }
+                </textarea>
             </div>
-            
-            <div class="mt-6 text-xs text-gray-500 text-center">
-                * If Google asks for permission: Click "Review Permissions" → Select Account → "Advanced" → "Go to (unsafe)".
+        </div>
+
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">3</div>
+                <h2 class="text-xl font-bold">Deploy as Web App</h2>
             </div>
-        </section>
-
-        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">5</span>
-                Get Your Link
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div class="text-gray-600">
-                    <p class="mb-4">After deploying, you will see a <strong>Web App URL</strong>.</p>
-                    <p class="mb-4">It looks like a long mess of random letters.</p>
-                    <button class="bg-gray-100 text-gray-500 font-mono text-xs p-3 rounded w-full text-left truncate border border-gray-300 cursor-not-allowed">
-                        https://script.google.com/macros/s/AKfycbx.../exec
-                    </button>
-                    <p class="mt-2 font-bold text-indigo-600">Copy this URL!</p>
-                </div>
-                 <div class="cartoon-card bg-blue-50 border-blue-300">
-                    <div class="bg-pattern"></div>
-                    <div class="icon-circle bg-blue-500 text-white">
-                        <span class="material-icons text-4xl">link</span>
-                    </div>
-                    <div class="z-10 text-center">
-                        <div class="text-4xl">🔗</div>
-                        <div class="font-bold text-blue-900 mt-2">Copy the Key</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">6</span>
-                Finish Setup
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div class="prose text-sm text-gray-600 space-y-4">
-                    <div class="flex gap-3">
-                        <span class="font-bold text-indigo-600">A.</span>
-                        <span>Go to <a href="admin.html" class="underline font-bold">Admin</a> and paste the URL you copied.</span>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="font-bold text-indigo-600">B.</span>
-                        <span>The system will ask for a PIN. Use the default: <strong class="bg-gray-200 px-1 rounded">1234</strong>.</span>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="font-bold text-indigo-600">C.</span>
-                        <span>To change the password: Go back to your <strong>Google Sheet</strong>. Look for the <strong>"Settings"</strong> tab at the bottom. Change cell <strong>B2</strong>.</span>
-                    </div>
-                </div>
-
-                <div class="cartoon-card bg-orange-50 border-orange-300">
-                    <div class="bg-pattern"></div>
-                    <div class="icon-circle bg-orange-500 text-white">
-                        <span class="material-icons text-4xl">password</span>
-                    </div>
-                    <div class="z-10 bg-white p-2 rounded shadow border border-gray-200 w-48 text-center">
-                        <div class="text-xs text-gray-400 uppercase font-bold mb-1">Google Sheet Cell B2</div>
-                        <div class="text-2xl font-mono tracking-widest text-gray-800">1234</div>
-                        <div class="text-[10px] text-green-600 mt-1">✎ Edit to change</div>
-                    </div>
-                </div>
-            </div>
-        </section>
+            <ul class="list-disc pl-5 space-y-2 text-slate-300">
+                <li>Click the big blue <strong>Deploy</strong> button (top right).</li>
+                <li>Select <strong>New Deployment</strong>.</li>
+                <li>Click the gear icon next to "Select type" and choose <strong>Web App</strong>.</li>
+                <li><strong>Execute as:</strong> Me.</li>
+                <li><strong>Who has access:</strong> <span class="text-red-400 font-bold">Anyone</span> (Important!).</li>
+                <li>Click <strong>Deploy</strong>.</li>
+                <li>Copy the <strong>Web App URL</strong> generated.</li>
+                <li>Paste that URL into the <strong>Admin Dashboard</strong> (Database Connection).</li>
+            </ul>
+        </div>
 
     </div>
 
+    <script>
+        function copyCode() {
+            const code = document.getElementById('scriptCode');
+            code.select();
+            document.execCommand('copy');
+            alert("Code copied to clipboard!");
+        }
+    </script>
 </body>
 </html>
