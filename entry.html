@@ -1,295 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Habit Entry - Berrien RESA</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<meta charset="UTF-8">
+<title>Daily Habit Entry – Project Zeta</title>
 
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        /* Smooth fade for AI text */
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        /* Custom tweaks to make Tom Select match Tailwind */
-        .ts-control {
-            border-radius: 0.375rem; /* rounded-md */
-            padding: 0.75rem 1rem;
-            border-color: #d1d5db; /* gray-300 */
-        }
-        .ts-wrapper.focus .ts-control {
-            border-color: #6366f1; /* indigo-500 */
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
-        }
-        .ts-dropdown {
-            border-radius: 0.375rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-    </style>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    max-width: 900px;
+    margin: auto;
+    background: #f7f7fc;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .block {
+    background: #ffffff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    border: 1px solid #dedede;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+  }
+
+  select, input[type="text"], textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.05em;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 12px;
+  }
+
+  textarea {
+    height: 80px;
+  }
+
+  .habit-group {
+    margin-bottom: 20px;
+  }
+
+  .habit-group label {
+    font-weight: normal;
+  }
+
+  .save-btn {
+    width: 100%;
+    padding: 15px;
+    background: #6b6bff;
+    color: white;
+    font-size: 1.2em;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+
+  .save-btn:hover {
+    background: #5757e6;
+  }
+
+  .success {
+    margin-top: 20px;
+    padding: 12px;
+    background: #e6ffe6;
+    border-left: 4px solid #22aa22;
+    display: none;
+  }
+
+</style>
 </head>
-<body class="bg-[#F3F4F6] text-gray-900">
 
-    <nav class="bg-white border-b border-gray-200">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <img src="https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_1/v1688065006/berrienresaorg/us2um9v88w7rv6ublprl/berrien-resa-logo.png" alt="Berrien RESA" class="h-10 w-auto">
-                    </div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="entry.html" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Entry</a>
-                        <a href="index.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Admin / Dashboard</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body>
 
-    <div class="max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        
-        <header class="mb-8">
-            <h1 class="text-3xl font-bold leading-tight text-indigo-900">Daily Habit Entry</h1>
-            <p class="mt-2 text-sm text-gray-600">Record student work habits and track progress over time</p>
-        </header>
+<h1>Daily Habit Entry</h1>
 
-        <form id="habitForm" onsubmit="submitEntry(event)">
-            
-            <div class="bg-white shadow-sm rounded-lg p-6 mb-6 border border-gray-100">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Student Information</h3>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
-                    <div class="relative">
-                        <select id="studentSelect" required placeholder="Type to search student name...">
-                            <option value="">Loading student list...</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+<!-- STUDENT SELECT -->
+<div class="block">
+  <label>Select Student</label>
+  <select id="studentSelect">
+    <option>Loading students…</option>
+  </select>
+</div>
 
-            <div class="bg-white shadow-sm rounded-lg p-6 border border-gray-100 mb-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-6">Work Habits Assessment</h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Self-Reflection</label>
-                    <select name="h1" id="h1" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+<!-- EVALUATOR INPUT -->
+<div class="block">
+  <label>Evaluator Name</label>
+  <input type="text" id="evaluatorInput" placeholder="Enter your name (e.g., Mr. Smith)">
+</div>
 
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Time Management</label>
-                    <select name="h2" id="h2" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+<!-- HABIT INPUTS -->
+<div class="block">
+  <h3>Habit Scoring</h3>
 
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Organization</label>
-                    <select name="h3" id="h3" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+  <div class="habit-group">
+    <label>Attention</label>
+    <select id="attention">
+      <option value="">Select</option>
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+    </select>
+  </div>
 
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Task Completion</label>
-                    <select name="h4" id="h4" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+  <div class="habit-group">
+    <label>Cooperation</label>
+    <select id="cooperation">
+      <option value="">Select</option>
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+    </select>
+  </div>
 
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Attention</label>
-                    <select name="h5" id="h5" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+  <div class="habit-group">
+    <label>Pace</label>
+    <select id="pace">
+      <option value="">Select</option>
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+    </select>
+  </div>
+</div>
 
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Follow Directions</label>
-                    <select name="h6" id="h6" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+<!-- COMMENTS -->
+<div class="block">
+  <label>Comment (optional)</label>
+  <textarea id="commentInput" placeholder="Add any notes or observations..."></textarea>
+</div>
 
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Problem Solving</label>
-                    <select name="h7" id="h7" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+<!-- SAVE BUTTON -->
+<button class="save-btn" onclick="saveEntry()">Save Daily Entry</button>
 
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Independence</label>
-                    <select name="h8" id="h8" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+<div class="success" id="successBox">
+  Entry saved successfully!
+</div>
 
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Cooperation</label>
-                    <select name="h9" id="h9" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+<script>
+/* ====================================================
+   MOCK: Replace with real student fetch logic
+   ==================================================== */
+async function getStudents() {
+  return [
+    { id: "s1", name: "Alice Johnson" },
+    { id: "s2", name: "Brandon Lee" },
+    { id: "s3", name: "Charlotte Rivera" }
+  ];
+}
 
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Social Skills</label>
-                    <select name="h10" id="h10" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+/* ====================================================
+   Load student list into dropdown
+   ==================================================== */
+async function loadStudents() {
+  const studentSelect = document.getElementById("studentSelect");
+  studentSelect.innerHTML = "";
 
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Work Quality</label>
-                    <select name="h11" id="h11" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+  const students = await getStudents();
+  students.forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s.id;
+    opt.textContent = s.name;
+    studentSelect.appendChild(opt);
+  });
+}
 
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Work Pace</label>
-                    <select name="h12" id="h12" class="habit-select block w-full border-gray-300 rounded-md border p-2.5 text-gray-700"><option value="" disabled selected>Rate...</option><option value="1">1 - Needs Improvement</option><option value="2">2 - Fair</option><option value="3">3 - Good</option><option value="4">4 - Very Good</option><option value="5">5 - Excellent</option></select></div>
+loadStudents();
 
-                </div>
-            </div>
+/* ====================================================
+   Save Entry (Mock)
+   Replace this with your real saving logic
+   ==================================================== */
+function saveEntry() {
+  const studentId = document.getElementById("studentSelect").value;
+  const evaluator = document.getElementById("evaluatorInput").value.trim();
 
-            <div class="bg-white shadow-sm rounded-lg p-6 border border-gray-100 mb-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Daily Comment</h3>
-                    <button type="button" onclick="generateAIComment()" class="text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300 px-3 py-1 rounded-full flex items-center transition-colors">
-                        <span class="mr-1">✨</span> Suggest Comment
-                    </button>
-                </div>
-                <textarea id="commentBox" name="comments" rows="3" class="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Optional teacher comments..."></textarea>
-            </div>
+  const entry = {
+    date: new Date().toISOString().split("T")[0],
+    values: {
+      attention: Number(document.getElementById("attention").value),
+      cooperation: Number(document.getElementById("cooperation").value),
+      pace: Number(document.getElementById("pace").value),
+      comment: document.getElementById("commentInput").value.trim(),
+      evaluator: evaluator || "Unknown"
+    }
+  };
 
-            <div class="mt-6 flex justify-end">
-                <button type="submit" id="submitBtn" class="bg-indigo-600 border border-transparent rounded-md shadow-sm py-3 px-8 inline-flex justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full sm:w-auto transition-colors">
-                    Save Daily Entry
-                </button>
-            </div>
+  console.log("Saved entry:", entry);
 
-        </form>
-    </div>
+  // Replace with actual save call:
+  // await fetch("/api/saveEntry", { method: "POST", body: JSON.stringify(entry) });
 
-    <div id="toast" class="hidden fixed bottom-5 right-5 bg-green-600 text-white px-6 py-4 rounded-md shadow-xl flex items-center transform transition-all duration-300">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        <span>Entry saved successfully!</span>
-    </div>
+  // Show success message
+  const successBox = document.getElementById("successBox");
+  successBox.style.display = "block";
+  setTimeout(() => successBox.style.display = "none", 2000);
+}
 
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzpGmJVhrjvYUXtokK6QMeoJdqfR21IaiVfwHm1-Jnq9TRjTgB_oQ3BQf22XDE-cSQ1/exec";
+</script>
 
-        const studentSelect = document.getElementById('studentSelect');
-        const habitForm = document.getElementById('habitForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const toast = document.getElementById('toast');
-        const commentBox = document.getElementById('commentBox');
-        let tomSelectInstance = null; // To store the searchable dropdown instance
-
-        const habitMap = {
-            'h1': "Self-Reflection", 'h2': "Time Management", 'h3': "Organization",
-            'h4': "Task Completion", 'h5': "Attention", 'h6': "Following Directions",
-            'h7': "Problem Solving", 'h8': "Independence", 'h9': "Cooperation",
-            'h10': "Social Skills", 'h11': "Work Quality", 'h12': "Work Pace"
-        };
-
-        // 1. Fetch Students
-        async function loadStudents() {
-            try {
-                const response = await fetch(API_URL + "?action=getStudents");
-                const result = await response.json();
-                
-                // Clear existing options
-                studentSelect.innerHTML = '<option value="">Select or type name...</option>';
-                
-                const sortedStudents = result.data.sort((a, b) => a.name.localeCompare(b.name));
-
-                sortedStudents.forEach(student => {
-                    const opt = document.createElement('option');
-                    // Store ID and Name in value as stringified JSON
-                    opt.value = JSON.stringify({id: student.student_id, name: student.name});
-                    opt.innerText = student.name;
-                    studentSelect.appendChild(opt);
-                });
-
-                // Initialize Tom Select (Searchable Dropdown)
-                if (tomSelectInstance) {
-                    tomSelectInstance.destroy(); // Clear if re-loading
-                }
-                
-                tomSelectInstance = new TomSelect("#studentSelect", {
-                    create: false,
-                    sortField: { field: "text", direction: "asc" },
-                    placeholder: "Search for a student..."
-                });
-
-            } catch (error) {
-                console.error("Error loading students", error);
-                studentSelect.innerHTML = '<option>Error loading list. Check connection.</option>';
-            }
-        }
-
-        // 2. AI Comment Generator
-        function generateAIComment() {
-            let highSkills = [];
-            let lowSkills = [];
-            let midSkills = [];
-
-            for(let i=1; i<=12; i++) {
-                const el = document.getElementById('h' + i);
-                const val = parseInt(el.value);
-                const name = habitMap['h' + i];
-
-                if(val >= 4) highSkills.push(name);
-                else if(val <= 2) lowSkills.push(name);
-                else if(val === 3) midSkills.push(name);
-            }
-
-            let comment = "";
-            let name = "The student";
-            
-            // Get name from Tom Select value if available
-            if(studentSelect.value) {
-                try {
-                    const fullName = JSON.parse(studentSelect.value).name;
-                    name = fullName.split(' ')[0]; 
-                } catch(e) { name = "The student"; }
-            }
-
-            if(highSkills.length === 0 && lowSkills.length === 0 && midSkills.length === 0) {
-                comment = "Please rate at least one habit to generate a comment.";
-            } else if (highSkills.length > 0 && lowSkills.length === 0) {
-                comment = `${name} had an excellent day! They demonstrated strong performance in ${highSkills.join(", ")}, showing great effort overall.`;
-            } else if (highSkills.length === 0 && lowSkills.length > 0) {
-                comment = `${name} had a challenging day. We need to work on improvement in ${lowSkills.join(", ")}.`;
-            } else if (highSkills.length > 0 && lowSkills.length > 0) {
-                comment = `${name} showed great strength in ${highSkills[0]} and ${highSkills[1] || highSkills[0]}. However, they struggled with ${lowSkills.join(" and ")} today.`;
-            } else {
-                comment = `${name} had a satisfactory day with steady performance in ${midSkills.slice(0, 3).join(", ")}.`;
-            }
-
-            commentBox.value = comment;
-            commentBox.classList.remove('fade-in');
-            void commentBox.offsetWidth; 
-            commentBox.classList.add('fade-in');
-        }
-
-        // 3. Submit Entry
-        async function submitEntry(e) {
-            e.preventDefault();
-            
-            if(!studentSelect.value) {
-                alert("Please select a student.");
-                return;
-            }
-
-            const studentData = JSON.parse(studentSelect.value);
-            const formData = new FormData(habitForm);
-            
-            const payload = {
-                student_id: studentData.id,
-                student_name: studentData.name,
-                h1: formData.get('h1') || "", h2: formData.get('h2') || "", h3: formData.get('h3') || "",
-                h4: formData.get('h4') || "", h5: formData.get('h5') || "", h6: formData.get('h6') || "",
-                h7: formData.get('h7') || "", h8: formData.get('h8') || "", h9: formData.get('h9') || "",
-                h10: formData.get('h10') || "", h11: formData.get('h11') || "", h12: formData.get('h12') || "",
-                comments: formData.get('comments') || "" 
-            };
-
-            const originalBtnText = submitBtn.innerText;
-            submitBtn.innerText = "Saving...";
-            submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
-
-            try {
-                await fetch(API_URL + "?action=logEntry", {
-                    method: "POST",
-                    body: JSON.stringify(payload)
-                });
-                showToast();
-                
-                // Clear form but keep logic clean
-                if (tomSelectInstance) tomSelectInstance.clear(); // Clear the dropdown
-                habitForm.reset(); 
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } catch (error) {
-                alert("Error saving entry.");
-                console.error(error);
-            } finally {
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-            }
-        }
-
-        function showToast() {
-            toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('hidden'); }, 3000);
-        }
-
-        loadStudents();
-    </script>
 </body>
 </html>
