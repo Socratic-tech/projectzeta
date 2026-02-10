@@ -40,20 +40,22 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <div id="errorBanner" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm" role="alert">
-            <p class="font-bold">Connection Error</p>
+            <h3 class="font-bold text-lg"><span class="material-icons align-bottom">error</span> Connection Failed</h3>
             <p id="errorText">Could not load data.</p>
+            <div id="debugInfo" class="mt-2 text-xs font-mono bg-red-50 p-2 rounded border border-red-200 hidden"></div>
+            <div class="mt-3">
+                <a href="admin.html" class="text-sm font-bold underline hover:text-red-900">Go to Admin Settings to fix URL</a>
+            </div>
         </div>
 
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 no-print">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
                     <select id="studentSelect" onchange="updateDashboard()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-gray-50">
                         <option value="">Loading students...</option>
                     </select>
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Time Period</label>
                     <select id="timeRange" onchange="updateDashboard()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-gray-50">
@@ -68,7 +70,6 @@
         </div>
 
         <div id="reportContent" class="hidden">
-            
             <div class="mb-8 border-b pb-4">
                 <h1 id="studentNameTitle" class="text-3xl font-bold text-gray-900">Student Name</h1>
                 <p class="text-gray-500">Progress Summary</p>
@@ -77,38 +78,20 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-blue-50 text-blue-600 mr-4">
-                            <span class="material-icons text-3xl">history_edu</span>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 font-medium">Total Evaluations</p>
-                            <p id="totalLogs" class="text-2xl font-bold text-gray-900">0</p>
-                        </div>
+                        <div class="p-3 rounded-full bg-blue-50 text-blue-600 mr-4"><span class="material-icons text-3xl">history_edu</span></div>
+                        <div><p class="text-sm text-gray-500 font-medium">Total Evaluations</p><p id="totalLogs" class="text-2xl font-bold text-gray-900">0</p></div>
                     </div>
                 </div>
-
                 <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-50 text-green-600 mr-4">
-                            <span class="material-icons text-3xl">star</span>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 font-medium">Average Score</p>
-                            <p id="avgScore" class="text-2xl font-bold text-gray-900">0.0</p>
-                            <p class="text-xs text-gray-400">Out of 5.0</p>
-                        </div>
+                        <div class="p-3 rounded-full bg-green-50 text-green-600 mr-4"><span class="material-icons text-3xl">star</span></div>
+                        <div><p class="text-sm text-gray-500 font-medium">Average Score</p><p id="avgScore" class="text-2xl font-bold text-gray-900">0.0</p></div>
                     </div>
                 </div>
-
                 <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-purple-50 text-purple-600 mr-4">
-                            <span class="material-icons text-3xl">thumb_up</span>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 font-medium">Strongest Skill</p>
-                            <p id="topSkill" class="text-lg font-bold text-gray-900 leading-tight">N/A</p>
-                        </div>
+                        <div class="p-3 rounded-full bg-purple-50 text-purple-600 mr-4"><span class="material-icons text-3xl">thumb_up</span></div>
+                        <div><p class="text-sm text-gray-500 font-medium">Strongest Skill</p><p id="topSkill" class="text-lg font-bold text-gray-900 leading-tight">N/A</p></div>
                     </div>
                 </div>
             </div>
@@ -122,15 +105,15 @@
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8 page-break-inside-avoid">
                 <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-bold text-gray-800">Recent Evaluation Comments</h3>
+                    <h3 class="text-lg font-bold text-gray-800">Recent Comments</h3>
                 </div>
                 <div class="p-6">
-                    <ul id="commentsList" class="space-y-4">
-                        </ul>
+                    <ul id="commentsList" class="space-y-4"></ul>
                 </div>
             </div>
+        </div>
 
-        </div> <div id="loadingIndicator" class="text-center py-20">
+        <div id="loadingIndicator" class="text-center py-20">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-700 mx-auto mb-4"></div>
             <p class="text-gray-500">Connecting to Google Database...</p>
         </div>
@@ -164,18 +147,23 @@
 
         // 2. INITIALIZATION
         window.addEventListener('load', async () => {
-            const apiUrl = localStorage.getItem('vocational_backend_url');
-            
+            // Retrieve URL and clean it up (trim spaces/quotes)
+            let apiUrl = localStorage.getItem('vocational_backend_url');
+            if (apiUrl) apiUrl = apiUrl.trim().replace(/['"]+/g, '');
+
             if (!apiUrl) {
-                showError("Database not connected. Please go to Admin Settings.");
+                showError("No database URL found.", "Please go to 'Admin' and paste your Google Script URL.");
                 return;
             }
 
             try {
                 // Fetch Students
                 const sResponse = await fetch(`${apiUrl}?action=getStudents`);
+                if (!sResponse.ok) throw new Error(`Student Fetch Failed: ${sResponse.status}`);
                 const sData = await sResponse.json();
                 
+                if (sData.status === "error") throw new Error(sData.message);
+
                 const select = document.getElementById('studentSelect');
                 select.innerHTML = '<option value="">-- Select a Student --</option>';
                 
@@ -189,15 +177,23 @@
 
                 // Fetch Entries
                 const eResponse = await fetch(`${apiUrl}?action=getEntries`);
+                if (!eResponse.ok) throw new Error(`Entries Fetch Failed: ${eResponse.status}`);
                 const eData = await eResponse.json();
+                
+                if (eData.status === "error") throw new Error(eData.message);
+                
                 allEntries = eData.data;
-
                 document.getElementById('loadingIndicator').classList.add('hidden');
 
             } catch (err) {
                 document.getElementById('loadingIndicator').classList.add('hidden');
-                showError("Failed to load data. Please check your internet connection.");
                 console.error(err);
+                // Show detailed error on screen
+                let debugMsg = err.toString();
+                if (err.message.includes("Unexpected token")) {
+                    debugMsg += " (This usually means the Script URL is wrong or the Script crashed)";
+                }
+                showError("Failed to connect to Google Sheets.", debugMsg);
             }
         });
 
@@ -228,7 +224,6 @@
             });
 
             if (filtered.length === 0) {
-                // Handle no data case
                 document.getElementById('totalLogs').innerText = "0";
                 document.getElementById('avgScore').innerText = "N/A";
                 document.getElementById('topSkill').innerText = "No Data";
@@ -247,7 +242,6 @@
 
             filtered.forEach(entry => {
                 SKILLS_LIST.forEach(skill => {
-                    // Check if score exists and is a number (handles the object mapping)
                     if (entry.scores && entry.scores[skill] !== "" && entry.scores[skill] !== undefined) {
                         const score = parseFloat(entry.scores[skill]);
                         if (!isNaN(score)) {
@@ -272,7 +266,7 @@
 
             SKILLS_LIST.forEach(skill => {
                 const avg = skillCounts[skill] > 0 ? (skillSums[skill] / skillCounts[skill]) : 0;
-                chartLabels.push(skill); // Shorten if needed? No, Horizontal bar handles long text well.
+                chartLabels.push(skill);
                 chartData.push(avg.toFixed(1));
 
                 if (avg > bestSkillAvg) {
@@ -325,33 +319,21 @@
                     datasets: [{
                         label: 'Average Score (1-5)',
                         data: data,
-                        backgroundColor: 'rgba(79, 70, 229, 0.6)', // Indigo-600
+                        backgroundColor: 'rgba(79, 70, 229, 0.6)',
                         borderColor: 'rgba(79, 70, 229, 1)',
                         borderWidth: 1,
                         borderRadius: 4
                     }]
                 },
                 options: {
-                    indexAxis: 'y', // MAKES IT HORIZONTAL
+                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: {
-                            min: 0,
-                            max: 5,
-                            grid: { color: '#f3f4f6' }
-                        },
-                        y: {
-                            grid: { display: false },
-                            ticks: {
-                                autoSkip: false, // Ensure all 16 skills show
-                                font: { size: 11 }
-                            }
-                        }
+                        x: { min: 0, max: 5, grid: { color: '#f3f4f6' } },
+                        y: { grid: { display: false }, ticks: { autoSkip: false, font: { size: 11 } } }
                     },
-                    plugins: {
-                        legend: { display: false }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
         }
@@ -361,9 +343,15 @@
             return new Date(dateString).toLocaleDateString(undefined, options);
         }
 
-        function showError(msg) {
+        function showError(title, detail) {
+            document.getElementById('loadingIndicator').classList.add('hidden');
             document.getElementById('errorBanner').classList.remove('hidden');
-            document.getElementById('errorText').innerText = msg;
+            document.getElementById('errorText').innerText = title;
+            if(detail) {
+                const debug = document.getElementById('debugInfo');
+                debug.innerText = detail;
+                debug.classList.remove('hidden');
+            }
         }
     </script>
 </body>
