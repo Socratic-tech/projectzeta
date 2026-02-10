@@ -55,7 +55,7 @@
         
         <div class="text-center mb-8">
             <h1 class="text-4xl font-extrabold text-gray-900">Let's Get Connected!</h1>
-            <p class="mt-4 text-xl text-gray-500">Follow these steps to update your database structure.</p>
+            <p class="mt-4 text-xl text-gray-500">Follow these steps to generate your new database.</p>
         </div>
 
         <section class="mb-12 bg-teal-50 border-l-4 border-teal-500 p-6 rounded-r-xl shadow-sm flex flex-col md:flex-row gap-6 items-center">
@@ -82,7 +82,6 @@
                     <p class="mb-3">1. Go to <a href="https://sheets.google.com" target="_blank" class="text-indigo-600 font-bold hover:underline">sheets.google.com</a>.</p>
                     <p class="mb-3">2. Click the giant <strong class="text-green-600">+</strong> to start a blank sheet.</p>
                     <p class="mb-3">3. Rename it to: <br><span class="font-mono bg-gray-100 text-indigo-700 px-2 py-1 rounded border border-gray-300 mt-1 inline-block">Vocational Tracker Database</span></p>
-                    <p class="text-xs text-gray-400 italic">The script will automatically create the 16 skill columns for you.</p>
                 </div>
                 <div class="cartoon-card bg-green-50 border-green-300">
                     <div class="bg-pattern"></div>
@@ -118,10 +117,10 @@
         <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
                 <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">3</span>
-                Copy & Paste Code (Updated for 16 Skills)
+                Copy & Paste Code (Corrected Spelling)
             </h2>
             
-            <p class="text-gray-600 mb-4">Delete the default code and paste this. It includes your specific skill list.</p>
+            <p class="text-gray-600 mb-4">Delete the default code and paste this entire block.</p>
 
             <div class="relative mb-6 group">
                 <button id="copyBtn" onclick="copyCode()" class="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-indigo-700 transition shadow-lg z-20 flex items-center gap-1">
@@ -129,6 +128,7 @@
                 </button>
                 <div class="h-64 overflow-y-auto bg-gray-900 text-gray-300 p-4 rounded-lg shadow-inner border border-gray-700 text-xs font-mono leading-relaxed relative">
                     <pre id="scriptCode">
+// 1. CONFIGURATION: The 16 Skills (Spelling Corrected)
 const SKILLS_LIST = [
   "Punctual",
   "Prepared with Necessary Materials",
@@ -140,7 +140,7 @@ const SKILLS_LIST = [
   "Work is completed to quality standards",
   "Maintains clean and organized work space",
   "Awareness of surroundings and good decision making",
-  "Appropriate and respectul social interactions",
+  "Appropriate and respectful social interactions", // Fixed Spelling
   "Displays effective communication skills",
   "Accepts constructive criticism",
   "Demonstrates a positive attitude",
@@ -164,7 +164,7 @@ function doPost(e) {
     // Password Check
     if (action === "verifyPassword") return verifyPassword(data);
 
-    // Initial Setup Check (ensures all 16 skill columns exist)
+    // Initial Setup Check (runs on every write to ensure sheets exist)
     ensureSheetsExist();
 
     if (action === "addEntry") return addEntry(data);
@@ -221,13 +221,20 @@ function getEntries() {
   const data = sheet.getDataRange().getValues();
   const entries = [];
   
-  // Columns: 0=Timestamp, 1=Date, 2=Student, 3=Site, 4=Evaluator, 5..20=Skills, 21=Comments
+  // Columns Mapping:
+  // 0:Timestamp, 1:Date, 2:Student, 3:Site, 4:Evaluator
+  // 5 to 20: The 16 Skills
+  // 21: Comments
+  
   for (let i = 1; i < data.length; i++) {
     if (data[i][2]) { 
       let scores = {};
-      // Reconstruct the scores object from the columns for the frontend reports
+      
+      // RE-BUNDLE: Grab columns and put them back into a JSON object 
+      // so the Website Reports page can read them correctly.
       SKILLS_LIST.forEach((skill, index) => {
-         scores[skill] = data[i][5 + index]; // 5 is where skills start
+         // data[i][5 + index] is the cell containing the score
+         scores[skill] = data[i][5 + index]; 
       });
 
       entries.push({
@@ -236,8 +243,8 @@ function getEntries() {
         student_id: data[i][2],
         job_site: data[i][3], 
         evaluator: data[i][4], 
-        scores: scores, 
-        comments: data[i][21] // Comments is after the 16 skills
+        scores: scores, // The website receives the object it expects
+        comments: data[i][21] 
       });
     }
   }
@@ -247,12 +254,11 @@ function getEntries() {
 function addEntry(data) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Entries");
   
-  // Build the row: Meta Data + 16 Individual Scores + Comments
+  // UNPACK: Take the JSON from the website and split it into columns
   let row = [new Date(), data.date, data.student_id, data.job_site, data.evaluator];
   
-  // Add each score in exact order of SKILLS_LIST
   SKILLS_LIST.forEach(skill => {
-    // If score exists use it, otherwise empty string
+    // If the website sent a score for this skill, save it. Otherwise leave blank.
     row.push(data.scores[skill] || ""); 
   });
   
@@ -297,11 +303,11 @@ function ensureSheetsExist() {
   setupSheet(ss, "JobSites", ["Site Name"], [250]);
   setupSheet(ss, "Settings", ["Config Name", "Value"], [150, 150]);
   
-  // Setup Entries with specific 16 columns
+  // Dynamic Headers for Entries
   const entryHeaders = ["Timestamp", "Date", "Student ID", "Job Site", "Evaluator", ...SKILLS_LIST, "Comments"];
   
-  // Create an array of widths. First 5 are standard, next 16 are narrow (100), last is wide (300)
-  const entryWidths = [160, 100, 150, 150, 150, ...new Array(16).fill(120), 400];
+  // Dynamic Widths (Meta=Standard, Skills=Narrow, Comments=Wide)
+  const entryWidths = [160, 100, 150, 150, 150, ...new Array(16).fill(100), 400];
   
   setupSheet(ss, "Entries", entryHeaders, entryWidths);
   
@@ -321,7 +327,7 @@ function setupSheet(ss, name, headers, widths) {
     const range = sheet.getRange(1, 1, 1, headers.length);
     range.setFontWeight("bold");
     range.setBackground("#f3f4f6");
-    range.setWrap(true); // Wrap text for long headers
+    range.setWrap(true); 
     range.setVerticalAlignment("middle");
     sheet.setFrozenRows(1);
     if (widths) {
