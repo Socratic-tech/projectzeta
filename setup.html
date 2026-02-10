@@ -3,305 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Setup Guide</title>
+    <title>System Setup</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex items-center justify-center p-4">
 
-    <nav class="bg-slate-800 border-b border-slate-700 p-4 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="material-icons text-blue-400">build</span>
-                <span class="font-bold text-xl">System Setup</span>
+    <div class="bg-white max-w-4xl w-full rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+        
+        <div class="w-full md:w-1/2 p-8 bg-slate-50 border-r border-slate-200">
+            <div class="flex items-center gap-2 mb-6">
+                <span class="material-icons text-blue-600 text-3xl">settings_suggest</span>
+                <h1 class="text-2xl font-bold text-slate-800">System Setup</h1>
             </div>
-            <a href="index.html" class="text-slate-400 hover:text-white text-sm">Return to App</a>
-        </div>
-    </nav>
 
-    <div class="max-w-4xl mx-auto p-6 space-y-12">
-
-        <div class="text-center space-y-4">
-            <h1 class="text-3xl font-bold">Vocational Tracking System Setup</h1>
-            <p class="text-slate-400">Follow these steps to configure your Google Sheet backend.</p>
-        </div>
-
-        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
-            <div class="flex items-center gap-4 mb-6">
-                <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">1</div>
-                <h2 class="text-xl font-bold">Install Script</h2>
-            </div>
-            
-            <p class="text-slate-400 mb-4 text-sm">
-                1. Open your Google Sheet.<br>
-                2. Go to <strong>Extensions > Apps Script</strong>.<br>
-                3. Delete existing code, paste the code below, and <strong>Save</strong> (Disk Icon).
-            </p>
-
-            <div class="relative group">
-                <button onclick="copyCode()" class="absolute top-2 right-2 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1 rounded shadow">
-                    COPY CODE
-                </button>
-                <textarea id="scriptCode" class="w-full h-64 bg-slate-950 text-green-400 font-mono text-xs p-4 rounded border border-slate-600 focus:outline-none" readonly>
-// CONFIGURATION
-const SPREADSHEET_ID = ""; 
-const SHEET_NAME_ENTRIES = "Entries";
-const SHEET_NAME_STUDENTS = "Students";
-const SHEET_NAME_SETTINGS = "Settings";
-const SHEET_NAME_JOBSITES = "JobSites";
-
-// SKILLS LIST (Exact Match to App)
-const SKILLS_LIST = [
-  "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
-  "Initiates familiar tasks", "Maintains a productive work rate", "Complete tasks in a logical order",
-  "Demonstrates adaptability", "Work is completed to quality standards", "Maintains clean and organized work space",
-  "Awareness of surroundings and good decision making", "Appropriate and respectful social interactions",
-  "Displays effective communication skills", "Accepts constructive criticism", "Demonstrates a positive attitude",
-  "Asks for help appropriately", "Demonstrates self-reflection"
-];
+            <div class="space-y-6">
+                
+                <div>
+                    <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
+                        <span class="bg-slate-200 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs">1</span>
+                        Get the Code
+                    </h3>
+                    <p class="text-sm text-slate-500 mb-2">Copy the script below. This is your backend "brain".</p>
+                    <div class="relative group">
+                        <textarea id="scriptCode" readonly class="w-full h-32 p-3 text-xs font-mono bg-slate-800 text-green-400 rounded-lg focus:outline-none resize-none">
+function initialSetup() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let studentsSheet = ss.getSheetByName("Students");
+  if (!studentsSheet) {
+    studentsSheet = ss.insertSheet("Students");
+    studentsSheet.appendRow(["student_id", "name", "grade", "active"]);
+  }
+  let entriesSheet = ss.getSheetByName("Entries");
+  if (!entriesSheet) {
+    entriesSheet = ss.insertSheet("Entries");
+    entriesSheet.appendRow(["entry_id", "date", "student_id", "job_site", "evaluator", "comments", "scores_json"]);
+  }
+  return "Done";
+}
 
 function doGet(e) {
   const action = e.parameter.action;
-  if (action === "checkAdmin") return checkAdminPassword(e.parameter.password);
-  if (action === "getStudents") return getStudents();
-  if (action === "getJobSites") return getJobSites();
-  if (action === "getEntries") return getEntries();
-  return responseJSON({status: "error", message: "Invalid Action"});
+  if (action == "getStudents") return getStudents();
+  if (action == "getEntries") return getEntries();
+  return ContentService.createTextOutput("Backend Online");
 }
 
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
-    const act = data.action;
-
-    if (act === "setup") return setupSpreadsheet(); 
-    if (act === "addEntry") return addEntry(data);
-    if (act === "addStudent") return addStudent(data);
-    if (act === "deleteStudent") return deleteStudent(data);
-    if (act === "addJobSite") return addJobSite(data);
-    if (act === "deleteJobSite") return deleteJobSite(data);
-
-    return responseJSON({status: "error", message: "Invalid Action"});
+    if (data.action == "addEntry") return addEntry(data);
+    return responseJSON({ status: "error", message: "Unknown action" });
   } catch (err) {
-    return responseJSON({status: "error", message: err.toString()});
+    return responseJSON({ status: "error", message: err.toString() });
   }
-}
-
-// --- SETUP FUNCTION ---
-function setupSpreadsheet() {
-  const ss = getSpreadsheet();
-
-  // 1. STUDENTS SHEET
-  let sSheet = ss.getSheetByName(SHEET_NAME_STUDENTS);
-  if (!sSheet) sSheet = ss.insertSheet(SHEET_NAME_STUDENTS);
-  if (sSheet.getLastRow() === 0) sSheet.appendRow(["Student ID", "Name", "Grade"]);
-
-  // 2. JOBSITES SHEET
-  let jSheet = ss.getSheetByName(SHEET_NAME_JOBSITES);
-  if (!jSheet) jSheet = ss.insertSheet(SHEET_NAME_JOBSITES);
-  if (jSheet.getLastRow() === 0) jSheet.appendRow(["Site Name"]);
-
-  // 3. SETTINGS SHEET (Password: admin)
-  let setSheet = ss.getSheetByName(SHEET_NAME_SETTINGS);
-  if (!setSheet) setSheet = ss.insertSheet(SHEET_NAME_SETTINGS);
-  if (setSheet.getLastRow() === 0) {
-    setSheet.appendRow(["Config", "Value"]);
-    setSheet.appendRow(["Admin Password", "admin"]); // Default password
-  }
-
-  // 4. ENTRIES SHEET
-  let eSheet = ss.getSheetByName(SHEET_NAME_ENTRIES);
-  if (!eSheet) eSheet = ss.insertSheet(SHEET_NAME_ENTRIES);
-  if (eSheet.getLastRow() === 0) {
-    // Columns: A=ID, B=Date, C=Student, D=Site, E=Evaluator, F-U=Skills, V=Comments
-    let headers = ["Entry ID", "Date", "Student ID", "Job Site", "Evaluator", ...SKILLS_LIST, "Comments"];
-    eSheet.appendRow(headers);
-  }
-
-  return responseJSON({status: "success", message: "Spreadsheet Configured!"});
-}
-
-// --- CORE FUNCTIONS ---
-
-function checkAdminPassword(inputPass) {
-  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_SETTINGS);
-  const realPass = sheet.getRange("B2").getValue().toString();
-  return responseJSON({result: (inputPass === realPass ? "success" : "error")});
-}
-
-function getJobSites() {
-  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_JOBSITES);
-  if (!sheet) return responseJSON({status: "error", message: "Sheet missing"});
-  const data = sheet.getDataRange().getValues();
-  if (data.length > 0) data.shift();
-  const sites = data.flat().filter(s => s !== "" && s !== null);
-  return responseJSON({status: "success", data: sites});
-}
-
-function addJobSite(data) {
-  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_JOBSITES);
-  sheet.appendRow([data.site_name]); 
-  return responseJSON({status: "success"});
-}
-
-function deleteJobSite(data) {
-  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_JOBSITES);
-  const rows = sheet.getDataRange().getValues();
-  for (let i = 0; i < rows.length; i++) {
-    if (rows[i][0] == data.site_name) {
-      sheet.deleteRow(i + 1);
-      return responseJSON({status: "success"});
-    }
-  }
-  return responseJSON({status: "error"});
 }
 
 function getStudents() {
-  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_STUDENTS);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Students");
   const data = sheet.getDataRange().getValues();
-  data.shift(); 
-  const students = data.map(row => ({ student_id: row[0], name: row[1], grade: row[2] })).filter(s => s.student_id !== "");
-  return responseJSON({status: "success", data: students});
-}
-
-function addStudent(data) {
-  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_STUDENTS);
-  sheet.appendRow([Utilities.getUuid(), data.name, data.grade]);
-  return responseJSON({status: "success"});
-}
-
-function deleteStudent(data) {
-  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_STUDENTS);
-  const rows = sheet.getDataRange().getValues();
-  for (let i = 0; i < rows.length; i++) {
-    if (rows[i][0] == data.student_id) {
-      sheet.deleteRow(i + 1);
-      return responseJSON({status: "success"});
-    }
-  }
-  return responseJSON({status: "error"});
-}
-
-function addEntry(data) {
-  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_ENTRIES);
-  const headers = sheet.getRange("1:1").getValues()[0];
-  
-  // A=ID, B=Date, C=Student, D=Site, E=Evaluator
-  let newRow = [Utilities.getUuid(), data.date, data.student_id, data.job_site, data.evaluator];
-  
-  // F-U (Indices 5-20) Skills
-  for (let i = 5; i <= 20; i++) {
-    newRow[i] = data.scores[headers[i]] || "";
-  }
-  
-  // V (Index 21) Comments
-  newRow[21] = data.comments;
-
-  sheet.appendRow(newRow);
-  return responseJSON({status: "success"});
+  data.shift();
+  const students = data.map(row => ({ student_id: row[0], name: row[1], grade: row[2], active: row[3] }));
+  return responseJSON({ status: "success", data: students });
 }
 
 function getEntries() {
-  const sheet = getSpreadsheet().getSheetByName(SHEET_NAME_ENTRIES);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Entries");
+  if (sheet.getLastRow() < 2) return responseJSON({ status: "success", data: [] });
   const data = sheet.getDataRange().getValues();
-  const headers = data.shift();
-  
-  const entries = data.map(row => {
-    let entry = {
-      entry_id: row[0], date: row[1], student_id: row[2], 
-      job_site: row[3], evaluator: row[4], scores: {}, 
-      comments: row[21] || "" // Column V
-    };
-    
-    // Skills F-U
-    for (let i = 5; i <= 20; i++) {
-      if(headers[i]) entry.scores[headers[i]] = row[i];
-    }
-    return entry;
-  });
-  return responseJSON({status: "success", data: entries});
+  data.shift(); 
+  const entries = data.map(row => ({
+    entry_id: row[0], date: row[1], student_id: row[2], job_site: row[3],
+    evaluator: row[4], comments: row[5], scores: row[6] ? JSON.parse(row[6]) : {}
+  }));
+  return responseJSON({ status: "success", data: entries });
 }
 
-function getSpreadsheet() { return SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet(); }
-function responseJSON(data) { return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON); }
-                </textarea>
+function addEntry(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Entries");
+  const id = new Date().getTime().toString();
+  sheet.appendRow([id, data.date, data.student_id, data.job_site, data.evaluator, data.comments, JSON.stringify(data.scores)]);
+  return responseJSON({ status: "success", id: id });
+}
+
+function responseJSON(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+                        </textarea>
+                        <button onclick="copyCode()" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs backdrop-blur-sm transition">
+                            Copy Code
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
+                        <span class="bg-slate-200 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs">2</span>
+                        Deploy to Google
+                    </h3>
+                    <ol class="list-decimal pl-10 space-y-2 text-slate-600 text-xs">
+                        <li>Open a new <a href="https://sheets.new" target="_blank" class="text-blue-600 underline">Google Sheet</a>.</li>
+                        <li>Go to <strong>Extensions > Apps Script</strong>.</li>
+                        <li>Paste the code you copied above.</li>
+                        <li class="font-bold text-red-600 bg-red-50 p-1 rounded border border-red-100">
+                            CRITICAL: Select 'initialSetup' from the toolbar dropdown and click 'Run'.  Accept permissions.
+                        </li>
+                        <li>Click <strong>Deploy > New Deployment</strong>.</li>
+                        <li>Select type: <strong>Web App</strong>.</li>
+                        <li>Execute as: <strong>Me</strong>.</li>
+                        <li>Who has access: <strong>Anyone</strong>.</li>
+                        <li>Click Deploy and copy the <strong>Web App URL</strong>.</li>
+                    </ol>
+                </div>
+
             </div>
         </div>
 
-        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
-            <div class="flex items-center gap-4 mb-6">
-                <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">2</div>
-                <h2 class="text-xl font-bold">Deploy Web App</h2>
-            </div>
-            <ul class="list-disc pl-5 space-y-2 text-slate-300 text-sm">
-                <li>Click <strong>Deploy</strong> (Blue Button) > <strong>New Deployment</strong>.</li>
-                <li>Select Type: <strong>Web App</strong>.</li>
-                <li>Execute as: <strong>Me</strong>.</li>
-                <li>Who has access: <strong>Anyone</strong> (Crucial!).</li>
-                <li>Click <strong>Deploy</strong> and copy the URL.</li>
-            </ul>
-        </div>
-
-        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
-            <div class="flex items-center gap-4 mb-6">
-                <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">3</div>
-                <h2 class="text-xl font-bold">Auto-Create Sheets</h2>
-            </div>
+        <div class="w-full md:w-1/2 p-8 flex flex-col justify-center bg-white">
             
-            <p class="text-slate-400 mb-4 text-sm">Paste your Web App URL to automatically create headers and set password to "admin".</p>
-
-            <div class="flex gap-2">
-                <input type="text" id="setupUrl" placeholder="https://script.google.com/macros/s/..." 
-                    class="flex-1 bg-slate-900 border border-slate-600 rounded p-3 text-white outline-none focus:border-blue-500">
-                <button onclick="runAutoSetup()" id="setupBtn" class="bg-green-600 hover:bg-green-500 text-white font-bold px-6 rounded shadow transition">
-                    CONFIGURE
-                </button>
+            <div class="mb-8 text-center">
+                <span class="material-icons text-slate-300 text-6xl mb-4">link</span>
+                <h2 class="text-xl font-bold text-slate-800">Connect Your Sheet</h2>
+                <p class="text-slate-500 text-sm mt-2">Paste the Web App URL you just created to link this app to your database.</p>
             </div>
-            <p id="setupStatus" class="mt-4 text-center font-bold hidden"></p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Web App URL</label>
+                    <input type="text" id="dbUrl" placeholder="https://script.google.com/macros/s/..." 
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono text-slate-600">
+                </div>
+
+                <button onclick="saveAndConnect()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition flex justify-center items-center gap-2">
+                    <span class="material-icons text-sm">save</span> Save & Connect
+                </button>
+                
+                <p id="statusMsg" class="text-center text-xs text-red-500 font-bold hidden"></p>
+            </div>
+
+            <div class="mt-8 border-t pt-6">
+                <h4 class="text-xs font-bold text-slate-400 uppercase mb-3">Troubleshooting</h4>
+                <ul class="text-xs text-slate-500 space-y-1 list-disc pl-4">
+                    <li>Ensure you clicked "Run" on <code>initialSetup</code> first.</li>
+                    <li>Ensure access is set to "Anyone" (not "Anyone with Google Account").</li>
+                    <li>If you change the code later, you must do a <strong>New Deployment</strong>.</li>
+                </ul>
+            </div>
+
         </div>
 
     </div>
 
     <script>
+        // Check if already connected
+        const existingUrl = localStorage.getItem('vocational_backend_url');
+        if(existingUrl) {
+            document.getElementById('dbUrl').value = existingUrl;
+        }
+
         function copyCode() {
             const code = document.getElementById('scriptCode');
             code.select();
             document.execCommand('copy');
-            alert("Code copied!");
+            alert("Code copied to clipboard!");
         }
 
-        async function runAutoSetup() {
-            const url = document.getElementById('setupUrl').value.trim();
-            const status = document.getElementById('setupStatus');
-            const btn = document.getElementById('setupBtn');
+        async function saveAndConnect() {
+            const url = document.getElementById('dbUrl').value.trim();
+            const msg = document.getElementById('statusMsg');
+            
+            if(!url.includes('script.google.com')) {
+                msg.innerText = "Invalid URL. It must start with script.google.com";
+                msg.classList.remove('hidden');
+                return;
+            }
 
-            if(!url) return alert("Please enter the Web App URL");
-
-            btn.disabled = true;
-            btn.innerText = "Running...";
-            status.classList.remove('hidden');
-            status.className = "mt-4 text-center font-bold text-yellow-400";
-            status.innerText = "Connecting...";
+            msg.innerText = "Testing connection...";
+            msg.classList.remove('hidden');
+            msg.className = "text-center text-xs text-blue-500 font-bold";
 
             try {
-                // Using no-cors (blind request) to avoid CORS issues in simple setup
-                await fetch(url, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    body: JSON.stringify({ action: 'setup' })
-                });
+                // Test the connection by trying to fetch students (even if empty)
+                const response = await fetch(`${url}?action=getStudents`);
+                const result = await response.json();
 
-                status.className = "mt-4 text-center font-bold text-green-400";
-                status.innerHTML = "Success! Sheets created.<br>Password set to 'admin'.";
-                localStorage.setItem('vocational_backend_url', url);
-
+                if(result.status === 'success') {
+                    localStorage.setItem('vocational_backend_url', url);
+                    msg.className = "text-center text-xs text-green-500 font-bold";
+                    msg.innerText = "Success! Redirecting...";
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 1000);
+                } else {
+                    throw new Error("Script reachable, but returned error.");
+                }
             } catch (e) {
+                msg.className = "text-center text-xs text-red-500 font-bold";
+                msg.innerText = "Connection Failed. Did you set access to 'Anyone'?";
                 console.error(e);
-                status.className = "mt-4 text-center font-bold text-red-400";
-                status.innerText = "Error: " + e.message;
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "CONFIGURE";
             }
         }
     </script>
