@@ -8,85 +8,23 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        /* --- SCREEN STYLES (App Layout) --- */
-        body { 
-            background-color: #f1f5f9; 
-            color: #0f172a; 
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-        }
-
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-
-        /* Hides signature on screen */
-        .signature-section { display: none; }
-        #printHistoryTable { display: none; }
-
-        /* --- PRINT STYLES --- */
+        body { background-color: #f8fafc; font-family: ui-sans-serif, system-ui, sans-serif; }
+        
+        /* Print Optimization */
         @media print {
-            body, #mainLayout, #contentArea {
-                height: auto !important;
-                overflow: visible !important;
-                display: block !important;
-                background: white !important;
-                position: static !important;
-            }
-            nav, #sidebarCol, .no-print, button, #loadingIndicator, select {
-                display: none !important;
-            }
-            #contentArea {
-                padding: 0 !important;
-                margin: 0 !important;
-                width: 100% !important;
-            }
-            #summaryView, #detailView {
-                max-width: 100% !important;
-                margin: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-            }
-            /* Grid layout for print charts */
-            .charts-grid {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 10px !important;
-                page-break-inside: avoid;
-            }
-            .chart-card {
-                height: 200px !important; /* Smaller charts for print */
-                border: 1px solid #ccc;
-                box-shadow: none !important;
-                page-break-inside: avoid;
-            }
-            
-            #printHistoryTable {
-                display: block !important;
-                width: 100%;
-                margin-top: 2rem;
-                page-break-before: auto;
-            }
-            .signature-section {
-                display: flex !important;
-                justify-content: space-between;
-                margin-top: 40px;
-                padding-top: 10px;
-                page-break-inside: avoid;
-            }
-            table { width: 100%; border-collapse: collapse; font-size: 9pt; }
-            th, td { border: 1px solid #94a3b8; padding: 6px; text-align: left; }
-            th { background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; font-weight: bold; }
+            @page { size: landscape; margin: 0.5cm; }
+            body { background: white; -webkit-print-color-adjust: exact; }
+            nav, .no-print, #filterBar { display: none !important; }
+            #reportContainer { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
+            .chart-card { break-inside: avoid; page-break-inside: avoid; border: 1px solid #ddd; }
+            #historyTable { display: table !important; }
         }
     </style>
 </head>
-<body>
+<body class="flex flex-col min-h-screen">
 
-    <nav class="bg-blue-900 text-white shadow-lg shrink-0 z-10">
-        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+    <nav class="bg-blue-900 text-white shadow-lg z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center gap-2">
                     <span class="material-icons text-yellow-400">analytics</span>
@@ -99,175 +37,128 @@
                     <a href="admin.html" class="hover:bg-blue-800 px-3 py-2 rounded transition flex items-center gap-1 text-sm font-medium">
                         <span class="material-icons text-sm">settings</span> Admin
                     </a>
-                    <button onclick="window.print()" class="bg-white text-blue-900 font-bold px-4 py-2 rounded hover:bg-blue-50 transition flex items-center gap-1 text-sm shadow">
-                        <span class="material-icons text-sm">print</span> Print Report
-                    </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div id="loadingIndicator" class="fixed inset-0 bg-slate-100 z-50 flex flex-col justify-center items-center">
+    <div id="loadingIndicator" class="fixed inset-0 bg-white z-50 flex flex-col justify-center items-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
         <p class="text-slate-500 font-medium">Loading Database...</p>
     </div>
 
-    <div id="mainLayout" class="hidden flex-1 flex overflow-hidden">
-        
-        <div id="sidebarCol" class="w-80 bg-white border-r border-slate-200 flex flex-col overflow-hidden">
-            <div class="p-4 border-b border-slate-200 bg-slate-50">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Select Student</label>
-                <select id="studentSelect" onchange="loadStudentData()" class="w-full p-2 border rounded text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">-- Choose --</option>
-                </select>
-            </div>
-            
-            <div class="p-3 bg-slate-100 border-b border-slate-200 flex flex-col gap-2">
-                <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-slate-500 uppercase">Visit History</span>
-                    <span id="visitCount" class="text-xs bg-slate-300 px-2 py-0.5 rounded-full text-slate-700">0</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <label class="text-[10px] uppercase font-bold text-slate-400">Sort:</label>
-                    <select id="sortOrder" onchange="renderVisitList()" class="flex-1 text-xs p-1 border rounded bg-white">
-                        <option value="date">Date (Newest)</option>
-                        <option value="site">Job Site (A-Z)</option>
-                    </select>
-                </div>
-            </div>
+    <main id="mainContent" class="hidden flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
 
-            <div class="flex-1 overflow-y-auto custom-scroll p-2 space-y-2" id="visitList">
-                <div class="text-center text-slate-400 text-sm mt-10 italic">Select a student...</div>
-            </div>
-        </div>
-
-        <div id="contentArea" class="flex-1 overflow-y-auto custom-scroll bg-slate-50 p-6 md:p-8">
-            
-            <div id="summaryView" class="hidden max-w-6xl mx-auto">
-                <div class="flex justify-between items-end mb-6">
-                    <div>
-                        <h1 class="text-3xl font-bold text-slate-800" id="summaryTitle">Overview</h1>
-                        <p class="text-slate-500 text-sm">Vocational Skills Dashboard</p>
-                    </div>
-                    <select id="timeRange" onchange="renderSummary()" class="p-2 border rounded text-sm bg-white shadow-sm no-print">
-                        <option value="30">Last 30 Days</option>
-                        <option value="90">Last 3 Months</option>
-                        <option value="all">All Time</option>
+        <div id="filterBar" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Student</label>
+                    <select id="studentSelect" onchange="handleStudentChange()" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">-- Select Student --</option>
                     </select>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="card bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
-                        <p class="text-xs text-slate-500 font-bold uppercase">Average Score</p>
-                        <p id="avgScore" class="text-2xl font-bold text-slate-800">0.0</p>
-                    </div>
-                    <div class="card bg-white p-4 rounded-xl shadow-sm border-l-4 border-purple-500">
-                        <p class="text-xs text-slate-500 font-bold uppercase">Strongest Skill</p>
-                        <p id="topSkill" class="text-md font-bold text-slate-800 leading-tight">N/A</p>
-                    </div>
-                    <div class="card bg-white p-4 rounded-xl shadow-sm border-l-4 border-orange-500">
-                        <p class="text-xs text-slate-500 font-bold uppercase">Evaluations</p>
-                        <p id="totalEvals" class="text-2xl font-bold text-slate-800">0</p>
-                    </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Start Date</label>
+                    <input type="date" id="startDate" onchange="runReport()" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 charts-grid">
-                    
-                    <div class="card chart-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 h-80">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Skills Profile</h3>
-                        <div class="relative h-64 w-full">
-                            <canvas id="skillsChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="card chart-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 h-80">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Progress Over Time</h3>
-                        <div class="relative h-64 w-full">
-                            <canvas id="trendChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="card chart-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 h-80">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Support Level Breakdown</h3>
-                        <div class="relative h-64 w-full flex justify-center">
-                            <canvas id="distributionChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="card chart-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 h-80">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Performance by Job Site</h3>
-                        <div class="relative h-64 w-full">
-                            <canvas id="siteChart"></canvas>
-                        </div>
-                    </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">End Date</label>
+                    <input type="date" id="endDate" onchange="runReport()" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
 
-                <div id="printHistoryTable">
-                    <h3 class="text-lg font-bold mb-2 text-slate-800 border-b pb-1">Detailed Log</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="w-24">Date</th>
-                                <th>Job Site</th>
-                                <th>Evaluator</th>
-                                <th class="w-16">Avg</th>
-                                <th>Notes</th>
-                            </tr>
-                        </thead>
-                        <tbody id="printHistoryBody"></tbody>
-                    </table>
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Job Site</label>
+                    <select id="siteSelect" onchange="runReport()" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" disabled>
+                        <option value="All">All Sites</option>
+                    </select>
                 </div>
 
-                <div class="signature-section">
-                    <div class="w-5/12">
-                        <div class="border-b-2 border-slate-400 mb-2"></div>
-                        <p class="text-sm font-bold text-slate-700">Teacher Signature</p>
-                    </div>
-                    <div class="w-5/12">
-                        <div class="border-b-2 border-slate-400 mb-2"></div>
-                        <p class="text-sm font-bold text-slate-700">Supervisor Signature</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="detailView" class="hidden max-w-4xl mx-auto">
-                <div class="mb-6 flex justify-between items-start no-print">
-                    <button onclick="showSummary()" class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1 mb-2">
-                        <span class="material-icons text-sm">arrow_back</span> Back to Overview
+                <div class="md:col-span-2 text-right">
+                    <button onclick="window.print()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow transition text-sm">
+                        Print Report
                     </button>
                 </div>
+            </div>
+        </div>
 
-                <div class="card bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-                    <div class="bg-slate-800 text-white p-6 flex justify-between items-center print:bg-slate-200 print:text-black">
-                        <div>
-                            <h2 class="text-2xl font-bold" id="detailDate">Date</h2>
-                            <p class="text-slate-400 flex items-center gap-2 mt-1 print:text-slate-600">
-                                <span class="material-icons text-sm">work</span> <span id="detailSite">Site</span>
-                            </p>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-xs uppercase text-slate-400 print:text-slate-600">Evaluator</div>
-                            <div class="font-bold text-lg" id="detailEvaluator">Name</div>
-                        </div>
+        <div id="reportContainer" class="space-y-6 hidden">
+            
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                    <h1 id="reportStudentName" class="text-4xl font-extrabold text-slate-900 mb-2">Student Name</h1>
+                    <div class="text-sm text-slate-500 space-y-1">
+                        <p><strong>Report Period:</strong> <span id="reportPeriod"></span></p>
+                        <p><strong>Job Site Filter:</strong> <span id="reportSiteFilter">All</span></p>
+                        <p><strong>Total Evaluations:</strong> <span id="reportCount">0</span></p>
                     </div>
+                </div>
 
-                    <div class="p-6 bg-slate-50 border-b border-slate-200 print:bg-white">
-                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-4">Skill Performance</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="detailScores"></div>
-                    </div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center w-full md:w-64 shrink-0">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Overall Average</p>
+                    <div id="overallScoreDisplay" class="text-5xl font-black text-slate-300">N/A</div>
+                    <p class="text-xs text-slate-400 mt-2">Scale: 0.0 - 4.0</p>
+                </div>
+            </div>
 
-                    <div class="p-6">
-                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-2">Evaluator Notes</h3>
-                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-slate-700 italic print:bg-white print:border-slate-300">
-                            <span class="material-icons text-yellow-400 text-sm align-middle mr-1 no-print">format_quote</span>
-                            <span id="detailComments">No comments.</span>
-                        </div>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 chart-card">
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Skills Profile</h3>
+                    <div class="h-64 relative"><canvas id="skillsChart"></canvas></div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 chart-card">
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Progress Over Time</h3>
+                    <div class="h-64 relative"><canvas id="trendChart"></canvas></div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 chart-card">
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Support Level Breakdown</h3>
+                    <div class="h-64 relative flex justify-center"><canvas id="distributionChart"></canvas></div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 chart-card">
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Performance by Job Site</h3>
+                    <div class="h-64 relative"><canvas id="siteChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                    <h3 class="font-bold text-slate-700">Detailed Log</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+                            <tr>
+                                <th class="px-6 py-3">Date</th>
+                                <th class="px-6 py-3">Job Site</th>
+                                <th class="px-6 py-3">Evaluator</th>
+                                <th class="px-6 py-3">Score</th>
+                                <th class="px-6 py-3 w-1/2">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-100">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="hidden print:flex justify-between mt-12 pt-8">
+                <div class="w-5/12 border-t border-slate-400 pt-2">
+                    <p class="font-bold text-slate-900">Teacher Signature</p>
+                </div>
+                <div class="w-5/12 border-t border-slate-400 pt-2">
+                    <p class="font-bold text-slate-900">Parent/Guardian Signature</p>
                 </div>
             </div>
 
         </div>
-    </div>
+
+    </main>
 
     <script>
         const SKILLS = [
@@ -279,294 +170,227 @@
             "Asks for help appropriately", "Demonstrates self-reflection"
         ];
 
-        const SCORES_DEF = {
-            4: { label: "Independent", color: "text-green-600", bg: "bg-green-100", border: "border-green-200", hex: "#16a34a" },
-            3: { label: "Verbal Prompts", color: "text-blue-600", bg: "bg-blue-100", border: "border-blue-200", hex: "#2563eb" },
-            2: { label: "Modeling", color: "text-yellow-600", bg: "bg-yellow-100", border: "border-yellow-200", hex: "#ca8a04" },
-            1: { label: "Physical Assist", color: "text-orange-600", bg: "bg-orange-100", border: "border-orange-200", hex: "#ea580c" },
-            0: { label: "Refusal", color: "text-red-600", bg: "bg-red-100", border: "border-red-200", hex: "#dc2626" }
-        };
-
-        let allEntries = [], currentEntries = [], students = {};
+        let allEntries = [], students = {};
         // Chart instances
-        let skillsChart = null, trendChart = null, distChart = null, siteChart = null;
+        let charts = { skills: null, trend: null, dist: null, site: null };
 
-        function parseDate(d) {
-            if(!d) return new Date();
-            const p = d.substring(0,10).split('-');
-            return new Date(p[0], p[1]-1, p[2]);
-        }
-        function fmtDate(d) { return d.toLocaleDateString('en-US', {month:'short', day:'numeric'}); }
+        // Helper: Date Formatting
+        function parseDate(str) { return new Date(str.replace(/-/g, '\/')); } // Fix browser dash issues
+        function toISODate(d) { return d.toISOString().split('T')[0]; }
 
         window.onload = async () => {
+            // Set default dates (1st of current month to today)
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('endDate').value = toISODate(today);
+            document.getElementById('startDate').value = toISODate(firstDay);
+
             const url = localStorage.getItem('vocational_backend_url');
-            if(!url) return alert("No Database Connected");
+            if(!url) return alert("Database not connected. Please go to Admin Setup.");
 
             try {
+                // Fetch Data
                 const t = Date.now();
                 const [sRes, eRes] = await Promise.all([
                     fetch(`${url}?action=getStudents&t=${t}`), fetch(`${url}?action=getEntries&t=${t}`)
                 ]);
-                const sD = await sRes.json();
-                const eD = await eRes.json();
+                const sData = await sRes.json();
+                const eData = await eRes.json();
 
+                // Populate Student Dropdown
                 const sel = document.getElementById('studentSelect');
-                sD.data.forEach(s => {
+                sData.data.forEach(s => {
                     students[s.student_id] = s.name;
                     sel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
                 });
-                allEntries = eD.data;
+
+                allEntries = eData.data;
+
                 document.getElementById('loadingIndicator').classList.add('hidden');
-                document.getElementById('mainLayout').classList.remove('hidden');
-            } catch(e) { console.error(e); alert("Connection Error"); }
+                document.getElementById('mainContent').classList.remove('hidden');
+
+            } catch(e) { console.error(e); alert("Failed to load data."); }
         };
 
-        function loadStudentData() {
+        function handleStudentChange() {
             const sid = document.getElementById('studentSelect').value;
-            const list = document.getElementById('visitList');
+            const siteSel = document.getElementById('siteSelect');
+            
+            // Reset Site Filter
+            siteSel.innerHTML = '<option value="All">All Sites</option>';
+            siteSel.disabled = !sid;
+
             if(!sid) {
-                document.getElementById('summaryView').classList.add('hidden');
-                document.getElementById('detailView').classList.add('hidden');
-                list.innerHTML = "<div class='text-center text-slate-400 mt-10'>Select Student</div>";
-                document.getElementById('visitCount').innerText = "0";
+                document.getElementById('reportContainer').classList.add('hidden');
                 return;
             }
 
-            currentEntries = allEntries.filter(e => e.student_id == sid);
-            document.getElementById('visitCount').innerText = currentEntries.length;
-            renderVisitList();
-            showSummary();
-        }
-
-        function renderVisitList() {
-            const list = document.getElementById('visitList');
-            const sortMode = document.getElementById('sortOrder').value;
-
-            currentEntries.sort((a, b) => {
-                if (sortMode === 'date') return parseDate(b.date) - parseDate(a.date);
-                const siteComp = a.job_site.localeCompare(b.job_site);
-                return siteComp !== 0 ? siteComp : parseDate(b.date) - parseDate(a.date);
-            });
-
-            let html = `<div onclick="showSummary()" class="cursor-pointer p-3 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 mb-4 font-bold text-blue-700 flex gap-2"><span class="material-icons text-sm">dashboard</span> Overview</div>`;
+            // Populate Sites based on student history
+            const studentEntries = allEntries.filter(e => e.student_id == sid);
+            const sites = [...new Set(studentEntries.map(e => e.job_site))].sort();
             
-            if(currentEntries.length === 0) html += "<div class='text-center text-slate-400'>No visits found.</div>";
-
-            currentEntries.forEach((e, i) => {
-                const d = parseDate(e.date);
-                html += `<div onclick="showDetail(${i})" class="cursor-pointer p-3 rounded-lg border border-slate-200 bg-white hover:border-blue-400 mb-2 shadow-sm">
-                        <div class="flex justify-between font-bold text-sm text-slate-700">
-                            <span>${d.toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'})}</span>
-                            <span class="text-[10px] uppercase text-slate-400">${e.job_site.substring(0,12)}</span>
-                        </div>
-                        <div class="text-xs text-slate-500 mt-1">${e.evaluator}</div>
-                    </div>`;
+            sites.forEach(site => {
+                siteSel.innerHTML += `<option value="${site}">${site}</option>`;
             });
-            list.innerHTML = html;
+
+            runReport();
         }
 
-        function showSummary() {
-            document.getElementById('detailView').classList.add('hidden');
-            document.getElementById('summaryView').classList.remove('hidden');
-            renderSummary();
-        }
-
-        function renderSummary() {
-            const range = document.getElementById('timeRange').value;
+        function runReport() {
             const sid = document.getElementById('studentSelect').value;
-            document.getElementById('summaryTitle').innerText = students[sid];
+            if(!sid) return;
 
-            const now = new Date(); now.setHours(0,0,0,0);
-            const cutoff = new Date(now);
-            if(range !== 'all') cutoff.setDate(now.getDate() - parseInt(range));
+            const startVal = document.getElementById('startDate').value;
+            const endVal = document.getElementById('endDate').value;
+            const siteFilter = document.getElementById('siteSelect').value;
 
-            // Filter data by date
-            const filtered = currentEntries.filter(e => parseDate(e.date) >= cutoff);
+            // Date Objects for comparison (set times to start/end of day)
+            const startD = new Date(startVal); startD.setHours(0,0,0,0);
+            const endD = new Date(endVal); endD.setHours(23,59,59,999);
+
+            // Filter Data
+            const filtered = allEntries.filter(e => {
+                const d = parseDate(e.date);
+                const isStudent = e.student_id == sid;
+                const isDate = d >= startD && d <= endD;
+                const isSite = siteFilter === "All" || e.job_site === siteFilter;
+                return isStudent && isDate && isSite;
+            });
+
+            updateUI(filtered, students[sid], startVal, endVal, siteFilter);
+        }
+
+        function updateUI(data, name, start, end, site) {
+            document.getElementById('reportContainer').classList.remove('hidden');
             
-            // --- DATA PREPARATION ---
-            
-            // 1. Skill Sums (Existing)
+            // 1. Header Info
+            document.getElementById('reportStudentName').innerText = name;
+            document.getElementById('reportPeriod').innerText = `${start} to ${end}`;
+            document.getElementById('reportSiteFilter').innerText = site;
+            document.getElementById('reportCount').innerText = data.length;
+
+            // 2. Process Data Metrics
             let skillSums = {}, skillCounts = {}, totalSum = 0, totalCount = 0;
+            let trendMap = {}, distCounts = {0:0, 1:0, 2:0, 3:0, 4:0};
+            let siteSums = {}, siteCounts = {};
+            
             SKILLS.forEach(s => { skillSums[s]=0; skillCounts[s]=0; });
 
-            // 2. Trend Data (Date -> Avg)
-            let trendMap = {}; // Use map to handle multiple entries on same day
+            // Table Body
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = "";
+            if(data.length === 0) tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">No records found for this period.</td></tr>`;
 
-            // 3. Distribution Counts (0-4)
-            let distCounts = {0:0, 1:0, 2:0, 3:0, 4:0};
+            // Sort newest first for table
+            const sortedData = [...data].sort((a,b) => parseDate(b.date) - parseDate(a.date));
 
-            // 4. Site Data
-            let siteSums = {}, siteCounts = {};
-
-            // Print Table Body
-            const printBody = document.getElementById('printHistoryBody');
-            printBody.innerHTML = "";
-            const printEntries = [...filtered].sort((a,b) => parseDate(b.date) - parseDate(a.date));
-
-            if(printEntries.length === 0) printBody.innerHTML = "<tr><td colspan='5' class='text-center italic'>No records.</td></tr>";
-
-            printEntries.forEach(e => {
+            sortedData.forEach(e => {
                 let daySum = 0, dayCount = 0;
                 
-                // Track Site
-                if(!siteSums[e.job_site]) { siteSums[e.job_site]=0; siteCounts[e.job_site]=0; }
-
                 SKILLS.forEach(s => {
                     const val = parseFloat(e.scores[s]);
                     if(!isNaN(val)) {
-                        // Skill totals
                         skillSums[s] += val; skillCounts[s]++;
                         totalSum += val; totalCount++;
-                        // Day totals
                         daySum += val; dayCount++;
-                        // Distribution
                         distCounts[val]++;
                     }
                 });
 
                 const dailyAvg = dayCount ? (daySum/dayCount) : 0;
                 
-                // Add to Trend (Key by date)
-                const dateKey = fmtDate(parseDate(e.date));
+                // Trend Data (Key: Date String)
+                const dateKey = e.date.substring(0,10);
                 if(!trendMap[dateKey]) trendMap[dateKey] = [];
                 trendMap[dateKey].push(dailyAvg);
 
-                // Add to Site
-                siteSums[e.job_site] += dailyAvg; 
+                // Site Data
+                if(!siteSums[e.job_site]) { siteSums[e.job_site] = 0; siteCounts[e.job_site] = 0; }
+                siteSums[e.job_site] += dailyAvg;
                 siteCounts[e.job_site]++;
 
-                // Add to Table
-                printBody.innerHTML += `<tr><td>${dateKey}</td><td>${e.job_site}</td><td>${e.evaluator}</td><td>${dailyAvg.toFixed(1)}</td><td class="text-xs italic text-slate-600">${e.comments ? e.comments.substring(0,60) : '-'}</td></tr>`;
+                // Add Row
+                const rowColor = dailyAvg >= 3 ? 'text-green-600' : (dailyAvg >= 2 ? 'text-blue-600' : 'text-orange-600');
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-4 font-medium">${dateKey}</td>
+                        <td class="px-6 py-4">${e.job_site}</td>
+                        <td class="px-6 py-4 text-xs uppercase text-slate-500">${e.evaluator}</td>
+                        <td class="px-6 py-4 font-bold ${rowColor}">${dailyAvg.toFixed(1)}</td>
+                        <td class="px-6 py-4 text-xs italic text-slate-500">${e.comments || '-'}</td>
+                    </tr>
+                `;
             });
 
-            // Update Cards
-            document.getElementById('totalEvals').innerText = filtered.length;
-            document.getElementById('avgScore').innerText = totalCount ? (totalSum/totalCount).toFixed(1) : "0.0";
+            // 3. Overall Score Card
+            const overallAvg = totalCount ? (totalSum/totalCount).toFixed(1) : "N/A";
+            const scoreEl = document.getElementById('overallScoreDisplay');
+            scoreEl.innerText = overallAvg;
             
-            let bestAvg = -1, bestName = "N/A";
-            SKILLS.forEach(s => {
-                const avg = skillCounts[s] ? (skillSums[s]/skillCounts[s]) : 0;
-                if(avg > bestAvg && avg > 0) { bestAvg = avg; bestName = s; }
-            });
-            document.getElementById('topSkill').innerText = bestName;
+            // Color Coding the Big Score
+            scoreEl.className = "text-5xl font-black transition-colors duration-300"; // Reset
+            if(overallAvg === "N/A") scoreEl.classList.add("text-slate-300");
+            else if(overallAvg >= 3.5) scoreEl.classList.add("text-green-600");
+            else if(overallAvg >= 2.5) scoreEl.classList.add("text-blue-600");
+            else if(overallAvg >= 1.5) scoreEl.classList.add("text-yellow-600");
+            else scoreEl.classList.add("text-red-600");
 
-            // --- CHARTS ---
+            updateCharts(skillSums, skillCounts, trendMap, distCounts, siteSums, siteCounts);
+        }
 
-            // 1. Skills Bar Chart
-            const ctx1 = document.getElementById('skillsChart').getContext('2d');
-            if(skillsChart) skillsChart.destroy();
-            const skillsData = SKILLS.map(s => skillCounts[s] ? (skillSums[s]/skillCounts[s]).toFixed(1) : 0);
-            const skillsBg = skillsData.map(v => v>=3.5?'#16a34a': v>=2.5?'#2563eb': v>=1.5?'#ca8a04':'#dc2626');
+        function updateCharts(sSums, sCounts, trendMap, dCounts, siteSums, siteCounts) {
             
-            skillsChart = new Chart(ctx1, {
+            // 1. Skills Bar
+            const sLabels = SKILLS;
+            const sData = SKILLS.map(s => sCounts[s] ? (sSums[s]/sCounts[s]).toFixed(1) : 0);
+            const sColors = sData.map(v => v>=3?'#16a34a': v>=2?'#2563eb': '#ea580c');
+
+            if(charts.skills) charts.skills.destroy();
+            charts.skills = new Chart(document.getElementById('skillsChart'), {
                 type: 'bar',
-                data: { labels: SKILLS, datasets: [{ data: skillsData, backgroundColor: skillsBg, borderRadius: 4 }] },
-                options: { 
-                    indexAxis: 'y', maintainAspectRatio: false,
-                    scales: { x: { min:0, max:4 }, y: { ticks: { font: {size:9} } } },
-                    plugins: { legend: { display: false } }
-                }
+                data: { labels: sLabels, datasets: [{ data: sData, backgroundColor: sColors, borderRadius: 4 }] },
+                options: { indexAxis: 'y', maintainAspectRatio: false, scales: { x: { min:0, max:4 } }, plugins: { legend: { display: false } } }
             });
 
-            // 2. Trend Line Chart
-            const ctx2 = document.getElementById('trendChart').getContext('2d');
-            if(trendChart) trendChart.destroy();
-            // Process Trend Map into arrays
+            // 2. Trend Line
             // Sort dates chronologically
-            const sortedDates = Object.keys(trendMap).sort((a,b) => new Date(a) - new Date(b)); 
-            // Calculate avg if multiple entries per day
-            const trendValues = sortedDates.map(d => {
-                const vals = trendMap[d];
-                return (vals.reduce((a,b)=>a+b,0) / vals.length).toFixed(1);
+            const tLabels = Object.keys(trendMap).sort();
+            const tData = tLabels.map(d => {
+                const arr = trendMap[d];
+                return (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1);
             });
 
-            trendChart = new Chart(ctx2, {
+            if(charts.trend) charts.trend.destroy();
+            charts.trend = new Chart(document.getElementById('trendChart'), {
                 type: 'line',
-                data: {
-                    labels: sortedDates,
-                    datasets: [{
-                        label: 'Daily Avg',
-                        data: trendValues,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    scales: { y: { min: 0, max: 4 } },
-                    plugins: { legend: { display: false } }
-                }
+                data: { labels: tLabels, datasets: [{ data: tData, borderColor: '#4f46e5', backgroundColor: '#e0e7ff', fill: true, tension: 0.3 }] },
+                options: { maintainAspectRatio: false, scales: { y: { min:0, max:4 } }, plugins: { legend: { display: false } } }
             });
 
-            // 3. Distribution Doughnut
-            const ctx3 = document.getElementById('distributionChart').getContext('2d');
-            if(distChart) distChart.destroy();
-            distChart = new Chart(ctx3, {
+            // 3. Distribution
+            if(charts.dist) charts.dist.destroy();
+            charts.dist = new Chart(document.getElementById('distributionChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Independent (4)', 'Verbal (3)', 'Modeling (2)', 'Physical (1)', 'Refusal (0)'],
+                    labels: ['Indep (4)', 'Verbal (3)', 'Model (2)', 'Phys (1)', 'Refusal (0)'],
                     datasets: [{
-                        data: [distCounts[4], distCounts[3], distCounts[2], distCounts[1], distCounts[0]],
+                        data: [dCounts[4], dCounts[3], dCounts[2], dCounts[1], dCounts[0]],
                         backgroundColor: ['#16a34a', '#2563eb', '#ca8a04', '#ea580c', '#dc2626'],
                         borderWidth: 0
                     }]
                 },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } } }
-                }
+                options: { maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
             });
 
-            // 4. Site Performance Bar
-            const ctx4 = document.getElementById('siteChart').getContext('2d');
-            if(siteChart) siteChart.destroy();
-            const sites = Object.keys(siteSums);
-            const siteAvgs = sites.map(s => (siteSums[s] / siteCounts[s]).toFixed(1));
+            // 4. Site Performance
+            const siteLabels = Object.keys(siteSums);
+            const siteData = siteLabels.map(s => (siteSums[s]/siteCounts[s]).toFixed(1));
 
-            siteChart = new Chart(ctx4, {
+            if(charts.site) charts.site.destroy();
+            charts.site = new Chart(document.getElementById('siteChart'), {
                 type: 'bar',
-                data: {
-                    labels: sites,
-                    datasets: [{
-                        data: siteAvgs,
-                        backgroundColor: '#8b5cf6',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    maintainAspectRatio: false,
-                    scales: { x: { min: 0, max: 4 } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        function showDetail(i) {
-            const e = currentEntries[i];
-            document.getElementById('summaryView').classList.add('hidden');
-            document.getElementById('detailView').classList.remove('hidden');
-
-            document.getElementById('detailDate').innerText = fmtDate(parseDate(e.date));
-            document.getElementById('detailSite').innerText = e.job_site;
-            document.getElementById('detailEvaluator').innerText = e.evaluator;
-            document.getElementById('detailComments').innerText = e.comments || "No comments.";
-
-            const grid = document.getElementById('detailScores');
-            grid.innerHTML = "";
-            SKILLS.forEach(s => {
-                const val = parseInt(e.scores[s]);
-                const def = SCORES_DEF[val] || {label:"N/A", color:"text-gray-400", bg:"bg-gray-50", border:"border-gray-200"};
-                grid.innerHTML += `
-                    <div class="flex items-center justify-between p-3 rounded border ${def.bg} ${def.border}">
-                        <div class="text-sm font-medium text-slate-700 w-2/3">${s}</div>
-                        <div class="text-right">
-                            <span class="block text-xl font-bold ${def.color}">${isNaN(val)?'-':val}</span>
-                            <span class="text-[10px] uppercase font-bold text-slate-500">${def.label}</span>
-                        </div>
-                    </div>`;
+                data: { labels: siteLabels, datasets: [{ data: siteData, backgroundColor: '#8b5cf6', borderRadius: 4 }] },
+                options: { indexAxis: 'y', maintainAspectRatio: false, scales: { x: { min:0, max:4 } }, plugins: { legend: { display: false } } }
             });
         }
     </script>
