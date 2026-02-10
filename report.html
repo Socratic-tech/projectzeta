@@ -3,309 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Progress Report</title>
+    <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        @media print {
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            body { background: white; -webkit-print-color-adjust: exact; }
-            .card { border: none; shadow: none; break-inside: avoid; }
-        }
-    </style>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans">
+<body class="bg-slate-900 text-white font-sans h-screen flex flex-col">
 
-    <nav class="bg-indigo-700 text-white shadow-lg no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-2">
-                    <span class="material-icons">analytics</span>
-                    <span class="font-bold text-xl">Vocational Reports</span>
-                </div>
-                <div class="flex gap-4">
-                    <a href="index.html" class="hover:bg-indigo-600 px-3 py-2 rounded transition flex items-center gap-1">
-                        <span class="material-icons text-sm">dashboard</span> Dashboard
-                    </a>
-                    <button onclick="window.print()" class="bg-white text-indigo-700 font-bold px-4 py-2 rounded hover:bg-gray-100 transition flex items-center gap-1">
-                        <span class="material-icons text-sm">print</span> Print
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        <div id="errorBanner" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm">
-            <h3 class="font-bold text-lg">Connection Error</h3>
-            <p id="errorText">Could not load data.</p>
-        </div>
-
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 no-print">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Select Student</label>
-                    <select id="studentSelect" onchange="updateDashboard()" class="w-full p-3 border rounded bg-gray-50 outline-none">
-                        <option value="">Loading...</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Time Period</label>
-                    <select id="timeRange" onchange="updateDashboard()" class="w-full p-3 border rounded bg-gray-50 outline-none">
-                        <option value="30">Last 30 Days</option>
-                        <option value="90">Last 3 Months</option>
-                        <option value="180">Last 6 Months</option>
-                        <option value="all">All Time</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div id="loadingIndicator" class="text-center py-20">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-700 mx-auto mb-4"></div>
-            <p class="text-gray-500">Syncing database...</p>
-        </div>
-
-        <div id="reportContent" class="hidden">
+    <div id="loginOverlay" class="fixed inset-0 bg-slate-900 z-50 flex flex-col justify-center items-center p-4">
+        <div class="bg-slate-800 p-8 rounded-xl shadow-2xl border border-slate-700 w-full max-w-md text-center">
+            <span class="material-icons text-6xl text-blue-500 mb-4">admin_panel_settings</span>
+            <h1 class="text-2xl font-bold mb-2">Restricted Access</h1>
+            <p class="text-slate-400 mb-6 text-sm">Enter the admin password from the Settings Sheet (B2).</p>
             
-            <div class="mb-8 border-b pb-4 flex justify-between items-end">
-                <div>
-                    <h1 id="studentNameTitle" class="text-3xl font-bold text-gray-900">Student Name</h1>
-                    <p class="text-gray-500">Vocational Skills Progress Report</p>
-                </div>
-                <div class="text-right text-sm text-gray-400">
-                    Generated: <span id="reportDate"></span>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500 card">
-                    <p class="text-xs text-gray-500 font-bold uppercase">Evaluations</p>
-                    <p id="totalLogs" class="text-2xl font-bold text-gray-900">0</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500 card">
-                    <p class="text-xs text-gray-500 font-bold uppercase">Average Score</p>
-                    <p id="avgScore" class="text-2xl font-bold text-gray-900">0.0</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500 card">
-                    <p class="text-xs text-gray-500 font-bold uppercase">Strongest Skill</p>
-                    <p id="topSkill" class="text-lg font-bold text-gray-900 leading-tight">N/A</p>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 break-inside-avoid card">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Skill Proficiency (1-5 Scale)</h3>
-                <div class="relative h-96 w-full">
-                    <canvas id="skillsChart"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8 break-inside-avoid card">
-                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-bold text-gray-800">Recent Comments</h3>
-                </div>
-                <div class="p-6">
-                    <ul id="commentsList" class="space-y-4"></ul>
-                </div>
+            <input type="password" id="passwordInput" placeholder="Password" 
+                class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white mb-4 outline-none focus:border-blue-500 transition">
+            
+            <button onclick="attemptLogin()" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition">
+                UNLOCK
+            </button>
+            <p id="loginError" class="text-red-500 text-sm mt-4 hidden">Incorrect Password</p>
+            
+            <div class="mt-6 border-t border-slate-700 pt-4">
+                <a href="index.html" class="text-slate-500 text-xs hover:text-white">← Return to Entry Page</a>
             </div>
         </div>
     </div>
 
-    <script>
-        // --- CONFIGURATION ---
-        const SKILLS_LIST = [
-            "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
-            "Initiates familiar tasks", "Maintains a productive work rate", "Complete tasks in a logical order",
-            "Demonstrates adaptability", "Work is completed to quality standards", "Maintains clean and organized work space",
-            "Awareness of surroundings and good decision making", "Appropriate and respectful social interactions",
-            "Displays effective communication skills", "Accepts constructive criticism", "Demonstrates a positive attitude",
-            "Asks for help appropriately", "Demonstrates self-reflection"
-        ];
+    <div id="adminContent" class="hidden flex-1 overflow-auto">
+        
+        <nav class="bg-slate-800 border-b border-slate-700 p-4">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="material-icons text-green-500">settings</span>
+                    <span class="font-bold text-xl">System Admin</span>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="logout()" class="text-sm text-slate-400 hover:text-white">Logout</button>
+                    <a href="index.html" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-sm font-bold">Open App</a>
+                </div>
+            </div>
+        </nav>
 
-        let allEntries = [];
-        let studentsMap = {};
-        let chartInstance = null;
-
-        // --- THE DATE FIXER ---
-        // Converts "2023-10-25T..." or "2023-10-25" into a pure Local Date object
-        function parseDate(dateStr) {
-            if (!dateStr) return new Date();
-            // If it's a full ISO string (from Google), take the first 10 chars (YYYY-MM-DD)
-            const cleanStr = dateStr.substring(0, 10);
-            const parts = cleanStr.split('-');
-            // Create date using Local Time (Year, MonthIndex, Day)
-            // Month is 0-indexed in JS (0=Jan, 9=Oct)
-            return new Date(parts[0], parts[1] - 1, parts[2]);
-        }
-
-        // --- INIT ---
-        window.addEventListener('load', async () => {
-            document.getElementById('reportDate').innerText = new Date().toLocaleDateString();
+        <div class="max-w-4xl mx-auto p-6 space-y-8">
             
-            let apiUrl = localStorage.getItem('vocational_backend_url');
-            if (!apiUrl) {
-                document.getElementById('loadingIndicator').classList.add('hidden');
-                document.getElementById('errorBanner').classList.remove('hidden');
-                document.getElementById('errorText').innerText = "Please go to Admin and connect the database.";
+            <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <span class="material-icons text-blue-400">link</span> Database Connection
+                </h2>
+                <div class="flex gap-2">
+                    <input type="text" id="dbUrl" placeholder="Script URL" class="flex-1 bg-slate-900 border border-slate-600 rounded p-2 text-green-400 font-mono text-sm">
+                    <button onclick="saveUrl()" class="bg-green-700 hover:bg-green-600 px-4 rounded font-bold text-sm">SAVE</button>
+                </div>
+                <p class="text-xs text-slate-500 mt-2">Current Status: <span id="statusIndicator" class="text-yellow-500">Checking...</span></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <a href="https://docs.google.com/spreadsheets" target="_blank" class="bg-slate-800 p-6 rounded-lg border border-slate-700 hover:border-blue-500 transition group">
+                    <h3 class="font-bold text-lg mb-2 group-hover:text-blue-400">Manage Students & Settings</h3>
+                    <p class="text-slate-400 text-sm">Click here to open the Google Sheet directly to add students or change the password.</p>
+                </a>
+                
+                <a href="report.html" class="bg-slate-800 p-6 rounded-lg border border-slate-700 hover:border-purple-500 transition group">
+                    <h3 class="font-bold text-lg mb-2 group-hover:text-purple-400">View Reports</h3>
+                    <p class="text-slate-400 text-sm">Go to the reporting dashboard to view student progress.</p>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // 1. INIT
+        const storedUrl = localStorage.getItem('vocational_backend_url');
+        if (storedUrl) document.getElementById('dbUrl').value = storedUrl;
+
+        // 2. LOGIN LOGIC
+        async function attemptLogin() {
+            const pass = document.getElementById('passwordInput').value;
+            const btn = document.getElementById('loginBtn');
+            const err = document.getElementById('loginError');
+            const url = document.getElementById('dbUrl').value;
+
+            if(!url) {
+                alert("Please enter the Database URL first (in the Settings panel on the Entry page) or paste it here temporarily.");
                 return;
             }
+
+            btn.disabled = true;
+            btn.innerText = "Verifying...";
+            err.classList.add('hidden');
 
             try {
-                // Cache Buster to get fresh data
-                const t = Date.now();
-                
-                const [sRes, eRes] = await Promise.all([
-                    fetch(`${apiUrl}?action=getStudents&t=${t}`),
-                    fetch(`${apiUrl}?action=getEntries&t=${t}`)
-                ]);
+                // CALL GOOGLE SCRIPT WITH PASSWORD
+                const response = await fetch(`${url}?action=checkAdmin&password=${pass}`);
+                const data = await response.json();
 
-                const sData = await sRes.json();
-                const eData = await eRes.json();
-
-                if (sData.status === 'error' || eData.status === 'error') throw new Error("Database Error");
-
-                // Load Students
-                const select = document.getElementById('studentSelect');
-                select.innerHTML = '<option value="">-- Select Student --</option>';
-                sData.data.forEach(s => {
-                    studentsMap[s.student_id] = s.name;
-                    select.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
-                });
-
-                allEntries = eData.data;
-                document.getElementById('loadingIndicator').classList.add('hidden');
-
-            } catch (err) {
-                document.getElementById('loadingIndicator').classList.add('hidden');
-                document.getElementById('errorBanner').classList.remove('hidden');
-                console.error(err);
-            }
-        });
-
-        // --- DASHBOARD LOGIC ---
-        function updateDashboard() {
-            const studentId = document.getElementById('studentSelect').value;
-            const range = document.getElementById('timeRange').value;
-            const container = document.getElementById('reportContent');
-
-            if (!studentId) {
-                container.classList.add('hidden');
-                return;
-            }
-
-            document.getElementById('studentNameTitle').innerText = studentsMap[studentId];
-            container.classList.remove('hidden');
-
-            // --- FILTERING WITH FIXED DATES ---
-            const today = new Date();
-            // Reset hours to ensure fair comparison
-            today.setHours(0,0,0,0);
-            
-            const cutoffDate = new Date(today);
-            if (range !== 'all') {
-                cutoffDate.setDate(today.getDate() - parseInt(range));
-            }
-
-            const filtered = allEntries.filter(e => {
-                if(e.student_id.toString() !== studentId) return false;
-                if(range === 'all') return true;
-                
-                const entryDate = parseDate(e.date);
-                return entryDate >= cutoffDate;
-            });
-
-            if (filtered.length === 0) {
-                // Empty State
-                document.getElementById('totalLogs').innerText = "0";
-                document.getElementById('avgScore').innerText = "-";
-                document.getElementById('topSkill').innerText = "-";
-                document.getElementById('commentsList').innerHTML = "<li class='text-gray-400 italic text-center'>No records found in this period.</li>";
-                if(chartInstance) chartInstance.destroy();
-                return;
-            }
-
-            // --- CALCULATIONS ---
-            let skillSums = {};
-            let skillCounts = {};
-            SKILLS_LIST.forEach(s => { skillSums[s] = 0; skillCounts[s] = 0; });
-            let grandSum = 0, grandCount = 0;
-
-            filtered.forEach(entry => {
-                SKILLS_LIST.forEach(skill => {
-                    const score = parseFloat(entry.scores[skill]);
-                    if (!isNaN(score) && score > 0) {
-                        skillSums[skill] += score;
-                        skillCounts[skill]++;
-                        grandSum += score;
-                        grandCount++;
-                    }
-                });
-            });
-
-            // Update Metrics
-            document.getElementById('totalLogs').innerText = filtered.length;
-            document.getElementById('avgScore').innerText = grandCount ? (grandSum / grandCount).toFixed(1) : "0.0";
-
-            // Prepare Chart
-            let labels = [], data = [], bestAvg = -1, bestName = "N/A";
-            SKILLS_LIST.forEach(skill => {
-                const avg = skillCounts[skill] ? (skillSums[skill] / skillCounts[skill]) : 0;
-                labels.push(skill);
-                data.push(avg.toFixed(1));
-                if (avg > bestAvg && avg > 0) { bestAvg = avg; bestName = skill; }
-            });
-            document.getElementById('topSkill').innerText = bestName;
-
-            renderChart(labels, data);
-
-            // Render Comments (Sorted by Date Descending)
-            const list = document.getElementById('commentsList');
-            list.innerHTML = "";
-            const sorted = filtered.sort((a,b) => parseDate(b.date) - parseDate(a.date)).slice(0, 5);
-            
-            sorted.forEach(e => {
-                if (e.comments) {
-                    const d = parseDate(e.date);
-                    const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-                    
-                    list.innerHTML += `
-                        <li class="border-b border-gray-100 pb-2 mb-2">
-                            <div class="flex justify-between text-xs mb-1">
-                                <span class="font-bold text-indigo-600">${dateStr}</span>
-                                <span class="text-gray-400">${e.job_site}</span>
-                            </div>
-                            <p class="text-sm italic text-gray-700">"${e.comments}"</p>
-                            <p class="text-xs text-right text-gray-400 mt-1">- ${e.evaluator}</p>
-                        </li>
-                    `;
+                if (data.result === 'success') {
+                    // UNLOCK
+                    document.getElementById('loginOverlay').classList.add('hidden');
+                    document.getElementById('adminContent').classList.remove('hidden');
+                    document.getElementById('statusIndicator').innerText = "Connected & Verified";
+                    document.getElementById('statusIndicator').className = "text-green-500";
+                } else {
+                    throw new Error("Wrong Password");
                 }
-            });
-            if (!list.innerHTML) list.innerHTML = "<li class='text-gray-400 italic text-center'>No comments.</li>";
+            } catch (error) {
+                console.error(error);
+                btn.disabled = false;
+                btn.innerText = "UNLOCK";
+                err.innerText = "Incorrect Password (Check Settings!B2)";
+                err.classList.remove('hidden');
+            }
         }
 
-        function renderChart(labels, data) {
-            const ctx = document.getElementById('skillsChart').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Score', data: data,
-                        backgroundColor: data.map(v => v >= 4 ? '#22c55e' : v >= 3 ? '#4f46e5' : '#ef4444'),
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    maintainAspectRatio: false,
-                    scales: { x: { min: 0, max: 5 }, y: { ticks: { autoSkip: false, font: {size: 10} } } },
-                    plugins: { legend: { display: false } }
-                }
-            });
+        function saveUrl() {
+            const url = document.getElementById('dbUrl').value.trim();
+            localStorage.setItem('vocational_backend_url', url);
+            alert("URL Saved");
+        }
+
+        function logout() {
+            location.reload();
         }
     </script>
 </body>
