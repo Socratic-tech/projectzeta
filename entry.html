@@ -2,143 +2,231 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>New Entry</title>
+    <title>New Entry - Vocational Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans pb-10">
 
-    <div id="authModal" class="fixed inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-96 text-center">
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">Login Required</h2>
-            <div id="connectWarning" class="hidden bg-red-100 text-red-700 p-3 rounded text-sm mb-4">
-                System not connected. Please go to <strong>Admin</strong> to set up.
+    <nav class="bg-white shadow border-b border-gray-200 mb-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-gray-500 hover:text-indigo-600 mr-4 transition-colors">
+                        <span class="material-icons">arrow_back</span>
+                    </a>
+                    <h1 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
+                        <span class="material-icons">edit_note</span> New Entry
+                    </h1>
+                </div>
             </div>
-            <input type="password" id="authInput" class="w-full border p-3 rounded mb-4 text-center text-xl tracking-widest" placeholder="Enter PIN">
-            <button id="loginBtn" onclick="attemptLogin()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 transition flex justify-center items-center gap-2">
-                Unlock System
-            </button>
-            <p id="authError" class="text-red-500 text-sm mt-3 hidden">Incorrect PIN.</p>
         </div>
-    </div>
+    </nav>
 
-    <div id="appContent" class="hidden">
-        <nav class="bg-white shadow border-b border-gray-200 mb-6">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <a href="index.html" class="flex items-center text-gray-500 hover:text-indigo-600 mr-4">
-                            <span class="material-icons">arrow_back</span>
-                        </a>
-                        <h1 class="text-xl font-bold text-indigo-600">New Entry</h1>
-                    </div>
-                    <div class="flex items-center">
-                        <button onclick="logout()" class="text-gray-500 hover:text-red-600 text-sm font-medium">Logout</button>
-                    </div>
+    <div class="max-w-3xl mx-auto px-4">
+        
+        <div id="connectWarning" class="hidden bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 shadow-sm rounded-r">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <span class="material-icons text-yellow-400">warning</span>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-bold text-yellow-800">Database Not Connected</h3>
+                    <p class="text-sm text-yellow-700 mt-1">
+                        Please ask your teacher to visit the <strong>Admin Page</strong> on this device to complete the setup.
+                    </p>
                 </div>
             </div>
-        </nav>
+        </div>
 
-        <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
-            <h2 class="text-2xl font-bold mb-4 border-b pb-2">Daily Log</h2>
+        <div id="formCard" class="bg-white p-6 rounded-lg shadow-lg border border-gray-200 hidden">
+            
             <form id="entryForm" onsubmit="submitForm(event)">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded border border-gray-200">
-                    <div><label class="block text-sm font-bold mb-1">Student</label><select id="studentId" required class="w-full border p-2 rounded"><option value="">Loading...</option></select></div>
-                    <div><label class="block text-sm font-bold mb-1">Job Site</label><select id="jobSite" required class="w-full border p-2 rounded"><option value="">Loading...</option></select></div>
-                    <div><label class="block text-sm font-bold mb-1">Date</label><input type="date" id="date" required class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-sm font-bold mb-1">Evaluator</label><input type="text" id="evaluator" placeholder="Mrs. Smith" required class="w-full border p-2 rounded"></div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8 bg-gray-50 p-5 rounded-lg border border-gray-200">
+                    
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Student</label>
+                        <select id="studentId" required class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm">
+                            <option value="">Loading students...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Job Site</label>
+                        <select id="jobSite" required class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm">
+                            <option value="">Loading sites...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Date</label>
+                        <input type="date" id="date" required class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Evaluator Name</label>
+                        <input type="text" id="evaluator" placeholder="e.g. Mr. Smith" required class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                    </div>
+
                 </div>
 
-                <div class="mb-6">
-                    <h3 class="font-bold text-lg mb-2">Skill Assessment (0-4)</h3>
-                    <div id="skillsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div class="mb-8">
+                    <h3 class="font-bold text-lg mb-4 text-gray-800 border-b pb-2">Skill Assessment (0-4)</h3>
+                    <div id="skillsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        </div>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block font-bold mb-1">Comments / Notes</label>
-                    <textarea id="comments" rows="3" class="w-full border p-2 rounded" placeholder="Specific details..."></textarea>
+                <div class="mb-8">
+                    <label class="block font-bold text-gray-800 mb-2">Comments / Notes</label>
+                    <textarea id="comments" rows="3" class="w-full border border-gray-300 p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500" placeholder="Enter specific details about today's performance..."></textarea>
                 </div>
 
-                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 transition">Submit Log</button>
+                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-lg hover:bg-indigo-700 transition shadow-lg flex justify-center items-center gap-2 text-lg">
+                    <span class="material-icons">save</span> Submit Log
+                </button>
+
             </form>
         </div>
     </div>
 
     <script>
+        // Retrieve API URL from Local Storage (set in Admin)
         const API_URL = localStorage.getItem('bresa_api_url');
-        const SKILLS = ["Punctual", "Prepared", "Hygiene/Dress", "Task Initiation", "Work Rate", "Logical Order", "Adaptability", "Quality Standards", "Clean Workspace", "Awareness/Safety", "Social Interactions", "Communication", "Constructive Criticism", "Positive Attitude", "Asks for Help", "Self-Reflection"];
+        
+        // List of Skills to Evaluate
+        const SKILLS = [
+            "Punctual", "Prepared", "Hygiene/Dress", "Task Initiation", 
+            "Work Rate", "Logical Order", "Adaptability", "Quality Standards", 
+            "Clean Workspace", "Awareness/Safety", "Social Interactions", 
+            "Communication", "Constructive Criticism", "Positive Attitude", 
+            "Asks for Help", "Self-Reflection"
+        ];
 
-        function checkAuth() {
-            if(!API_URL) { document.getElementById('connectWarning').classList.remove('hidden'); document.getElementById('loginBtn').disabled=true; return; }
-            if (sessionStorage.getItem('auth') === 'true') {
-                document.getElementById('authModal').classList.add('hidden');
-                document.getElementById('appContent').classList.remove('hidden');
-                init();
-            }
-        }
-
-        async function attemptLogin() {
-            const input = document.getElementById('authInput').value;
-            const btn = document.getElementById('loginBtn');
-            const err = document.getElementById('authError');
-            
-            btn.disabled = true; btn.innerText = "Verifying..."; err.classList.add('hidden');
-
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: "verifyPassword", password: input })
-                });
-                const data = await res.json();
-                
-                if (data.status === "success") {
-                    sessionStorage.setItem('auth', 'true');
-                    checkAuth();
-                } else {
-                    err.classList.remove('hidden');
-                    btn.disabled = false; btn.innerText = "Unlock System";
-                }
-            } catch (e) {
-                alert("Connection Error. Check internet.");
-                btn.disabled = false; btn.innerText = "Unlock System";
-            }
-        }
-
-        function logout() { sessionStorage.removeItem('auth'); window.location.reload(); }
-        document.getElementById('authInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') attemptLogin(); });
-
+        // Initialize Page
         async function init() {
+            // Check connection
+            if (!API_URL) {
+                document.getElementById('connectWarning').classList.remove('hidden');
+                return;
+            }
+
+            // Show form
+            document.getElementById('formCard').classList.remove('hidden');
+
+            // Set default date to today
             document.getElementById('date').valueAsDate = new Date();
+
+            // Load Data
             try {
-                const [sRes, jRes] = await Promise.all([fetch(API_URL + "?action=getStudents"), fetch(API_URL + "?action=getJobSites")]);
+                // Fetch Students and Job Sites simultaneously
+                const [sRes, jRes] = await Promise.all([
+                    fetch(API_URL + "?action=getStudents"),
+                    fetch(API_URL + "?action=getJobSites")
+                ]);
+
                 const sData = await sRes.json();
                 const jData = await jRes.json();
+
+                // Populate Student Dropdown
                 const sSel = document.getElementById('studentId');
                 sSel.innerHTML = '<option value="">Select Student...</option>';
-                sData.data.forEach(s => sSel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`);
+                if (sData.data) {
+                    sData.data.forEach(s => {
+                        sSel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
+                    });
+                }
+
+                // Populate Job Site Dropdown
                 const jSel = document.getElementById('jobSite');
                 jSel.innerHTML = '<option value="">Select Site...</option>';
-                if(jData.data) jData.data.forEach(j => jSel.innerHTML += `<option value="${j}">${j}</option>`);
-            } catch(e) { console.error(e); }
+                if (jData.data) {
+                    jData.data.forEach(j => {
+                        jSel.innerHTML += `<option value="${j}">${j}</option>`;
+                    });
+                }
 
+            } catch (e) {
+                console.error(e);
+                alert("Error loading data from Google Sheets. Please check your internet connection.");
+            }
+
+            // Generate Skill Rows
             const container = document.getElementById('skillsContainer');
             SKILLS.forEach((skill, index) => {
-                container.innerHTML += `<div class="flex items-center justify-between bg-white p-3 rounded border shadow-sm"><label class="text-sm font-medium w-1/2">${skill}</label><div class="flex space-x-1">${[0,1,2,3,4].map(n => `<label class="cursor-pointer"><input type="radio" name="skill_${index}" value="${n}" class="peer sr-only"><div class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 hover:bg-gray-100 transition text-sm font-bold">${n}</div></label>`).join('')}</div></div>`;
+                container.innerHTML += `
+                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:border-indigo-300 transition-colors">
+                        <label class="text-sm font-bold text-gray-700 w-1/2">${skill}</label>
+                        <div class="flex space-x-1">
+                            ${[0, 1, 2, 3, 4].map(n => `
+                                <label class="cursor-pointer group relative">
+                                    <input type="radio" name="skill_${index}" value="${n}" class="peer sr-only">
+                                    <div class="w-9 h-9 flex items-center justify-center rounded-md border border-gray-200 
+                                                bg-gray-50 text-gray-500 font-bold transition-all duration-200
+                                                group-hover:bg-indigo-50 group-hover:border-indigo-300
+                                                peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 peer-checked:shadow-md">
+                                        ${n}
+                                    </div>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
             });
         }
 
+        // Handle Submission
         async function submitForm(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "Saving...";
-            const scores = SKILLS.map((_, i) => { const el = document.querySelector(`input[name="skill_${i}"]:checked`); return el ? el.value : ""; });
-            const payload = { action: "addEntry", student_id: document.getElementById('studentId').value, job_site: document.getElementById('jobSite').value, date: document.getElementById('date').value, evaluator: document.getElementById('evaluator').value, comments: document.getElementById('comments').value, scores: JSON.stringify(scores) };
+            const originalText = btn.innerHTML;
+            
+            // Disable button to prevent double-submit
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-icons animate-spin">refresh</span> Saving...`;
+
+            // Collect Scores
+            const scores = SKILLS.map((_, i) => {
+                const el = document.querySelector(`input[name="skill_${i}"]:checked`);
+                return el ? el.value : ""; 
+            });
+
+            // Prepare Payload
+            const payload = {
+                action: "addEntry",
+                student_id: document.getElementById('studentId').value,
+                job_site: document.getElementById('jobSite').value,
+                date: document.getElementById('date').value,
+                evaluator: document.getElementById('evaluator').value,
+                comments: document.getElementById('comments').value,
+                scores: JSON.stringify(scores)
+            };
+
             try {
-                await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                alert("Saved Successfully!"); window.location.href = 'index.html';
-            } catch(err) { alert("Error saving: " + err); btn.disabled = false; btn.innerText = "Submit Log"; }
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                // Success Feedback
+                btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                btn.classList.add('bg-green-600', 'hover:bg-green-700');
+                btn.innerHTML = `<span class="material-icons">check_circle</span> Saved Successfully!`;
+                
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+
+            } catch (err) {
+                alert("Error saving: " + err);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
         }
-        checkAuth();
+
+        // Run on Load
+        init();
     </script>
 </body>
 </html>
