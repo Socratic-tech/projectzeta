@@ -5,16 +5,22 @@
     <title>Setup Guide - Vocational Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* Custom Cartoon-ish Styles */
+        .cartoon-card { background-color: #F0F9FF; border: 2px dashed #3B82F6; border-radius: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; position: relative; overflow: hidden; }
+        .icon-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 1rem; z-index: 10; }
+        .bg-pattern { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.1; background-image: radial-gradient(#3B82F6 1px, transparent 1px); background-size: 20px 20px; z-index: 0; }
+    </style>
     <script>
         function copyCode() {
             const codeText = document.getElementById('scriptCode').innerText;
             navigator.clipboard.writeText(codeText).then(() => {
                 const btn = document.getElementById('copyBtn');
                 btn.innerText = "Copied!";
-                btn.classList.add("bg-green-600");
+                btn.classList.replace("bg-indigo-600", "bg-green-600");
                 setTimeout(() => {
                     btn.innerText = "Copy Script Code";
-                    btn.classList.remove("bg-green-600");
+                    btn.classList.replace("bg-green-600", "bg-indigo-600");
                 }, 2000);
             });
         }
@@ -27,10 +33,10 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <h1 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
-                        <span class="material-icons">build</span> Setup Guide
+                        <span class="material-icons">build_circle</span> Setup Wizard
                     </h1>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center">
                     <a href="index.html" class="text-gray-500 hover:text-indigo-600 font-medium flex items-center gap-1">
                         <span class="material-icons text-sm">arrow_back</span> Dashboard
                     </a>
@@ -42,52 +48,74 @@
     <div class="max-w-4xl mx-auto px-4">
         
         <div class="text-center mb-12">
-            <h1 class="text-4xl font-extrabold text-gray-900">Installation Guide</h1>
-            <p class="mt-4 text-xl text-gray-500">Follow these steps exactly to connect your tracker to Google Sheets.</p>
+            <h1 class="text-4xl font-extrabold text-gray-900">Let's Get Connected!</h1>
+            <p class="mt-4 text-xl text-gray-500">Follow these 6 steps to create your database.</p>
         </div>
 
-        <section class="mb-12 border-l-4 border-indigo-600 pl-6 py-2">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                <span class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full mr-3">Step 1</span>
+        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">1</span>
                 Create the Spreadsheet
             </h2>
-            <div class="prose text-gray-600">
-                <p class="mb-2">1. Go to <a href="https://sheets.google.com" target="_blank" class="text-indigo-600 underline font-bold">sheets.google.com</a> and create a <strong>Blank Spreadsheet</strong>.</p>
-                <p class="mb-2">2. Name it <span class="font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-800">Vocational Tracker Database</span>.</p>
-                <p class="text-sm text-gray-400 italic">Note: You do not need to create any tabs (columns). The script will do that for you automatically.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="prose text-gray-600">
+                    <p class="mb-3">1. Go to <a href="https://sheets.google.com" target="_blank" class="text-indigo-600 font-bold hover:underline">sheets.google.com</a>.</p>
+                    <p class="mb-3">2. Click the giant <strong class="text-green-600">+</strong> to start a blank sheet.</p>
+                    <p class="mb-3">3. Rename it to: <br><span class="font-mono bg-gray-100 text-indigo-700 px-2 py-1 rounded border border-gray-300 mt-1 inline-block">Vocational Tracker Database</span></p>
+                    <p class="text-xs text-gray-400 italic">Don't worry about columns; the code does that later!</p>
+                </div>
+                <div class="cartoon-card bg-green-50 border-green-300">
+                    <div class="bg-pattern"></div>
+                    <div class="icon-circle bg-green-500 text-white">
+                        <span class="material-icons text-4xl">table_view</span>
+                    </div>
+                    <div class="z-10 text-center font-bold text-green-800">"New Spreadsheet"</div>
+                    <div class="z-10 text-xs text-green-600 mt-1">sheets.google.com</div>
+                </div>
             </div>
         </section>
 
-        <section class="mb-12 border-l-4 border-indigo-600 pl-6 py-2">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                <span class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full mr-3">Step 2</span>
-                Open the Script Editor
+        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">2</span>
+                Open Script Editor
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div class="text-gray-600">
-                    <p class="mb-4">In your Google Sheet, look at the top menu bar.</p>
-                    <p>Click <strong>Extensions</strong> <span class="text-gray-400">→</span> <strong>Apps Script</strong>.</p>
-                    <p class="text-sm mt-2 text-gray-400">A new tab will open looking like a code editor.</p>
+                    <p class="mb-4">In your new Google Sheet, look at the top menu.</p>
+                    <p class="mb-2">1. Click <strong>Extensions</strong>.</p>
+                    <p class="mb-2">2. Click <strong>Apps Script</strong>.</p>
+                    <p class="text-sm mt-3 text-gray-400">This opens a new tab where the "Brain" of the app lives.</p>
                 </div>
-                <div class="bg-gray-200 border-2 border-dashed border-gray-400 rounded-lg h-40 flex items-center justify-center text-gray-500">
-                    
+                <div class="cartoon-card bg-yellow-50 border-yellow-300">
+                    <div class="bg-pattern"></div>
+                    <div class="icon-circle bg-yellow-500 text-white">
+                        <span class="material-icons text-4xl">extension</span>
+                    </div>
+                    <div class="z-10 flex flex-col gap-2">
+                        <span class="bg-white px-3 py-1 rounded shadow text-xs font-bold text-gray-700">Extensions</span>
+                        <span class="bg-white px-3 py-1 rounded shadow text-xs font-bold text-gray-700 flex items-center gap-1">
+                            <span class="material-icons text-xs text-blue-500">code</span> Apps Script
+                        </span>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="mb-12 border-l-4 border-indigo-600 pl-6 py-2">
+        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                <span class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full mr-3">Step 3</span>
-                Paste the Backend Code
+                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">3</span>
+                Copy & Paste Code
             </h2>
             
-            <p class="text-gray-600 mb-4">Delete any code currently in the editor (usually `function myFunction() {...}`) and paste the code block below:</p>
+            <p class="text-gray-600 mb-4">Delete the default code (<code>function myFunction...</code>) and paste this:</p>
 
-            <div class="relative mb-6">
-                <button id="copyBtn" onclick="copyCode()" class="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded hover:bg-indigo-700 transition shadow">
-                    Copy Script Code
+            <div class="relative mb-6 group">
+                <button id="copyBtn" onclick="copyCode()" class="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-indigo-700 transition shadow-lg z-20 flex items-center gap-1">
+                    <span class="material-icons text-xs">content_copy</span> Copy Script Code
                 </button>
-                <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg text-xs overflow-x-auto h-64 select-all shadow-inner border border-gray-700" id="scriptCode">
+                <div class="h-64 overflow-y-auto bg-gray-900 text-gray-300 p-4 rounded-lg shadow-inner border border-gray-700 text-xs font-mono leading-relaxed relative">
+                    <pre id="scriptCode">
 function doGet(e) {
   const action = e.parameter.action;
   if (action === "getStudents") return getStudents();
@@ -118,13 +146,16 @@ function doPost(e) {
 function verifyPassword(data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName("Settings");
+  
   if (!sheet) {
     sheet = ss.insertSheet("Settings");
     sheet.appendRow(["Config Name", "Value"]);
     sheet.appendRow(["Admin Password", "1234"]); 
     sheet.appendRow(["Note", "Change cell B2 to update password"]);
   }
+  
   const storedPassword = sheet.getRange("B2").getValue().toString();
+  
   if (String(data.password) === storedPassword) {
     return responseJSON({ status: "success" });
   } else {
@@ -212,82 +243,123 @@ function getSheet(name) {
 function responseJSON(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
 }
-                </pre>
+                    </pre>
+                </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            
+            <div class="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 p-3 rounded">
+                <span class="material-icons text-gray-400">save</span>
+                <span>Click the <strong>Floppy Disk Icon</strong> to Save. Name it "Vocational Backend".</span>
+            </div>
+        </section>
+
+        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">4</span>
+                Deploy (The Important Part!)
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <p class="text-gray-600 mb-4">Click <strong>Deploy</strong> (top right) → <strong>New Deployment</strong>.</p>
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r">
+                        <h3 class="font-bold text-red-800 text-sm mb-2">MATCH THESE SETTINGS:</h3>
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex items-center">
+                                <span class="material-icons text-gray-400 mr-2 text-sm">settings</span>
+                                <span>Type: <strong>Web App</strong> (Click the gear)</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span class="material-icons text-gray-400 mr-2 text-sm">person</span>
+                                <span>Execute as: <strong class="text-green-600">Me</strong></span>
+                            </li>
+                            <li class="flex items-center">
+                                <span class="material-icons text-red-500 mr-2 text-sm">lock_open</span>
+                                <span>Access: <strong class="bg-red-200 px-1 rounded text-red-900">Anyone</strong></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="cartoon-card bg-purple-50 border-purple-300">
+                    <div class="bg-pattern"></div>
+                    <div class="icon-circle bg-purple-500 text-white">
+                        <span class="material-icons text-4xl">rocket_launch</span>
+                    </div>
+                    <div class="z-10 bg-white p-3 rounded shadow-lg w-full max-w-xs space-y-2">
+                        <div class="flex justify-between text-xs text-gray-500"><span>Who has access:</span> <span class="font-bold text-red-500">Anyone</span></div>
+                        <div class="h-2 bg-gray-100 rounded overflow-hidden"><div class="h-full bg-purple-500 w-2/3"></div></div>
+                        <div class="text-center font-bold text-purple-700 text-sm">Deploying...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 text-xs text-gray-500 text-center">
+                * If Google asks for permission: Click "Review Permissions" → Select Account → "Advanced" → "Go to (unsafe)".
+            </div>
+        </section>
+
+        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">5</span>
+                Get Your Link
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div class="text-gray-600">
-                    <p>After pasting, click the <strong>Save</strong> icon (floppy disk) in the toolbar.</p>
-                    <p class="text-sm mt-1 text-gray-400">Name the project "Vocational Backend" if asked.</p>
+                    <p class="mb-4">After deploying, you will see a <strong>Web App URL</strong>.</p>
+                    <p class="mb-4">It looks like a long mess of random letters.</p>
+                    <button class="bg-gray-100 text-gray-500 font-mono text-xs p-3 rounded w-full text-left truncate border border-gray-300 cursor-not-allowed">
+                        https://script.google.com/macros/s/AKfycbx.../exec
+                    </button>
+                    <p class="mt-2 font-bold text-indigo-600">Copy this URL!</p>
                 </div>
-                <div class="bg-gray-200 border-2 border-dashed border-gray-400 rounded-lg h-32 flex items-center justify-center text-gray-500">
-                    
-                </div>
-            </div>
-        </section>
-
-        <section class="mb-12 border-l-4 border-indigo-600 pl-6 py-2">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                <span class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full mr-3">Step 4</span>
-                Deploy as Web App (Critical Step!)
-            </h2>
-            
-            <p class="text-gray-600 mb-4">Click the blue <strong>Deploy</strong> button (top right) and select <strong>New Deployment</strong>.</p>
-            
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-                <h3 class="font-bold text-yellow-800 mb-2">⚙️ Match these settings exactly:</h3>
-                <ul class="space-y-3">
-                    <li class="flex items-center">
-                        <span class="material-icons text-gray-400 mr-2">settings</span>
-                        <span><strong>Select Type:</strong> click the gear icon and select <span class="bg-white border px-1 rounded font-mono">Web App</span>.</span>
-                    </li>
-                    <li class="flex items-center">
-                        <span class="material-icons text-gray-400 mr-2">person</span>
-                        <span><strong>Execute as:</strong> <span class="bg-green-100 text-green-800 px-1 rounded font-bold">Me (your email)</span></span>
-                    </li>
-                    <li class="flex items-center">
-                        <span class="material-icons text-red-500 mr-2">lock_open</span>
-                        <span><strong>Who has access:</strong> <span class="bg-red-100 text-red-800 px-1 rounded font-bold border border-red-200">Anyone</span></span>
-                    </li>
-                </ul>
-                <p class="text-xs text-red-600 mt-3 font-medium">⚠️ If you do not select "Anyone", the app will not work.</p>
-            </div>
-
-            <div class="bg-gray-200 border-2 border-dashed border-gray-400 rounded-lg h-64 flex items-center justify-center text-gray-500 mb-6">
-                
-            </div>
-
-            <p class="text-gray-600">Click <strong>Deploy</strong>. You may be asked to "Authorize Access". Click <strong>Review Permissions</strong> → Choose your account → Click <strong>Advanced</strong> → Click <strong>Go to (unsafe)</strong> (it is safe, it's just your own script).</p>
-        </section>
-
-        <section class="mb-12 border-l-4 border-indigo-600 pl-6 py-2">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                <span class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full mr-3">Step 5</span>
-                Copy the Web App URL
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <div class="text-gray-600">
-                    <p class="mb-2">Once deployed, you will see a long URL ending in <code class="bg-gray-100 px-1 rounded">/exec</code>.</p>
-                    <p class="mb-2"><strong>Copy this URL.</strong> This is your "API Key".</p>
-                    <p class="text-sm text-gray-400">It looks like: <em>https://script.google.com/macros/s/.../exec</em></p>
-                </div>
-                <div class="bg-gray-200 border-2 border-dashed border-gray-400 rounded-lg h-32 flex items-center justify-center text-gray-500">
-                   
+                 <div class="cartoon-card bg-blue-50 border-blue-300">
+                    <div class="bg-pattern"></div>
+                    <div class="icon-circle bg-blue-500 text-white">
+                        <span class="material-icons text-4xl">link</span>
+                    </div>
+                    <div class="z-10 text-center">
+                        <div class="text-4xl">🔗</div>
+                        <div class="font-bold text-blue-900 mt-2">Copy the Key</div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="mb-12 border-l-4 border-indigo-600 pl-6 py-2">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                <span class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full mr-3">Step 6</span>
-                Connect the Admin Panel
+        <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">6</span>
+                Finish Setup
             </h2>
-            
-            <div class="prose text-gray-600">
-                <p>1. Go back to this vocational tracker and click <a href="admin.html" class="text-indigo-600 font-bold hover:underline">Admin</a>.</p>
-                <p>2. You will see a screen asking for the <strong>Web App URL</strong>.</p>
-                <p>3. Paste the URL you just copied and click <strong>Connect</strong>.</p>
-                <p>4. Once connected, you can add students and job sites!</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="prose text-sm text-gray-600 space-y-4">
+                    <div class="flex gap-3">
+                        <span class="font-bold text-indigo-600">A.</span>
+                        <span>Go to <a href="admin.html" class="underline font-bold">Admin</a> and paste the URL you copied.</span>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="font-bold text-indigo-600">B.</span>
+                        <span>The system will ask for a PIN. Use the default: <strong class="bg-gray-200 px-1 rounded">1234</strong>.</span>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="font-bold text-indigo-600">C.</span>
+                        <span>To change the password: Go back to your <strong>Google Sheet</strong>. Look for the <strong>"Settings"</strong> tab at the bottom. Change cell <strong>B2</strong>.</span>
+                    </div>
+                </div>
+
+                <div class="cartoon-card bg-orange-50 border-orange-300">
+                    <div class="bg-pattern"></div>
+                    <div class="icon-circle bg-orange-500 text-white">
+                        <span class="material-icons text-4xl">password</span>
+                    </div>
+                    <div class="z-10 bg-white p-2 rounded shadow border border-gray-200 w-48 text-center">
+                        <div class="text-xs text-gray-400 uppercase font-bold mb-1">Google Sheet Cell B2</div>
+                        <div class="text-2xl font-mono tracking-widest text-gray-800">1234</div>
+                        <div class="text-[10px] text-green-600 mt-1">✎ Edit to change</div>
+                    </div>
+                </div>
             </div>
         </section>
 
