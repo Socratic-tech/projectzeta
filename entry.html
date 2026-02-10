@@ -4,125 +4,126 @@
     <meta charset="UTF-8">
     <title>New Entry</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans pb-10">
 
-    <nav class="bg-white shadow border-b border-gray-200 mb-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <h1 class="text-xl font-bold text-indigo-600">Vocational Tracker</h1>
-                    </div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="index.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
-                        <a href="entry.html" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">New Entry</a>
-                        <a href="report.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Reports</a>
-                        <a href="admin.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Admin</a>
-                    </div>
-                </div>
+    <div id="authModal" class="fixed inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-96 text-center">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Login Required</h2>
+            <div id="connectWarning" class="hidden bg-red-100 text-red-700 p-3 rounded text-sm mb-4">
+                System not connected. Please go to <strong>Admin</strong> to set up.
             </div>
-        </div>
-    </nav>
-
-    <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
-        <h2 class="text-2xl font-bold mb-4 border-b pb-2">New Daily Log</h2>
-        
-        <form id="entryForm" onsubmit="submitForm(event)">
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded border border-gray-200">
-                <div>
-                    <label class="block text-sm font-bold mb-1">Student</label>
-                    <select id="studentId" required class="w-full border p-2 rounded">
-                        <option value="">Loading...</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-1">Job Site</label>
-                    <select id="jobSite" required class="w-full border p-2 rounded">
-                        <option value="">Loading...</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-1">Date</label>
-                    <input type="date" id="date" required class="w-full border p-2 rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-1">Evaluator</label>
-                    <input type="text" id="evaluator" placeholder="Mrs. Smith" required class="w-full border p-2 rounded">
-                </div>
-            </div>
-
-            <div class="mb-6">
-                <h3 class="font-bold text-lg mb-2">Skill Assessment (0-4)</h3>
-                <p class="text-xs text-gray-500 mb-4">0=Unsatisfactory, 1=Poor, 2=Satisfactory, 3=Good, 4=Exceptional</p>
-                
-                <div id="skillsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    </div>
-            </div>
-
-            <div class="mb-6">
-                <label class="block font-bold mb-1">Comments / Notes</label>
-                <textarea id="comments" rows="3" class="w-full border p-2 rounded" placeholder="Specific details about today's performance..."></textarea>
-            </div>
-
-            <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 transition">
-                Submit Log
+            <input type="password" id="authInput" class="w-full border p-3 rounded mb-4 text-center text-xl tracking-widest" placeholder="Enter PIN">
+            <button id="loginBtn" onclick="attemptLogin()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 transition flex justify-center items-center gap-2">
+                Unlock System
             </button>
-        </form>
+            <p id="authError" class="text-red-500 text-sm mt-3 hidden">Incorrect PIN.</p>
+        </div>
+    </div>
+
+    <div id="appContent" class="hidden">
+        <nav class="bg-white shadow border-b border-gray-200 mb-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <a href="index.html" class="flex items-center text-gray-500 hover:text-indigo-600 mr-4">
+                            <span class="material-icons">arrow_back</span>
+                        </a>
+                        <h1 class="text-xl font-bold text-indigo-600">New Entry</h1>
+                    </div>
+                    <div class="flex items-center">
+                        <button onclick="logout()" class="text-gray-500 hover:text-red-600 text-sm font-medium">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">Daily Log</h2>
+            <form id="entryForm" onsubmit="submitForm(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded border border-gray-200">
+                    <div><label class="block text-sm font-bold mb-1">Student</label><select id="studentId" required class="w-full border p-2 rounded"><option value="">Loading...</option></select></div>
+                    <div><label class="block text-sm font-bold mb-1">Job Site</label><select id="jobSite" required class="w-full border p-2 rounded"><option value="">Loading...</option></select></div>
+                    <div><label class="block text-sm font-bold mb-1">Date</label><input type="date" id="date" required class="w-full border p-2 rounded"></div>
+                    <div><label class="block text-sm font-bold mb-1">Evaluator</label><input type="text" id="evaluator" placeholder="Mrs. Smith" required class="w-full border p-2 rounded"></div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="font-bold text-lg mb-2">Skill Assessment (0-4)</h3>
+                    <div id="skillsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block font-bold mb-1">Comments / Notes</label>
+                    <textarea id="comments" rows="3" class="w-full border p-2 rounded" placeholder="Specific details..."></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 transition">Submit Log</button>
+            </form>
+        </div>
     </div>
 
     <script>
         const API_URL = localStorage.getItem('bresa_api_url');
-        const SKILLS = [
-            "Punctual", "Prepared", "Hygiene/Dress", "Task Initiation", 
-            "Work Rate", "Logical Order", "Adaptability", "Quality Standards", 
-            "Clean Workspace", "Awareness/Safety", "Social Interactions", "Communication", 
-            "Constructive Criticism", "Positive Attitude", "Asks for Help", "Self-Reflection"
-        ];
+        const SKILLS = ["Punctual", "Prepared", "Hygiene/Dress", "Task Initiation", "Work Rate", "Logical Order", "Adaptability", "Quality Standards", "Clean Workspace", "Awareness/Safety", "Social Interactions", "Communication", "Constructive Criticism", "Positive Attitude", "Asks for Help", "Self-Reflection"];
+
+        function checkAuth() {
+            if(!API_URL) { document.getElementById('connectWarning').classList.remove('hidden'); document.getElementById('loginBtn').disabled=true; return; }
+            if (sessionStorage.getItem('auth') === 'true') {
+                document.getElementById('authModal').classList.add('hidden');
+                document.getElementById('appContent').classList.remove('hidden');
+                init();
+            }
+        }
+
+        async function attemptLogin() {
+            const input = document.getElementById('authInput').value;
+            const btn = document.getElementById('loginBtn');
+            const err = document.getElementById('authError');
+            
+            btn.disabled = true; btn.innerText = "Verifying..."; err.classList.add('hidden');
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "verifyPassword", password: input })
+                });
+                const data = await res.json();
+                
+                if (data.status === "success") {
+                    sessionStorage.setItem('auth', 'true');
+                    checkAuth();
+                } else {
+                    err.classList.remove('hidden');
+                    btn.disabled = false; btn.innerText = "Unlock System";
+                }
+            } catch (e) {
+                alert("Connection Error. Check internet.");
+                btn.disabled = false; btn.innerText = "Unlock System";
+            }
+        }
+
+        function logout() { sessionStorage.removeItem('auth'); window.location.reload(); }
+        document.getElementById('authInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') attemptLogin(); });
 
         async function init() {
-            if(!API_URL) return alert("Please set API URL in Admin");
-            
             document.getElementById('date').valueAsDate = new Date();
-
-            // Load Students & Sites
             try {
-                const [sRes, jRes] = await Promise.all([
-                    fetch(API_URL + "?action=getStudents"),
-                    fetch(API_URL + "?action=getJobSites")
-                ]);
+                const [sRes, jRes] = await Promise.all([fetch(API_URL + "?action=getStudents"), fetch(API_URL + "?action=getJobSites")]);
                 const sData = await sRes.json();
                 const jData = await jRes.json();
-
                 const sSel = document.getElementById('studentId');
                 sSel.innerHTML = '<option value="">Select Student...</option>';
                 sData.data.forEach(s => sSel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`);
-
                 const jSel = document.getElementById('jobSite');
                 jSel.innerHTML = '<option value="">Select Site...</option>';
                 if(jData.data) jData.data.forEach(j => jSel.innerHTML += `<option value="${j}">${j}</option>`);
-
             } catch(e) { console.error(e); }
 
-            // Render Skills
             const container = document.getElementById('skillsContainer');
             SKILLS.forEach((skill, index) => {
-                container.innerHTML += `
-                    <div class="flex items-center justify-between bg-white p-3 rounded border shadow-sm">
-                        <label class="text-sm font-medium w-1/2">${skill}</label>
-                        <div class="flex space-x-1">
-                            ${[0,1,2,3,4].map(n => `
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="skill_${index}" value="${n}" class="peer sr-only">
-                                    <div class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 hover:bg-gray-100 transition text-sm font-bold">
-                                        ${n}
-                                    </div>
-                                </label>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
+                container.innerHTML += `<div class="flex items-center justify-between bg-white p-3 rounded border shadow-sm"><label class="text-sm font-medium w-1/2">${skill}</label><div class="flex space-x-1">${[0,1,2,3,4].map(n => `<label class="cursor-pointer"><input type="radio" name="skill_${index}" value="${n}" class="peer sr-only"><div class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 hover:bg-gray-100 transition text-sm font-bold">${n}</div></label>`).join('')}</div></div>`;
             });
         }
 
@@ -130,36 +131,14 @@
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             btn.disabled = true; btn.innerText = "Saving...";
-
-            const scores = SKILLS.map((_, i) => {
-                const el = document.querySelector(`input[name="skill_${i}"]:checked`);
-                return el ? el.value : "";
-            });
-
-            const payload = {
-                action: "addEntry",
-                student_id: document.getElementById('studentId').value,
-                job_site: document.getElementById('jobSite').value,
-                date: document.getElementById('date').value,
-                evaluator: document.getElementById('evaluator').value,
-                comments: document.getElementById('comments').value,
-                scores: JSON.stringify(scores) // Send as JSON array string
-            };
-
+            const scores = SKILLS.map((_, i) => { const el = document.querySelector(`input[name="skill_${i}"]:checked`); return el ? el.value : ""; });
+            const payload = { action: "addEntry", student_id: document.getElementById('studentId').value, job_site: document.getElementById('jobSite').value, date: document.getElementById('date').value, evaluator: document.getElementById('evaluator').value, comments: document.getElementById('comments').value, scores: JSON.stringify(scores) };
             try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                alert("Saved Successfully!");
-                window.location.href = 'index.html';
-            } catch(err) {
-                alert("Error saving: " + err);
-                btn.disabled = false; btn.innerText = "Submit Log";
-            }
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                alert("Saved Successfully!"); window.location.href = 'index.html';
+            } catch(err) { alert("Error saving: " + err); btn.disabled = false; btn.innerText = "Submit Log"; }
         }
-
-        init();
+        checkAuth();
     </script>
 </body>
 </html>
