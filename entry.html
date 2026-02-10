@@ -21,7 +21,7 @@
 <body class="pb-20">
 
     <div class="bg-indigo-600 pb-20 pt-6">
-        <div class="max-w-3xl mx-auto px-4">
+        <div class="max-w-4xl mx-auto px-4">
             <div class="flex justify-between items-center text-white mb-6">
                 <h1 class="text-2xl font-bold">New Evaluation</h1>
                 <a href="home.html" class="text-indigo-100 hover:text-white text-sm">Cancel</a>
@@ -29,7 +29,7 @@
         </div>
     </div>
 
-    <main class="-mt-16 max-w-3xl mx-auto px-4">
+    <main class="-mt-16 max-w-4xl mx-auto px-4">
         <div class="bg-white rounded-lg shadow-lg p-6 space-y-6">
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -53,9 +53,9 @@
                 </div>
             </div>
 
-            <div id="skillsContainer" class="space-y-3 pt-4 border-t"></div>
+            <div id="skillsContainer" class="space-y-0 divide-y divide-gray-100 pt-4 border-t"></div>
 
-            <div>
+            <div class="pt-4">
                 <label class="block text-sm font-bold text-gray-700 mb-1">Notes</label>
                 <textarea id="comments" rows="3" class="w-full border p-2 rounded"></textarea>
             </div>
@@ -67,8 +67,27 @@
 
     <script>
         const API_URL = localStorage.getItem('bresa_api_url');
-        const habitNames = ["Self-Reflection", "Time Mgmt", "Organization", "Task Comp", "Attention", "Follow Directions", "Problem Solving", "Independence", "Cooperation", "Social Skills", "Quality", "Pace"];
-        let scores = new Array(12).fill(null); 
+        
+        // --- 15 SKILLS EXACTLY AS REQUESTED ---
+        const habitNames = [
+            "Punctual",
+            "Prepared with Necessary Materials",
+            "Demonstrates appropriate hygiene/dress",
+            "Initiates familiar tasks",
+            "Maintains a productive work rate",
+            "Complete tasks in a logical order",
+            "Demonstrates adaptability",
+            "Work is completed to quality standards",
+            "Awareness of surroundings and good decision making",
+            "Appropriate and respectful social interactions",
+            "Displays effective communication skills",
+            "Accepts constructive criticism",
+            "Demonstrates a positive attitude",
+            "Asks for help appropriately",
+            "Demonstrates self-reflection"
+        ];
+        
+        let scores = new Array(habitNames.length).fill(null); 
         let studentData = [];
 
         async function init() {
@@ -76,7 +95,7 @@
             document.getElementById('entryDate').valueAsDate = new Date();
 
             try {
-                // 1. Get Students
+                // Get Students
                 const sRes = await fetch(API_URL + "?action=getStudents");
                 const sData = await sRes.json();
                 studentData = sData.data;
@@ -88,17 +107,17 @@
                 });
                 new TomSelect("#studentSelect");
 
-                // 2. Get Job Sites
+                // Get Job Sites
                 const jRes = await fetch(API_URL + "?action=getJobSites");
                 const jData = await jRes.json();
                 const jSelect = document.getElementById('jobSiteSelect');
                 jSelect.innerHTML = '<option value="">Select Job Site...</option>';
-                if(jData.data.length === 0) {
-                     jSelect.innerHTML += `<option value="Unknown">No sites configured</option>`;
-                } else {
+                if(jData.data.length > 0) {
                     jData.data.forEach(site => {
                         jSelect.innerHTML += `<option value="${site}">${site}</option>`;
                     });
+                } else {
+                    jSelect.innerHTML += `<option value="Unknown">No sites configured</option>`;
                 }
 
             } catch(e) { console.error(e); }
@@ -110,19 +129,19 @@
             const container = document.getElementById('skillsContainer');
             habitNames.forEach((name, idx) => {
                 const row = document.createElement('div');
-                row.className = "flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-100";
+                row.className = "flex flex-col md:flex-row md:items-center justify-between py-3";
                 
                 const label = document.createElement('div');
-                label.className = "text-sm font-medium w-1/3";
-                label.innerText = name;
+                label.className = "text-sm font-medium text-gray-800 w-full md:w-1/2 mb-2 md:mb-0";
+                label.innerText = (idx + 1) + ". " + name;
                 
                 const btnGroup = document.createElement('div');
-                btnGroup.className = "flex space-x-1 sm:space-x-2 mt-2 sm:mt-0";
+                btnGroup.className = "flex space-x-2 md:justify-end w-full md:w-1/2";
                 
                 [0, 1, 2, 3, 4].forEach(val => {
                     const btn = document.createElement('button');
                     btn.innerText = val;
-                    btn.className = `btn-score h-10 w-10 rounded bg-white text-gray-600 font-medium shadow-sm hover:bg-gray-50`;
+                    btn.className = `btn-score h-10 w-full md:w-12 rounded bg-white text-gray-600 font-medium shadow-sm hover:bg-gray-50`;
                     btn.onclick = () => {
                         scores[idx] = val;
                         Array.from(btnGroup.children).forEach(b => b.classList.remove('selected', 'score-0', 'score-1', 'score-2', 'score-3', 'score-4'));
@@ -144,7 +163,8 @@
             const jobSite = document.getElementById('jobSiteSelect').value;
             
             if(!studentId || !date) return alert("Please fill in Student and Date.");
-            if(scores.every(s => s === null)) return alert("Please select at least one score.");
+            // Optional: Uncomment next line if you want to FORCE all scores to be filled
+            // if(scores.some(s => s === null)) return alert("Please score all items.");
 
             const studentObj = studentData.find(s => s.student_id == studentId);
             const studentName = studentObj ? studentObj.name : "Unknown";
@@ -152,7 +172,6 @@
             const btn = document.getElementById('submitBtn');
             btn.disabled = true; btn.innerText = "Saving...";
 
-            // Match structure expected by Apps Script "logEntry"
             const payload = {
                 action: 'logEntry',
                 student_id: studentId,
@@ -160,10 +179,7 @@
                 evaluator: evaluator,
                 job_site: jobSite,
                 comments: document.getElementById('comments').value,
-                // Spread scores into h1...h12
-                h1: scores[0], h2: scores[1], h3: scores[2], h4: scores[3],
-                h5: scores[4], h6: scores[5], h7: scores[6], h8: scores[7],
-                h9: scores[8], h10: scores[9], h11: scores[10], h12: scores[11]
+                scores: scores
             };
 
             await fetch(API_URL, {
