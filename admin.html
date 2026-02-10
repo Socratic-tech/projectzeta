@@ -13,7 +13,7 @@
         <div class="bg-slate-800 p-8 rounded-xl shadow-2xl border border-slate-700 w-full max-w-md text-center">
             <span class="material-icons text-6xl text-blue-500 mb-4">admin_panel_settings</span>
             <h1 class="text-2xl font-bold mb-2">Restricted Access</h1>
-            <p class="text-slate-400 mb-6 text-sm">Enter admin password (Settings Sheet B2)</p>
+            <p class="text-slate-400 mb-6 text-sm">Enter admin password</p>
             <input type="password" id="passwordInput" placeholder="Password" 
                 class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white mb-4 outline-none focus:border-blue-500">
             <button onclick="attemptLogin()" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition">
@@ -59,7 +59,6 @@
                     <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white">
                         <span class="material-icons text-purple-400">school</span> Manage Students
                     </h2>
-                    
                     <form onsubmit="addStudent(event)" class="flex gap-2 mb-4">
                         <input type="text" id="newStudentName" placeholder="Student Name" required
                             class="flex-1 bg-slate-900 border border-slate-600 rounded p-2 text-sm outline-none focus:border-purple-500">
@@ -69,7 +68,6 @@
                             <span class="material-icons text-sm">add</span>
                         </button>
                     </form>
-
                     <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                         <ul id="studentList" class="space-y-2">
                             <li class="text-slate-500 text-sm text-center italic mt-10">Loading...</li>
@@ -81,7 +79,6 @@
                     <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white">
                         <span class="material-icons text-orange-400">work</span> Manage Job Sites
                     </h2>
-
                     <form onsubmit="addJobSite(event)" class="flex gap-2 mb-4">
                         <input type="text" id="newSiteName" placeholder="Job Site Name" required
                             class="flex-1 bg-slate-900 border border-slate-600 rounded p-2 text-sm outline-none focus:border-orange-500">
@@ -89,7 +86,6 @@
                             <span class="material-icons text-sm">add</span>
                         </button>
                     </form>
-
                     <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                         <ul id="siteList" class="space-y-2">
                             <li class="text-slate-500 text-sm text-center italic mt-10">Loading...</li>
@@ -102,37 +98,25 @@
     </div>
 
     <script>
-        // --- LOGIC ---
         let API_URL = localStorage.getItem('vocational_backend_url');
         if (API_URL) document.getElementById('dbUrl').value = API_URL;
 
-        // LOGIN
         async function attemptLogin() {
             const pass = document.getElementById('passwordInput').value;
             const btn = document.getElementById('loginBtn');
             const err = document.getElementById('loginError');
             
             if(!API_URL) {
-                // If they haven't set URL yet, let them in to set it, but warn them
-                if(pass === "setup") { // Backdoor for initial setup if needed, or just block
-                    alert("Please set the Database URL first.");
-                }
+                alert("Please paste your Database URL first.");
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('adminContent').classList.remove('hidden');
+                return;
             }
 
             btn.disabled = true;
             btn.innerText = "Checking...";
             
             try {
-                // If no URL set, we can't check pass remotely. 
-                // Allowing bypass if URL input is empty so they can set it? 
-                // Better: Only check if URL exists.
-                if (!API_URL) {
-                     document.getElementById('loginOverlay').classList.add('hidden');
-                     document.getElementById('adminContent').classList.remove('hidden');
-                     alert("No Database Connected. Please paste your Script URL immediately.");
-                     return;
-                }
-
                 const res = await fetch(`${API_URL}?action=checkAdmin&password=${pass}`);
                 const data = await res.json();
 
@@ -154,77 +138,84 @@
         function saveUrl() {
             const url = document.getElementById('dbUrl').value.trim();
             localStorage.setItem('vocational_backend_url', url);
-            API_URL = url;
             alert("Saved! Reloading...");
             location.reload();
         }
 
-        // LOAD DATA
         async function loadData() {
             if(!API_URL) return;
 
             // Load Students
-            fetch(`${API_URL}?action=getStudents`).then(r => r.json()).then(d => {
-                const list = document.getElementById('studentList');
-                list.innerHTML = "";
-                if(d.data.length === 0) list.innerHTML = "<li class='text-slate-500 text-center'>No students found.</li>";
-                
-                d.data.forEach(s => {
-                    list.innerHTML += `
-                        <li class="flex justify-between items-center bg-slate-700/50 p-3 rounded border border-slate-600 group">
-                            <div>
-                                <p class="font-bold text-slate-200">${s.name}</p>
-                                <p class="text-xs text-slate-400">Grade: ${s.grade}</p>
-                            </div>
-                            <button onclick="deleteStudent('${s.student_id}')" class="text-slate-500 hover:text-red-400">
-                                <span class="material-icons text-sm">delete</span>
-                            </button>
-                        </li>`;
-                });
-            });
+            fetch(`${API_URL}?action=getStudents`)
+                .then(r => r.json())
+                .then(d => {
+                    const list = document.getElementById('studentList');
+                    list.innerHTML = "";
+                    if(!d.data || d.data.length === 0) {
+                        list.innerHTML = "<li class='text-slate-500 text-center'>No students found.</li>";
+                        return;
+                    }
+                    d.data.forEach(s => {
+                        list.innerHTML += `
+                            <li class="flex justify-between items-center bg-slate-700/50 p-3 rounded border border-slate-600 group">
+                                <div>
+                                    <p class="font-bold text-slate-200">${s.name}</p>
+                                    <p class="text-xs text-slate-400">Grade: ${s.grade}</p>
+                                </div>
+                                <button onclick="deleteStudent('${s.student_id}')" class="text-slate-500 hover:text-red-400">
+                                    <span class="material-icons text-sm">delete</span>
+                                </button>
+                            </li>`;
+                    });
+                })
+                .catch(e => console.error("Student load error", e));
 
             // Load Job Sites
-            fetch(`${API_URL}?action=getJobSites`).then(r => r.json()).then(d => {
-                const list = document.getElementById('siteList');
-                list.innerHTML = "";
-                if(d.data.length === 0) list.innerHTML = "<li class='text-slate-500 text-center'>No sites found.</li>";
-                
-                d.data.forEach(site => {
-                    list.innerHTML += `
-                        <li class="flex justify-between items-center bg-slate-700/50 p-3 rounded border border-slate-600">
-                            <span class="font-bold text-slate-200">${site}</span>
-                            <button onclick="deleteJobSite('${site}')" class="text-slate-500 hover:text-red-400">
-                                <span class="material-icons text-sm">delete</span>
-                            </button>
-                        </li>`;
+            fetch(`${API_URL}?action=getJobSites`)
+                .then(r => r.json())
+                .then(d => {
+                    const list = document.getElementById('siteList');
+                    list.innerHTML = "";
+                    
+                    if(!d.data || d.data.length === 0) {
+                        list.innerHTML = "<li class='text-slate-500 text-center mt-4'>No sites found in 'JobSites' sheet.</li>";
+                        return;
+                    }
+                    
+                    d.data.forEach(site => {
+                        list.innerHTML += `
+                            <li class="flex justify-between items-center bg-slate-700/50 p-3 rounded border border-slate-600">
+                                <span class="font-bold text-slate-200">${site}</span>
+                                <button onclick="deleteJobSite('${site}')" class="text-slate-500 hover:text-red-400">
+                                    <span class="material-icons text-sm">delete</span>
+                                </button>
+                            </li>`;
+                    });
+                })
+                .catch(e => {
+                    console.error("Job site load error", e);
+                    document.getElementById('siteList').innerHTML = "<li class='text-red-400 text-center'>Error loading sites.</li>";
                 });
-            });
         }
 
-        // ACTIONS
         async function addStudent(e) {
             e.preventDefault();
             const name = document.getElementById('newStudentName').value;
             const grade = document.getElementById('newStudentGrade').value;
             
-            // Optimistic UI update
-            const list = document.getElementById('studentList');
-            const tempId = Date.now();
-            list.innerHTML += `<li id="temp-${tempId}" class="p-3 text-center text-slate-400">Adding...</li>`;
+            document.getElementById('studentList').innerHTML += `<li class="p-3 text-center text-slate-400">Adding...</li>`;
             
             await fetch(API_URL, {
                 method: "POST", mode: "no-cors",
                 body: JSON.stringify({ action: "addStudent", name, grade })
             });
-            
             document.getElementById('newStudentName').value = "";
             document.getElementById('newStudentGrade').value = "";
-            setTimeout(loadData, 1000); // Reload to confirm
+            setTimeout(loadData, 1000);
         }
 
         async function deleteStudent(id) {
-            if(!confirm("Are you sure? This cannot be undone.")) return;
-            
+            if(!confirm("Are you sure?")) return;
             await fetch(API_URL, {
                 method: "POST", mode: "no-cors",
                 body: JSON.stringify({ action: "deleteStudent", student_id: id })
@@ -235,19 +226,18 @@
         async function addJobSite(e) {
             e.preventDefault();
             const name = document.getElementById('newSiteName').value;
-            
+            document.getElementById('siteList').innerHTML += `<li class="p-3 text-center text-slate-400">Adding...</li>`;
+
             await fetch(API_URL, {
                 method: "POST", mode: "no-cors",
                 body: JSON.stringify({ action: "addJobSite", site_name: name })
             });
-            
             document.getElementById('newSiteName').value = "";
             setTimeout(loadData, 1000);
         }
 
         async function deleteJobSite(name) {
             if(!confirm("Remove this job site?")) return;
-            
             await fetch(API_URL, {
                 method: "POST", mode: "no-cors",
                 body: JSON.stringify({ action: "deleteJobSite", site_name: name })
@@ -255,13 +245,10 @@
             setTimeout(loadData, 1000);
         }
     </script>
-
     <style>
-        /* Custom Scrollbar for dark theme */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
 </body>
 </html>
