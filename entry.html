@@ -2,231 +2,269 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>New Entry - Vocational Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocational Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans pb-10">
+<body class="bg-gray-50 text-gray-900 font-sans">
 
-    <nav class="bg-white shadow border-b border-gray-200 mb-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="index.html" class="flex items-center text-gray-500 hover:text-indigo-600 mr-4 transition-colors">
-                        <span class="material-icons">arrow_back</span>
+    <nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <span class="material-icons text-yellow-400">assignment</span>
+                    <span class="font-bold text-xl tracking-tight">Vocational Entry</span>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="toggleSettings()" class="text-blue-200 hover:text-white transition">
+                        <span class="material-icons">settings</span>
+                    </button>
+                    <a href="admin.html" class="bg-blue-800 hover:bg-blue-700 px-3 py-1 rounded text-xs font-bold uppercase tracking-wide transition">
+                        Admin
                     </a>
-                    <h1 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
-                        <span class="material-icons">edit_note</span> New Entry
-                    </h1>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-3xl mx-auto px-4">
-        
-        <div id="connectWarning" class="hidden bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 shadow-sm rounded-r">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <span class="material-icons text-yellow-400">warning</span>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-bold text-yellow-800">Database Not Connected</h3>
-                    <p class="text-sm text-yellow-700 mt-1">
-                        Please ask your teacher to visit the <strong>Admin Page</strong> on this device to complete the setup.
-                    </p>
-                </div>
+    <div id="settingsPanel" class="hidden bg-slate-800 text-white p-4">
+        <div class="max-w-4xl mx-auto">
+            <label class="text-xs uppercase font-bold text-gray-400">Database Connection URL</label>
+            <div class="flex gap-2 mt-1">
+                <input type="text" id="apiUrlInput" placeholder="Paste Google Script URL here..." 
+                    class="flex-1 bg-black/30 text-sm p-2 rounded border border-slate-600 focus:border-blue-500 outline-none font-mono text-green-400">
+                <button onclick="saveUrl()" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded text-xs font-bold uppercase">Save</button>
             </div>
         </div>
+    </div>
 
-        <div id="formCard" class="bg-white p-6 rounded-lg shadow-lg border border-gray-200 hidden">
-            
-            <form id="entryForm" onsubmit="submitForm(event)">
+    <div class="max-w-3xl mx-auto px-4 py-8">
+        
+        <form id="entryForm" onsubmit="submitEntry(event)" class="space-y-6">
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Student & Site</h2>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8 bg-gray-50 p-5 rounded-lg border border-gray-200">
-                    
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Student</label>
-                        <select id="studentId" required class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Student</label>
+                        <select id="studentSelect" required class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
                             <option value="">Loading students...</option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Job Site</label>
-                        <select id="jobSite" required class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Job Site</label>
+                        <select id="siteSelect" required class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
                             <option value="">Loading sites...</option>
                         </select>
                     </div>
+                </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Date</label>
-                        <input type="date" id="date" required class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Date</label>
+                        <input type="date" id="dateInput" required class="w-full p-3 border rounded-lg bg-gray-50 outline-none">
                     </div>
-
                     <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Evaluator Name</label>
-                        <input type="text" id="evaluator" placeholder="e.g. Mr. Smith" required class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Evaluator Name</label>
+                        <input type="text" id="evaluatorInput" placeholder="e.g. Mr. Smith" required 
+                            class="w-full p-3 border rounded-lg bg-gray-50 outline-none">
                     </div>
-
                 </div>
+            </div>
 
-                <div class="mb-8">
-                    <h3 class="font-bold text-lg mb-4 text-gray-800 border-b pb-2">Skill Assessment (0-4)</h3>
-                    <div id="skillsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        </div>
-                </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800 mb-2 border-b pb-2">Skills Assessment</h2>
+                <p class="text-xs text-gray-500 mb-6 uppercase tracking-wider font-bold">Rate from 1 (Low) to 5 (High)</p>
+                
+                <div id="skillsContainer" class="space-y-6">
+                    </div>
+            </div>
 
-                <div class="mb-8">
-                    <label class="block font-bold text-gray-800 mb-2">Comments / Notes</label>
-                    <textarea id="comments" rows="3" class="w-full border border-gray-300 p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500" placeholder="Enter specific details about today's performance..."></textarea>
-                </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Notes</h2>
+                <textarea id="commentsInput" rows="3" placeholder="Additional observations..." 
+                    class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+            </div>
 
-                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-lg hover:bg-indigo-700 transition shadow-lg flex justify-center items-center gap-2 text-lg">
-                    <span class="material-icons">save</span> Submit Log
-                </button>
+            <button type="submit" id="submitBtn" 
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform active:scale-95 flex justify-center items-center gap-2">
+                <span class="material-icons">send</span> SUBMIT ENTRY
+            </button>
 
-            </form>
-        </div>
+        </form>
     </div>
 
     <script>
-        // Retrieve API URL from Local Storage (set in Admin)
-        const API_URL = localStorage.getItem('bresa_api_url');
-        
-        // List of Skills to Evaluate
-        const SKILLS = [
-            "Punctual", "Prepared", "Hygiene/Dress", "Task Initiation", 
-            "Work Rate", "Logical Order", "Adaptability", "Quality Standards", 
-            "Clean Workspace", "Awareness/Safety", "Social Interactions", 
-            "Communication", "Constructive Criticism", "Positive Attitude", 
-            "Asks for Help", "Self-Reflection"
+        // --- 1. CONFIGURATION: MUST MATCH GOOGLE SCRIPT EXACTLY ---
+        const SKILLS_LIST = [
+            "Punctual",
+            "Prepared with Necessary Materials",
+            "Demonstrates appropriate hygiene/dress",
+            "Initiates familiar tasks",
+            "Maintains a productive work rate",
+            "Complete tasks in a logical order",
+            "Demonstrates adaptability",
+            "Work is completed to quality standards",
+            "Maintains clean and organized work space",
+            "Awareness of surroundings and good decision making",
+            "Appropriate and respectful social interactions",
+            "Displays effective communication skills",
+            "Accepts constructive criticism",
+            "Demonstrates a positive attitude",
+            "Asks for help appropriately",
+            "Demonstrates self-reflection"
         ];
 
-        // Initialize Page
-        async function init() {
-            // Check connection
-            if (!API_URL) {
-                document.getElementById('connectWarning').classList.remove('hidden');
-                return;
+        let API_URL = localStorage.getItem('vocational_backend_url') || "";
+
+        // --- 2. INITIALIZATION ---
+        window.onload = function() {
+            // Set Date to Today
+            document.getElementById('dateInput').valueAsDate = new Date();
+            
+            // Generate Skill Sliders
+            renderSkills();
+
+            // Load Data if URL exists
+            if (API_URL) {
+                document.getElementById('apiUrlInput').value = API_URL;
+                loadDropdowns();
+            } else {
+                toggleSettings(); // Open settings if no URL
             }
+        };
 
-            // Show form
-            document.getElementById('formCard').classList.remove('hidden');
+        function toggleSettings() {
+            document.getElementById('settingsPanel').classList.toggle('hidden');
+        }
 
-            // Set default date to today
-            document.getElementById('date').valueAsDate = new Date();
-
-            // Load Data
-            try {
-                // Fetch Students and Job Sites simultaneously
-                const [sRes, jRes] = await Promise.all([
-                    fetch(API_URL + "?action=getStudents"),
-                    fetch(API_URL + "?action=getJobSites")
-                ]);
-
-                const sData = await sRes.json();
-                const jData = await jRes.json();
-
-                // Populate Student Dropdown
-                const sSel = document.getElementById('studentId');
-                sSel.innerHTML = '<option value="">Select Student...</option>';
-                if (sData.data) {
-                    sData.data.forEach(s => {
-                        sSel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
-                    });
-                }
-
-                // Populate Job Site Dropdown
-                const jSel = document.getElementById('jobSite');
-                jSel.innerHTML = '<option value="">Select Site...</option>';
-                if (jData.data) {
-                    jData.data.forEach(j => {
-                        jSel.innerHTML += `<option value="${j}">${j}</option>`;
-                    });
-                }
-
-            } catch (e) {
-                console.error(e);
-                alert("Error loading data from Google Sheets. Please check your internet connection.");
+        function saveUrl() {
+            const url = document.getElementById('apiUrlInput').value.trim();
+            if (url) {
+                localStorage.setItem('vocational_backend_url', url);
+                API_URL = url;
+                alert("URL Saved!");
+                loadDropdowns();
+                toggleSettings();
             }
+        }
 
-            // Generate Skill Rows
+        // --- 3. DYNAMIC RENDERING ---
+        function renderSkills() {
             const container = document.getElementById('skillsContainer');
-            SKILLS.forEach((skill, index) => {
-                container.innerHTML += `
-                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:border-indigo-300 transition-colors">
-                        <label class="text-sm font-bold text-gray-700 w-1/2">${skill}</label>
-                        <div class="flex space-x-1">
-                            ${[0, 1, 2, 3, 4].map(n => `
-                                <label class="cursor-pointer group relative">
-                                    <input type="radio" name="skill_${index}" value="${n}" class="peer sr-only">
-                                    <div class="w-9 h-9 flex items-center justify-center rounded-md border border-gray-200 
-                                                bg-gray-50 text-gray-500 font-bold transition-all duration-200
-                                                group-hover:bg-indigo-50 group-hover:border-indigo-300
-                                                peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 peer-checked:shadow-md">
-                                        ${n}
-                                    </div>
-                                </label>
-                            `).join('')}
+            container.innerHTML = "";
+
+            SKILLS_LIST.forEach((skill, index) => {
+                const html = `
+                    <div class="skill-row">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">${skill}</label>
+                        <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                            <span class="text-xs font-bold text-gray-400 w-4">1</span>
+                            <input type="range" min="1" max="5" value="3" step="1" 
+                                id="skill_${index}" 
+                                oninput="document.getElementById('val_${index}').innerText = this.value"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                            <span class="text-xs font-bold text-gray-400 w-4">5</span>
+                            <span id="val_${index}" class="ml-2 w-8 text-center font-bold text-blue-600 text-lg bg-white shadow rounded">3</span>
                         </div>
                     </div>
                 `;
+                container.innerHTML += html;
             });
         }
 
-        // Handle Submission
-        async function submitForm(e) {
+        async function loadDropdowns() {
+            try {
+                // Fetch Students
+                const sRes = await fetch(`${API_URL}?action=getStudents`);
+                const sData = await sRes.json();
+                const sSelect = document.getElementById('studentSelect');
+                sSelect.innerHTML = '<option value="">Select Student...</option>';
+                sData.data.forEach(s => {
+                    sSelect.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
+                });
+
+                // Fetch Sites
+                const jRes = await fetch(`${API_URL}?action=getJobSites`);
+                const jData = await jRes.json();
+                const jSelect = document.getElementById('siteSelect');
+                jSelect.innerHTML = '<option value="">Select Site...</option>';
+                jData.data.forEach(site => {
+                    jSelect.innerHTML += `<option value="${site}">${site}</option>`;
+                });
+
+            } catch (err) {
+                console.error(err);
+                alert("Error loading lists. Check your URL in settings.");
+            }
+        }
+
+        // --- 4. SUBMIT FUNCTION ---
+        async function submitEntry(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const originalText = btn.innerHTML;
             
-            // Disable button to prevent double-submit
+            // Visual Loading State
             btn.disabled = true;
             btn.innerHTML = `<span class="material-icons animate-spin">refresh</span> Saving...`;
 
-            // Collect Scores
-            const scores = SKILLS.map((_, i) => {
-                const el = document.querySelector(`input[name="skill_${i}"]:checked`);
-                return el ? el.value : ""; 
-            });
-
-            // Prepare Payload
+            // 1. Gather Basic Data
             const payload = {
                 action: "addEntry",
-                student_id: document.getElementById('studentId').value,
-                job_site: document.getElementById('jobSite').value,
-                date: document.getElementById('date').value,
-                evaluator: document.getElementById('evaluator').value,
-                comments: document.getElementById('comments').value,
-                scores: JSON.stringify(scores)
+                student_id: document.getElementById('studentSelect').value,
+                job_site: document.getElementById('siteSelect').value,
+                date: document.getElementById('dateInput').value,
+                evaluator: document.getElementById('evaluatorInput').value,
+                comments: document.getElementById('commentsInput').value,
+                scores: {}
             };
 
+            // 2. Gather Skill Scores (Matching Keys Exactly)
+            SKILLS_LIST.forEach((skill, index) => {
+                const val = document.getElementById(`skill_${index}`).value;
+                payload.scores[skill] = parseInt(val); // Ensure it's a number
+            });
+
+            // 3. Send to Google Script
             try {
+                // Using no-cors/text-plain to bypass security blocks
                 await fetch(API_URL, {
-                    method: 'POST',
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain" },
                     body: JSON.stringify(payload)
                 });
-                
+
                 // Success Feedback
-                btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-                btn.classList.add('bg-green-600', 'hover:bg-green-700');
-                btn.innerHTML = `<span class="material-icons">check_circle</span> Saved Successfully!`;
+                btn.classList.remove("bg-blue-600", "hover:bg-blue-700");
+                btn.classList.add("bg-green-600", "hover:bg-green-700");
+                btn.innerHTML = `<span class="material-icons">check_circle</span> SUCCESS!`;
                 
-                // Redirect after delay
+                // Reset Form after 1.5 seconds
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    document.getElementById('entryForm').reset();
+                    // Reset sliders to 3
+                    document.querySelectorAll('input[type="range"]').forEach(r => r.value = 3);
+                    document.querySelectorAll('[id^="val_"]').forEach(s => s.innerText = "3");
+                    document.getElementById('dateInput').valueAsDate = new Date(); // Reset date
+                    
+                    // Reset Button
+                    btn.disabled = false;
+                    btn.classList.add("bg-blue-600", "hover:bg-blue-700");
+                    btn.classList.remove("bg-green-600", "hover:bg-green-700");
+                    btn.innerHTML = originalText;
                 }, 1500);
 
             } catch (err) {
-                alert("Error saving: " + err);
+                alert("Failed to save: " + err.message);
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
         }
-
-        // Run on Load
-        init();
     </script>
 </body>
 </html>
