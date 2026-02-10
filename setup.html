@@ -6,12 +6,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        /* Custom Cartoon-ish Styles */
         .cartoon-card { background-color: #F0F9FF; border: 2px dashed #3B82F6; border-radius: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; position: relative; overflow: hidden; }
         .icon-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 1rem; z-index: 10; }
         .bg-pattern { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.1; background-image: radial-gradient(#3B82F6 1px, transparent 1px); background-size: 20px 20px; z-index: 0; }
         
-        /* Privacy Shield Animation */
         @keyframes pulse-shield {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -57,7 +55,7 @@
         
         <div class="text-center mb-8">
             <h1 class="text-4xl font-extrabold text-gray-900">Let's Get Connected!</h1>
-            <p class="mt-4 text-xl text-gray-500">Follow these 6 steps to create your private database.</p>
+            <p class="mt-4 text-xl text-gray-500">Follow these steps to update your database structure.</p>
         </div>
 
         <section class="mb-12 bg-teal-50 border-l-4 border-teal-500 p-6 rounded-r-xl shadow-sm flex flex-col md:flex-row gap-6 items-center">
@@ -70,9 +68,6 @@
                 <h3 class="text-xl font-bold text-teal-900 mb-2">🔒 Your Student Data is 100% Private</h3>
                 <p class="text-teal-800 text-sm leading-relaxed mb-2">
                     <strong>We do not see your data.</strong> This tool is a "static interface." When you enter data, it goes directly from this device to <strong>your personal Google Spreadsheet</strong>.
-                </p>
-                <p class="text-teal-800 text-sm leading-relaxed">
-                    The creators of this site have no access to your students' names, scores, or logs. You own the database completely within your Google Drive. Only people you share your Spreadsheet with can see the data.
                 </p>
             </div>
         </section>
@@ -87,7 +82,7 @@
                     <p class="mb-3">1. Go to <a href="https://sheets.google.com" target="_blank" class="text-indigo-600 font-bold hover:underline">sheets.google.com</a>.</p>
                     <p class="mb-3">2. Click the giant <strong class="text-green-600">+</strong> to start a blank sheet.</p>
                     <p class="mb-3">3. Rename it to: <br><span class="font-mono bg-gray-100 text-indigo-700 px-2 py-1 rounded border border-gray-300 mt-1 inline-block">Vocational Tracker Database</span></p>
-                    <p class="text-xs text-gray-400 italic">Don't worry about columns; the code does that later!</p>
+                    <p class="text-xs text-gray-400 italic">The script will automatically create the 16 skill columns for you.</p>
                 </div>
                 <div class="cartoon-card bg-green-50 border-green-300">
                     <div class="bg-pattern"></div>
@@ -95,7 +90,6 @@
                         <span class="material-icons text-4xl">table_view</span>
                     </div>
                     <div class="z-10 text-center font-bold text-green-800">"New Spreadsheet"</div>
-                    <div class="z-10 text-xs text-green-600 mt-1">sheets.google.com</div>
                 </div>
             </div>
         </section>
@@ -110,19 +104,13 @@
                     <p class="mb-4">In your new Google Sheet, look at the top menu.</p>
                     <p class="mb-2">1. Click <strong>Extensions</strong>.</p>
                     <p class="mb-2">2. Click <strong>Apps Script</strong>.</p>
-                    <p class="text-sm mt-3 text-gray-400">This opens a new tab where the "Brain" of the app lives.</p>
                 </div>
                 <div class="cartoon-card bg-yellow-50 border-yellow-300">
                     <div class="bg-pattern"></div>
                     <div class="icon-circle bg-yellow-500 text-white">
                         <span class="material-icons text-4xl">extension</span>
                     </div>
-                    <div class="z-10 flex flex-col gap-2">
-                        <span class="bg-white px-3 py-1 rounded shadow text-xs font-bold text-gray-700">Extensions</span>
-                        <span class="bg-white px-3 py-1 rounded shadow text-xs font-bold text-gray-700 flex items-center gap-1">
-                            <span class="material-icons text-xs text-blue-500">code</span> Apps Script
-                        </span>
-                    </div>
+                    <div class="z-10 text-center text-sm font-bold text-gray-700">Apps Script</div>
                 </div>
             </div>
         </section>
@@ -130,10 +118,10 @@
         <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
                 <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-3 shadow">3</span>
-                Copy & Paste Code
+                Copy & Paste Code (Updated for 16 Skills)
             </h2>
             
-            <p class="text-gray-600 mb-4">Delete the default code (<code>function myFunction...</code>) and paste this:</p>
+            <p class="text-gray-600 mb-4">Delete the default code and paste this. It includes your specific skill list.</p>
 
             <div class="relative mb-6 group">
                 <button id="copyBtn" onclick="copyCode()" class="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-indigo-700 transition shadow-lg z-20 flex items-center gap-1">
@@ -141,6 +129,25 @@
                 </button>
                 <div class="h-64 overflow-y-auto bg-gray-900 text-gray-300 p-4 rounded-lg shadow-inner border border-gray-700 text-xs font-mono leading-relaxed relative">
                     <pre id="scriptCode">
+const SKILLS_LIST = [
+  "Punctual",
+  "Prepared with Necessary Materials",
+  "Demonstrates appropriate hygiene/dress",
+  "Initiates familiar tasks",
+  "Maintains a productive work rate",
+  "Complete tasks in a logical order",
+  "Demonstrates adaptability",
+  "Work is completed to quality standards",
+  "Maintains clean and organized work space",
+  "Awareness of surroundings and good decision making",
+  "Appropriate and respectul social interactions",
+  "Displays effective communication skills",
+  "Accepts constructive criticism",
+  "Demonstrates a positive attitude",
+  "Asks for help appropriately",
+  "Demonstrates self-reflection"
+];
+
 function doGet(e) {
   const action = e.parameter.action;
   if (action === "getStudents") return getStudents();
@@ -157,6 +164,9 @@ function doPost(e) {
     // Password Check
     if (action === "verifyPassword") return verifyPassword(data);
 
+    // Initial Setup Check (ensures all 16 skill columns exist)
+    ensureSheetsExist();
+
     if (action === "addEntry") return addEntry(data);
     if (action === "addStudent") return addStudent(data);
     if (action === "addJobSite") return addJobSite(data);
@@ -168,17 +178,12 @@ function doPost(e) {
   }
 }
 
+// --- CORE FUNCTIONS ---
+
 function verifyPassword(data) {
+  ensureSheetsExist();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName("Settings");
-  
-  if (!sheet) {
-    sheet = ss.insertSheet("Settings");
-    sheet.appendRow(["Config Name", "Value"]);
-    sheet.appendRow(["Admin Password", "1234"]); 
-    sheet.appendRow(["Note", "Change cell B2 to update password"]);
-  }
-  
+  const sheet = ss.getSheetByName("Settings");
   const storedPassword = sheet.getRange("B2").getValue().toString();
   
   if (String(data.password) === storedPassword) {
@@ -189,7 +194,8 @@ function verifyPassword(data) {
 }
 
 function getStudents() {
-  const sheet = getSheet("Students");
+  ensureSheetsExist();
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
   const data = sheet.getDataRange().getValues();
   const students = [];
   for (let i = 1; i < data.length; i++) {
@@ -199,7 +205,8 @@ function getStudents() {
 }
 
 function getJobSites() {
-  const sheet = getSheet("JobSites");
+  ensureSheetsExist();
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("JobSites");
   const data = sheet.getDataRange().getValues();
   const sites = [];
   for (let i = 1; i < data.length; i++) {
@@ -209,16 +216,28 @@ function getJobSites() {
 }
 
 function getEntries() {
-  const sheet = getSheet("Entries");
+  ensureSheetsExist();
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Entries");
   const data = sheet.getDataRange().getValues();
   const entries = [];
+  
+  // Columns: 0=Timestamp, 1=Date, 2=Student, 3=Site, 4=Evaluator, 5..20=Skills, 21=Comments
   for (let i = 1; i < data.length; i++) {
     if (data[i][2]) { 
-      let scores = [];
-      try { scores = JSON.parse(data[i][5]); } catch(e) { scores = []; }
+      let scores = {};
+      // Reconstruct the scores object from the columns for the frontend reports
+      SKILLS_LIST.forEach((skill, index) => {
+         scores[skill] = data[i][5 + index]; // 5 is where skills start
+      });
+
       entries.push({
-        timestamp: data[i][0], date: data[i][1], student_id: data[i][2],
-        job_site: data[i][3], evaluator: data[i][4], scores: scores, comments: data[i][6]
+        timestamp: data[i][0], 
+        date: data[i][1], 
+        student_id: data[i][2],
+        job_site: data[i][3], 
+        evaluator: data[i][4], 
+        scores: scores, 
+        comments: data[i][21] // Comments is after the 16 skills
       });
     }
   }
@@ -226,26 +245,38 @@ function getEntries() {
 }
 
 function addEntry(data) {
-  const sheet = getSheet("Entries");
-  sheet.appendRow([new Date(), data.date, data.student_id, data.job_site, data.evaluator, data.scores, data.comments]);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Entries");
+  
+  // Build the row: Meta Data + 16 Individual Scores + Comments
+  let row = [new Date(), data.date, data.student_id, data.job_site, data.evaluator];
+  
+  // Add each score in exact order of SKILLS_LIST
+  SKILLS_LIST.forEach(skill => {
+    // If score exists use it, otherwise empty string
+    row.push(data.scores[skill] || ""); 
+  });
+  
+  row.push(data.comments);
+  
+  sheet.appendRow(row);
   return responseJSON({ status: "success" });
 }
 
 function addStudent(data) {
-  const sheet = getSheet("Students");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
   const id = "STU" + Date.now(); 
   sheet.appendRow([id, data.name]);
   return responseJSON({ status: "success", id: id });
 }
 
 function addJobSite(data) {
-  const sheet = getSheet("JobSites");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("JobSites");
   sheet.appendRow([data.site_name]);
   return responseJSON({ status: "success" });
 }
 
 function deleteJobSite(data) {
-  const sheet = getSheet("JobSites");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("JobSites");
   const rows = sheet.getDataRange().getValues();
   for (let i = rows.length - 1; i >= 0; i--) {
     if (rows[i][0] === data.site_name) sheet.deleteRow(i + 1);
@@ -253,20 +284,50 @@ function deleteJobSite(data) {
   return responseJSON({ status: "success" });
 }
 
-function getSheet(name) {
+function responseJSON(data) {
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// --- AUTO SETUP & FORMATTING ---
+
+function ensureSheetsExist() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  setupSheet(ss, "Students", ["Student ID", "Name"], [150, 250]);
+  setupSheet(ss, "JobSites", ["Site Name"], [250]);
+  setupSheet(ss, "Settings", ["Config Name", "Value"], [150, 150]);
+  
+  // Setup Entries with specific 16 columns
+  const entryHeaders = ["Timestamp", "Date", "Student ID", "Job Site", "Evaluator", ...SKILLS_LIST, "Comments"];
+  
+  // Create an array of widths. First 5 are standard, next 16 are narrow (100), last is wide (300)
+  const entryWidths = [160, 100, 150, 150, 150, ...new Array(16).fill(120), 400];
+  
+  setupSheet(ss, "Entries", entryHeaders, entryWidths);
+  
+  // Default Password
+  const setSheet = ss.getSheetByName("Settings");
+  if (setSheet.getLastRow() === 1) {
+    setSheet.appendRow(["Admin Password", "1234"]);
+    setSheet.appendRow(["Note", "Change cell B2 to update password"]);
+  }
+}
+
+function setupSheet(ss, name, headers, widths) {
   let sheet = ss.getSheetByName(name);
   if (!sheet) {
     sheet = ss.insertSheet(name);
-    if (name === "Students") sheet.appendRow(["Student ID", "Name"]);
-    if (name === "JobSites") sheet.appendRow(["Site Name"]);
-    if (name === "Entries") sheet.appendRow(["Timestamp", "Date", "Student ID", "Job Site", "Evaluator", "Scores", "Comments"]);
+    sheet.appendRow(headers);
+    const range = sheet.getRange(1, 1, 1, headers.length);
+    range.setFontWeight("bold");
+    range.setBackground("#f3f4f6");
+    range.setWrap(true); // Wrap text for long headers
+    range.setVerticalAlignment("middle");
+    sheet.setFrozenRows(1);
+    if (widths) {
+      widths.forEach((w, i) => sheet.setColumnWidth(i + 1, w));
+    }
   }
-  return sheet;
-}
-
-function responseJSON(data) {
-  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
 }
                     </pre>
                 </div>
