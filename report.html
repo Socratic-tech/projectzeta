@@ -3,41 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Progress Report</title>
+    <title>Vocational Progress Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        /* PRINT STYLES */
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; -webkit-print-color-adjust: exact; }
-            ::-webkit-scrollbar { display: none; }
-            .print-full { width: 100% !important; max-width: none !important; padding: 0 !important; }
-            #sidebarCol { display: none !important; }
-            
-            /* FORCE TABLE VISIBILITY ON PRINT */
-            #printHistoryTable { display: block !important; margin-top: 2rem; page-break-before: auto; }
-            
-            /* Clean Table Styling for Paper */
-            table { width: 100%; border-collapse: collapse; font-size: 10pt; }
-            th, td { border: 1px solid #cbd5e1; padding: 6px 10px; text-align: left; }
-            th { background-color: #f1f5f9 !important; font-weight: bold; }
-        }
-        
-        /* SCREEN STYLES */
-        @media screen {
-            #printHistoryTable { display: none; }
+        /* --- SCREEN STYLES (App Layout) --- */
+        body { 
+            background-color: #f1f5f9; 
+            color: #0f172a; 
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; /* This locks the screen but kills printing (fixed below) */
         }
 
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* Hides signature on screen */
+        .signature-section { display: none; }
+        #printHistoryTable { display: none; }
+
+
+        /* --- PRINT STYLES (The Magic Fix) --- */
+        @media print {
+            /* 1. Reset the "App" constraints so pages can flow */
+            body, #mainLayout, #contentArea {
+                height: auto !important;
+                overflow: visible !important;
+                display: block !important;
+                background: white !important;
+                position: static !important;
+            }
+
+            /* 2. Hide Screen-Only Elements */
+            nav, #sidebarCol, .no-print, button, #loadingIndicator, select {
+                display: none !important;
+            }
+
+            /* 3. Layout Adjustments for Paper */
+            #contentArea {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+
+            #summaryView, #detailView {
+                max-width: 100% !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            /* 4. Chart Sizing */
+            .chart-container {
+                height: 300px !important; /* Force smaller height for print so it fits */
+                border: 1px solid #ccc;
+                page-break-inside: avoid;
+            }
+
+            /* 5. Force Table & Signatures to Show */
+            #printHistoryTable {
+                display: block !important;
+                width: 100%;
+                margin-top: 2rem;
+                page-break-before: auto;
+            }
+
+            .signature-section {
+                display: flex !important;
+                justify-content: space-between;
+                margin-top: 50px;
+                padding-top: 20px;
+                page-break-inside: avoid; /* Keep signatures together */
+            }
+
+            /* Table Styling for Print */
+            table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+            th, td { border: 1px solid #94a3b8; padding: 8px; text-align: left; }
+            th { background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; font-weight: bold; }
+            
+            /* Clean up cards */
+            .card { border: 1px solid #ccc !important; box-shadow: none !important; }
+        }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-900 font-sans h-screen flex flex-col overflow-hidden">
+<body>
 
-    <nav class="bg-blue-900 text-white shadow-lg no-print shrink-0">
+    <nav class="bg-blue-900 text-white shadow-lg shrink-0 z-10">
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center gap-2">
@@ -66,7 +122,7 @@
 
     <div id="mainLayout" class="hidden flex-1 flex overflow-hidden">
         
-        <div id="sidebarCol" class="w-80 bg-white border-r border-slate-200 flex flex-col no-print">
+        <div id="sidebarCol" class="w-80 bg-white border-r border-slate-200 flex flex-col overflow-hidden">
             <div class="p-4 border-b border-slate-200 bg-slate-50">
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Select Student</label>
                 <select id="studentSelect" onchange="loadStudentData()" class="w-full p-2 border rounded text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500">
@@ -84,7 +140,7 @@
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto custom-scroll bg-slate-50 p-6 md:p-8 print-full" id="contentArea">
+        <div id="contentArea" class="flex-1 overflow-y-auto custom-scroll bg-slate-50 p-6 md:p-8">
             
             <div id="summaryView" class="hidden max-w-5xl mx-auto">
                 <div class="flex justify-between items-end mb-6">
@@ -100,26 +156,26 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                    <div class="card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
                         <p class="text-xs text-slate-500 font-bold uppercase">Average Score</p>
                         <p id="avgScore" class="text-3xl font-bold text-slate-800">0.0</p>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                    <div class="card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
                         <p class="text-xs text-slate-500 font-bold uppercase">Strongest Skill</p>
                         <p id="topSkill" class="text-lg font-bold text-slate-800 leading-tight">N/A</p>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-500">
+                    <div class="card bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-500">
                         <p class="text-xs text-slate-500 font-bold uppercase">Evaluations</p>
                         <p id="totalEvals" class="text-3xl font-bold text-slate-800">0</p>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8 h-96">
+                <div class="card chart-container bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8 h-96">
                     <canvas id="skillsChart"></canvas>
                 </div>
 
-                <div id="printHistoryTable" class="hidden">
-                    <h3 class="text-lg font-bold mb-2 text-slate-800 border-b pb-1">Evaluation Log</h3>
+                <div id="printHistoryTable">
+                    <h3 class="text-lg font-bold mb-2 text-slate-800 border-b pb-1">Detailed Log</h3>
                     <table>
                         <thead>
                             <tr>
@@ -134,6 +190,17 @@
                             </tbody>
                     </table>
                 </div>
+
+                <div class="signature-section">
+                    <div class="w-5/12">
+                        <div class="border-b-2 border-slate-400 mb-2"></div>
+                        <p class="text-sm font-bold text-slate-700">Teacher Signature</p>
+                    </div>
+                    <div class="w-5/12">
+                        <div class="border-b-2 border-slate-400 mb-2"></div>
+                        <p class="text-sm font-bold text-slate-700">Supervisor Signature</p>
+                    </div>
+                </div>
             </div>
 
             <div id="detailView" class="hidden max-w-4xl mx-auto">
@@ -143,29 +210,29 @@
                     </button>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-                    <div class="bg-slate-800 text-white p-6 flex justify-between items-center">
+                <div class="card bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-800 text-white p-6 flex justify-between items-center print:bg-slate-200 print:text-black">
                         <div>
                             <h2 class="text-2xl font-bold" id="detailDate">Date</h2>
-                            <p class="text-slate-400 flex items-center gap-2 mt-1">
+                            <p class="text-slate-400 flex items-center gap-2 mt-1 print:text-slate-600">
                                 <span class="material-icons text-sm">work</span> <span id="detailSite">Site</span>
                             </p>
                         </div>
                         <div class="text-right">
-                            <div class="text-xs uppercase text-slate-400">Evaluator</div>
+                            <div class="text-xs uppercase text-slate-400 print:text-slate-600">Evaluator</div>
                             <div class="font-bold text-lg" id="detailEvaluator">Name</div>
                         </div>
                     </div>
 
-                    <div class="p-6 bg-slate-50 border-b border-slate-200">
+                    <div class="p-6 bg-slate-50 border-b border-slate-200 print:bg-white">
                         <h3 class="text-xs font-bold text-slate-500 uppercase mb-4">Skill Performance</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="detailScores"></div>
                     </div>
 
                     <div class="p-6">
                         <h3 class="text-xs font-bold text-slate-500 uppercase mb-2">Evaluator Notes</h3>
-                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-slate-700 italic">
-                            <span class="material-icons text-yellow-400 text-sm align-middle mr-1">format_quote</span>
+                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-slate-700 italic print:bg-white print:border-slate-300">
+                            <span class="material-icons text-yellow-400 text-sm align-middle mr-1 no-print">format_quote</span>
                             <span id="detailComments">No comments.</span>
                         </div>
                     </div>
@@ -276,11 +343,10 @@
 
             const filtered = currentEntries.filter(e => parseDate(e.date) >= cutoff);
 
-            // 1. CALC STATS
             let sums = {}, counts = {}, grandSum = 0, grandCount = 0;
             SKILLS.forEach(s => { sums[s]=0; counts[s]=0; });
 
-            // 2. POPULATE PRINT TABLE (While calculating stats)
+            // POPULATE PRINT TABLE
             const printBody = document.getElementById('printHistoryBody');
             printBody.innerHTML = "";
 
@@ -289,7 +355,6 @@
             }
 
             filtered.forEach(e => {
-                // Calc daily avg
                 let daySum = 0, dayCount = 0;
                 SKILLS.forEach(s => {
                     const val = parseFloat(e.scores[s]);
@@ -301,18 +366,17 @@
                 });
                 const dailyAvg = dayCount ? (daySum/dayCount).toFixed(1) : "-";
 
-                // Add Row to Print Table
-                const row = `<tr>
-                    <td>${fmtDate(parseDate(e.date))}</td>
-                    <td>${e.job_site}</td>
-                    <td>${e.evaluator}</td>
-                    <td><strong>${dailyAvg}</strong> / 4</td>
-                    <td class="text-xs italic text-slate-600">${e.comments ? e.comments.substring(0,60) : '-'}</td>
-                </tr>`;
-                printBody.innerHTML += row;
+                // We display 60 chars of comments max for the table row
+                printBody.innerHTML += `
+                    <tr>
+                        <td>${fmtDate(parseDate(e.date))}</td>
+                        <td>${e.job_site}</td>
+                        <td>${e.evaluator}</td>
+                        <td><strong>${dailyAvg}</strong> / 4</td>
+                        <td class="text-xs italic text-slate-600">${e.comments ? e.comments.substring(0,100) : '-'}</td>
+                    </tr>`;
             });
 
-            // 3. UPDATE METRICS
             document.getElementById('totalEvals').innerText = filtered.length;
             document.getElementById('avgScore').innerText = grandCount ? (grandSum/grandCount).toFixed(1) : "0.0";
             
@@ -323,7 +387,6 @@
             });
             document.getElementById('topSkill').innerText = bestName;
 
-            // 4. CHART
             const ctx = document.getElementById('skillsChart').getContext('2d');
             if(chartInstance) chartInstance.destroy();
             const data = SKILLS.map(s => counts[s] ? (sums[s]/counts[s]).toFixed(1) : 0);
