@@ -13,6 +13,12 @@
         .animate-fade-in-up {
             animation: fadeInUp 0.5s ease-out forwards;
         }
+        .status-dot {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
@@ -26,8 +32,15 @@
                         Vocational Tracker
                     </h1>
                 </div>
-                <div class="flex items-center">
-                    <a href="setup.html" class="text-gray-500 hover:text-indigo-600 text-sm font-medium transition-colors">Setup Guide</a>
+
+                <div class="flex items-center gap-4">
+                    <div id="statusContainer" class="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 border border-gray-200 text-xs font-medium text-gray-500 transition-colors">
+                        <span id="statusDot" class="status-dot bg-gray-400"></span>
+                        <span id="statusText">Checking...</span>
+                    </div>
+                    <a href="setup.html" class="text-gray-400 hover:text-indigo-600 transition-colors">
+                        <span class="material-icons">help_outline</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -80,5 +93,68 @@
         </div>
     </footer>
 
+    <script>
+        const API_URL = localStorage.getItem('bresa_api_url');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const statusContainer = document.getElementById('statusContainer');
+
+        async function checkConnection() {
+            // 1. Check if URL is saved locally
+            if (!API_URL) {
+                setStatus("offline", "Not Configured");
+                return;
+            }
+
+            try {
+                // 2. Try to fetch a simple data point (Job Sites) to test connection
+                // We use a timeout so it doesn't hang forever if internet is down
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+                const response = await fetch(API_URL + "?action=getJobSites", { 
+                    signal: controller.signal 
+                });
+                
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status && data.status === "error") {
+                        setStatus("error", "Script Error");
+                    } else {
+                        setStatus("online", "System Online");
+                    }
+                } else {
+                    setStatus("offline", "Server Error");
+                }
+            } catch (error) {
+                console.error("Connection failed:", error);
+                setStatus("offline", "Offline");
+            }
+        }
+
+        function setStatus(type, message) {
+            statusText.innerText = message;
+            
+            // Reset classes
+            statusDot.className = "status-dot";
+            statusContainer.className = "flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium transition-colors";
+
+            if (type === "online") {
+                statusDot.classList.add("bg-green-500", "animate-pulse");
+                statusContainer.classList.add("bg-green-50", "border-green-200", "text-green-700");
+            } else if (type === "offline") {
+                statusDot.classList.add("bg-red-500");
+                statusContainer.classList.add("bg-red-50", "border-red-200", "text-red-700");
+            } else {
+                statusDot.classList.add("bg-yellow-500");
+                statusContainer.classList.add("bg-yellow-50", "border-yellow-200", "text-yellow-700");
+            }
+        }
+
+        // Run check on load
+        checkConnection();
+    </script>
 </body>
 </html>
