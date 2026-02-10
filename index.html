@@ -2,154 +2,83 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Vocational Dashboard</title>
+    <title>Vocational Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans">
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
 
     <nav class="bg-white shadow border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <h1 class="text-xl font-bold text-indigo-600">Vocational Tracker</h1>
-                    </div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="index.html" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
-                        <a href="entry.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">New Entry</a>
-                        <a href="report.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Reports</a>
-                        <a href="admin.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Admin</a>
-                    </div>
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
+                        <span class="material-icons">school</span>
+                        Vocational Tracker
+                    </h1>
                 </div>
-                <div class="flex items-center sm:hidden">
-                    <a href="entry.html" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm">New Entry</a>
+                <div class="flex items-center">
+                    <a href="setup.html" class="text-gray-500 hover:text-indigo-600 text-sm font-medium transition-colors">Setup Guide</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="flex-grow flex flex-col items-center justify-center p-6">
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <dt class="text-sm font-medium text-gray-500 truncate">Total Students</dt>
-                    <dd class="mt-1 text-3xl font-semibold text-gray-900" id="totalStudents">-</dd>
-                </div>
+        <div class="w-full max-w-5xl animate-fade-in-up">
+            
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-extrabold text-gray-900 mb-4">Dashboard</h2>
+                <p class="text-xl text-gray-500">Select an option below to access the system.</p>
             </div>
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <dt class="text-sm font-medium text-gray-500 truncate">Logs This Month</dt>
-                    <dd class="mt-1 text-3xl font-semibold text-gray-900" id="monthLogs">-</dd>
-                </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <a href="entry.html" class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 hover:border-indigo-500 transition-all duration-300 flex flex-col items-center text-center cursor-pointer transform hover:-translate-y-1">
+                    <div class="bg-blue-50 text-blue-600 w-20 h-20 rounded-full flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                        <span class="material-icons text-4xl">edit_note</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 group-hover:text-blue-600 mb-2 transition-colors">New Entry</h3>
+                    <p class="text-gray-500">Log daily performance scores and evaluator comments for a student.</p>
+                </a>
+
+                <a href="report.html" class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 hover:border-indigo-500 transition-all duration-300 flex flex-col items-center text-center cursor-pointer transform hover:-translate-y-1">
+                    <div class="bg-purple-50 text-purple-600 w-20 h-20 rounded-full flex items-center justify-center mb-6 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                        <span class="material-icons text-4xl">assessment</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 group-hover:text-purple-600 mb-2 transition-colors">Reports</h3>
+                    <p class="text-gray-500">View progress charts, skill breakdowns, and print report cards.</p>
+                </a>
+
+                <a href="admin.html" class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 hover:border-indigo-500 transition-all duration-300 flex flex-col items-center text-center cursor-pointer transform hover:-translate-y-1">
+                    <div class="bg-gray-50 text-gray-600 w-20 h-20 rounded-full flex items-center justify-center mb-6 group-hover:bg-gray-600 group-hover:text-white transition-colors duration-300">
+                        <span class="material-icons text-4xl">settings</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 group-hover:text-gray-700 mb-2 transition-colors">Admin</h3>
+                    <p class="text-gray-500">Manage student rosters, job site locations, and API connections.</p>
+                </a>
+
             </div>
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <dt class="text-sm font-medium text-gray-500 truncate">Avg. Score (All Time)</dt>
-                    <dd class="mt-1 text-3xl font-semibold text-indigo-600" id="avgScore">-</dd>
-                </div>
-            </div>
+
         </div>
 
-        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div class="px-4 py-5 border-b border-gray-200 sm:px-6 flex justify-between items-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Recent Activity</h3>
-                <a href="report.html" class="text-sm text-indigo-600 hover:text-indigo-900">View All Reports &rarr;</a>
-            </div>
-            <ul class="divide-y divide-gray-200" id="activityList">
-                <li class="px-4 py-4 sm:px-6 text-center text-gray-500">Loading activity...</li>
-            </ul>
-        </div>
     </div>
 
-    <script>
-        const API_URL = localStorage.getItem('bresa_api_url');
+    <footer class="bg-white border-t border-gray-200 py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-gray-400 text-sm">
+            Vocational Tracker System
+        </div>
+    </footer>
 
-        async function initDashboard() {
-            if(!API_URL) return window.location.href = 'admin.html';
-
-            try {
-                // Fetch Students & Entries
-                const [sRes, eRes] = await Promise.all([
-                    fetch(API_URL + "?action=getStudents"),
-                    fetch(API_URL + "?action=getEntries")
-                ]);
-                const sData = await sRes.json();
-                const eData = await eRes.json();
-
-                const students = sData.data || [];
-                const entries = eData.data || [];
-
-                // 1. Stats
-                document.getElementById('totalStudents').innerText = students.length;
-                
-                const now = new Date();
-                const thisMonth = entries.filter(e => {
-                    const d = new Date(e.date);
-                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                });
-                document.getElementById('monthLogs').innerText = thisMonth.length;
-
-                // Calc Average
-                let sum = 0, count = 0;
-                entries.forEach(e => {
-                    e.scores.forEach(s => {
-                        if(s !== "" && s !== null) {
-                            sum += Number(s);
-                            count++;
-                        }
-                    });
-                });
-                document.getElementById('avgScore').innerText = count ? (sum/count).toFixed(2) : "0.0";
-
-                // 2. Recent List
-                const list = document.getElementById('activityList');
-                list.innerHTML = '';
-                
-                // Sort by date desc, take top 5
-                const recent = entries.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
-
-                if(recent.length === 0) {
-                    list.innerHTML = '<li class="px-4 py-4 text-gray-500 text-center">No logs found.</li>';
-                } else {
-                    recent.forEach(r => {
-                        const studentName = students.find(s => s.student_id == r.student_id)?.name || "Unknown Student";
-                        
-                        // Calc entry average
-                        let eSum=0, eCnt=0;
-                        r.scores.forEach(v => { if(v!==""){eSum+=Number(v);eCnt++;} });
-                        const eAvg = eCnt ? (eSum/eCnt).toFixed(1) : "-";
-
-                        list.innerHTML += `
-                            <li class="px-4 py-4 sm:px-6 hover:bg-gray-50">
-                                <div class="flex items-center justify-between">
-                                    <div class="text-sm font-medium text-indigo-600 truncate">${studentName}</div>
-                                    <div class="ml-2 flex-shrink-0 flex">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${eAvg>=3?'bg-green-100 text-green-800':(eAvg>=2?'bg-yellow-100 text-yellow-800':'bg-red-100 text-red-800')}">
-                                            Avg: ${eAvg}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="mt-2 sm:flex sm:justify-between">
-                                    <div class="sm:flex">
-                                        <p class="flex items-center text-sm text-gray-500">
-                                            ${r.job_site || "No Site"}
-                                        </p>
-                                    </div>
-                                    <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                                        <p>${new Date(r.date).toLocaleDateString()}</p>
-                                    </div>
-                                </div>
-                            </li>
-                        `;
-                    });
-                }
-
-            } catch(e) { console.error(e); }
-        }
-
-        initDashboard();
-    </script>
 </body>
 </html>
