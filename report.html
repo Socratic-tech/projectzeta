@@ -181,6 +181,7 @@
             document.getElementById('startDate').valueAsDate = firstDay;
 
             try {
+                // 1. Get Students
                 const sRes = await fetch(API_URL + "?action=getStudents");
                 const sData = await sRes.json();
                 students = sData.data;
@@ -191,15 +192,24 @@
                     sel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
                 });
 
+                // 2. Get Job Sites (UPDATED: Fetching from DB Master List)
+                const jRes = await fetch(API_URL + "?action=getJobSites");
+                const jData = await jRes.json();
+                const siteSel = document.getElementById('siteFilter');
+                // Keep "All" as first option
+                siteSel.innerHTML = '<option value="All">All Sites</option>';
+                
+                if(jData.data && jData.data.length > 0) {
+                    jData.data.forEach(s => {
+                         siteSel.innerHTML += `<option value="${s}">${s}</option>`;
+                    });
+                }
+
+                // 3. Get Entries
                 const eRes = await fetch(API_URL + "?action=getEntries");
                 const eData = await eRes.json();
                 allEntries = eData.data;
 
-                const sites = [...new Set(allEntries.map(e => e.job_site).filter(s => s))].sort();
-                const siteSel = document.getElementById('siteFilter');
-                sites.forEach(s => {
-                    siteSel.innerHTML += `<option value="${s}">${s}</option>`;
-                });
             } catch(e) { console.error("Error loading data", e); }
         }
 
