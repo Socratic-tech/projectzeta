@@ -2,177 +2,369 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Vocational Report Card</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Progress Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        body { background-color: #F3F4F6; }
         @media print {
-            @page { margin: 0.5in; size: portrait; }
-            body { background-color: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .no-print { display: none !important; }
-            #reportContainer { box-shadow: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; display: block !important; }
-            #chartContainer { height: 350px !important; border: 1px solid #eee; border-radius: 8px; padding: 10px; margin-bottom: 20px; }
-            #skillsGrid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; }
-            .history-section { page-break-before: always; }
+            .no-print { display: none; }
+            .print-only { display: block; }
+            body { background: white; }
+            .card { border: none; shadow: none; }
         }
     </style>
 </head>
-<body class="text-gray-900 font-sans pb-10">
+<body class="bg-gray-50 text-gray-900 font-sans">
 
-    <div id="authModal" class="fixed inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center z-50 no-print">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-96 text-center">
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">Login Required</h2>
-            <div id="connectWarning" class="hidden bg-red-100 text-red-700 p-3 rounded text-sm mb-4">
-                System not connected. Please go to <strong>Admin</strong> to set up.
-            </div>
-            <input type="password" id="authInput" class="w-full border p-3 rounded mb-4 text-center text-xl tracking-widest" placeholder="Enter PIN">
-            <button id="loginBtn" onclick="attemptLogin()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 transition">Unlock System</button>
-            <p id="authError" class="text-red-500 text-sm mt-3 hidden">Incorrect PIN.</p>
-        </div>
-    </div>
-
-    <div id="appContent" class="hidden">
-        <nav class="bg-white shadow border-b border-gray-200 mb-6 no-print">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <a href="index.html" class="flex items-center text-gray-500 hover:text-indigo-600 mr-4">
-                            <span class="material-icons">arrow_back</span>
-                        </a>
-                        <h1 class="text-xl font-bold text-indigo-600">Reports</h1>
-                    </div>
-                    <div class="flex items-center"><button onclick="logout()" class="text-gray-500 hover:text-red-600 text-sm font-medium">Logout</button></div>
+    <nav class="bg-indigo-700 text-white shadow-lg no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <span class="material-icons">analytics</span>
+                    <span class="font-bold text-xl">Vocational Reports</span>
+                </div>
+                <div class="flex gap-4">
+                    <a href="index.html" class="hover:bg-indigo-600 px-3 py-2 rounded transition flex items-center gap-1">
+                        <span class="material-icons text-sm">dashboard</span> Dashboard
+                    </a>
+                    <button onclick="window.print()" class="bg-white text-indigo-700 font-bold px-4 py-2 rounded hover:bg-gray-100 transition flex items-center gap-1">
+                        <span class="material-icons text-sm">print</span> Print
+                    </button>
                 </div>
             </div>
-        </nav>
+        </div>
+    </nav>
 
-        <div class="max-w-6xl mx-auto bg-white p-5 rounded-lg shadow mb-6 no-print border border-gray-200">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                <div><label class="block text-xs font-bold uppercase text-gray-500 mb-1">Student</label><select id="studentSelect" onchange="loadStudentData()" class="w-full border p-2 rounded bg-gray-50"><option value="">Select Student...</option></select></div>
-                <div><label class="block text-xs font-bold uppercase text-gray-500 mb-1">Start Date</label><input type="date" id="startDate" onchange="loadStudentData()" class="w-full border p-2 rounded"></div>
-                <div><label class="block text-xs font-bold uppercase text-gray-500 mb-1">End Date</label><input type="date" id="endDate" onchange="loadStudentData()" class="w-full border p-2 rounded"></div>
-                <div><label class="block text-xs font-bold uppercase text-gray-500 mb-1">Job Site</label><select id="siteFilter" onchange="loadStudentData()" class="w-full border p-2 rounded"><option value="All">All Sites</option></select></div>
-            </div>
-            <div class="mt-4 pt-4 border-t flex justify-end">
-                <button onclick="window.print()" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 font-bold shadow flex items-center gap-2">Print Report Card</button>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <div id="errorBanner" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm" role="alert">
+            <p class="font-bold">Connection Error</p>
+            <p id="errorText">Could not load data.</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 no-print">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
+                    <select id="studentSelect" onchange="updateDashboard()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-gray-50">
+                        <option value="">Loading students...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Time Period</label>
+                    <select id="timeRange" onchange="updateDashboard()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-gray-50">
+                        <option value="30">Last 30 Days</option>
+                        <option value="90">Last 3 Months</option>
+                        <option value="180">Last 6 Months</option>
+                        <option value="365">Last Year</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div id="reportContainer" class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-lg hidden min-h-screen relative">
-            <div class="flex justify-between items-start border-b-4 border-indigo-600 pb-4 mb-6">
-                <div><h2 id="studentName" class="text-4xl font-bold text-gray-900">Student Name</h2><div class="mt-2 text-gray-600"><p><strong>Report Period:</strong> <span id="dateRangeDisplay">--</span></p><p><strong>Job Site Filter:</strong> <span id="siteDisplay">All</span></p></div></div>
-                <div class="text-right bg-gray-50 p-4 rounded-lg border border-gray-200"><div class="text-xs text-gray-500 uppercase tracking-wide font-bold mb-1">Overall Average</div><div id="overallScore" class="text-5xl font-bold text-gray-800 leading-none">--</div><div class="text-xs text-gray-400 mt-1">Scale: 0.0 - 4.0</div></div>
+        <div id="reportContent" class="hidden">
+            
+            <div class="mb-8 border-b pb-4">
+                <h1 id="studentNameTitle" class="text-3xl font-bold text-gray-900">Student Name</h1>
+                <p class="text-gray-500">Progress Summary</p>
             </div>
-            <div id="chartContainer" class="mb-8 h-80 relative"><canvas id="skillsChart"></canvas></div>
-            <h3 class="font-bold text-lg mb-3 text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1">Detailed Skill Breakdown</h3>
-            <div id="skillsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"></div>
-            <div class="history-section pt-4">
-                <h3 class="font-bold text-lg mb-4 text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1">Evaluation History</h3>
-                <div class="overflow-x-auto mb-8"><table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-gray-100 border-b-2 border-gray-300 text-gray-600 uppercase text-xs"><th class="p-3">Date</th><th class="p-3">Job Site</th><th class="p-3">Evaluator</th><th class="p-3 text-center">Score</th><th class="p-3 w-1/3">Notes</th></tr></thead><tbody id="entriesTable" class="divide-y divide-gray-200"></tbody></table></div>
-                <div class="signature-section mt-16 pt-8 grid grid-cols-2 gap-16"><div><div class="border-b-2 border-gray-400 mb-2"></div><p class="text-sm font-bold text-gray-600 uppercase tracking-wide">Teacher of Record</p></div><div><div class="border-b-2 border-gray-400 mb-2"></div><p class="text-sm font-bold text-gray-600 uppercase tracking-wide">Employer / Supervisor</p></div></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-50 text-blue-600 mr-4">
+                            <span class="material-icons text-3xl">history_edu</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Total Evaluations</p>
+                            <p id="totalLogs" class="text-2xl font-bold text-gray-900">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-50 text-green-600 mr-4">
+                            <span class="material-icons text-3xl">star</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Average Score</p>
+                            <p id="avgScore" class="text-2xl font-bold text-gray-900">0.0</p>
+                            <p class="text-xs text-gray-400">Out of 5.0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-50 text-purple-600 mr-4">
+                            <span class="material-icons text-3xl">thumb_up</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Strongest Skill</p>
+                            <p id="topSkill" class="text-lg font-bold text-gray-900 leading-tight">N/A</p>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 page-break-inside-avoid">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Skill Proficiency Profile</h3>
+                <div class="relative h-96 w-full">
+                    <canvas id="skillsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8 page-break-inside-avoid">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800">Recent Evaluation Comments</h3>
+                </div>
+                <div class="p-6">
+                    <ul id="commentsList" class="space-y-4">
+                        </ul>
+                </div>
+            </div>
+
+        </div> <div id="loadingIndicator" class="text-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-700 mx-auto mb-4"></div>
+            <p class="text-gray-500">Connecting to Google Database...</p>
         </div>
 
     </div>
 
     <script>
-        const API_URL = localStorage.getItem('bresa_api_url');
-        const SKILLS = ["Punctual", "Prepared", "Hygiene/Dress", "Task Initiation", "Work Rate", "Logical Order", "Adaptability", "Quality Standards", "Clean Workspace", "Awareness/Safety", "Social Interactions", "Communication", "Constructive Criticism", "Positive Attitude", "Asks for Help", "Self-Reflection"];
-        let allEntries=[], students=[], filteredEntries=[], chartInstance=null;
+        // 1. CONFIGURATION: Matched to your Backend (Correct Spelling)
+        const SKILLS_LIST = [
+          "Punctual",
+          "Prepared with Necessary Materials",
+          "Demonstrates appropriate hygiene/dress",
+          "Initiates familiar tasks",
+          "Maintains a productive work rate",
+          "Complete tasks in a logical order",
+          "Demonstrates adaptability",
+          "Work is completed to quality standards",
+          "Maintains clean and organized work space",
+          "Awareness of surroundings and good decision making",
+          "Appropriate and respectful social interactions", 
+          "Displays effective communication skills",
+          "Accepts constructive criticism",
+          "Demonstrates a positive attitude",
+          "Asks for help appropriately",
+          "Demonstrates self-reflection"
+        ];
 
-        function checkAuth() {
-            if(!API_URL) { document.getElementById('connectWarning').classList.remove('hidden'); document.getElementById('loginBtn').disabled=true; return; }
-            if (sessionStorage.getItem('auth') === 'true') {
-                document.getElementById('authModal').classList.add('hidden');
-                document.getElementById('appContent').classList.remove('hidden');
-                init();
+        let allEntries = [];
+        let studentsMap = {};
+        let chartInstance = null;
+
+        // 2. INITIALIZATION
+        window.addEventListener('load', async () => {
+            const apiUrl = localStorage.getItem('vocational_backend_url');
+            
+            if (!apiUrl) {
+                showError("Database not connected. Please go to Admin Settings.");
+                return;
+            }
+
+            try {
+                // Fetch Students
+                const sResponse = await fetch(`${apiUrl}?action=getStudents`);
+                const sData = await sResponse.json();
+                
+                const select = document.getElementById('studentSelect');
+                select.innerHTML = '<option value="">-- Select a Student --</option>';
+                
+                sData.data.forEach(stu => {
+                    studentsMap[stu.student_id] = stu.name;
+                    let opt = document.createElement('option');
+                    opt.value = stu.student_id;
+                    opt.innerText = stu.name;
+                    select.appendChild(opt);
+                });
+
+                // Fetch Entries
+                const eResponse = await fetch(`${apiUrl}?action=getEntries`);
+                const eData = await eResponse.json();
+                allEntries = eData.data;
+
+                document.getElementById('loadingIndicator').classList.add('hidden');
+
+            } catch (err) {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                showError("Failed to load data. Please check your internet connection.");
+                console.error(err);
+            }
+        });
+
+        // 3. CORE LOGIC
+        function updateDashboard() {
+            const studentId = document.getElementById('studentSelect').value;
+            const range = document.getElementById('timeRange').value;
+            const container = document.getElementById('reportContent');
+
+            if (!studentId) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            // Set Title
+            document.getElementById('studentNameTitle').innerText = studentsMap[studentId];
+            container.classList.remove('hidden');
+
+            // Filter Data
+            const cutoffDate = new Date();
+            if (range !== 'all') {
+                cutoffDate.setDate(cutoffDate.getDate() - parseInt(range));
+            }
+
+            const filtered = allEntries.filter(e => {
+                const entryDate = new Date(e.date);
+                return e.student_id.toString() === studentId && (range === 'all' || entryDate >= cutoffDate);
+            });
+
+            if (filtered.length === 0) {
+                // Handle no data case
+                document.getElementById('totalLogs').innerText = "0";
+                document.getElementById('avgScore').innerText = "N/A";
+                document.getElementById('topSkill').innerText = "No Data";
+                document.getElementById('commentsList').innerHTML = "<li class='text-gray-400 italic'>No records found for this period.</li>";
+                if(chartInstance) chartInstance.destroy();
+                return;
+            }
+
+            // Calculate Metrics
+            let skillSums = {};
+            let skillCounts = {};
+            SKILLS_LIST.forEach(s => { skillSums[s] = 0; skillCounts[s] = 0; });
+
+            let totalScoreSum = 0;
+            let totalScoreCount = 0;
+
+            filtered.forEach(entry => {
+                SKILLS_LIST.forEach(skill => {
+                    // Check if score exists and is a number (handles the object mapping)
+                    if (entry.scores && entry.scores[skill] !== "" && entry.scores[skill] !== undefined) {
+                        const score = parseFloat(entry.scores[skill]);
+                        if (!isNaN(score)) {
+                            skillSums[skill] += score;
+                            skillCounts[skill]++;
+                            totalScoreSum += score;
+                            totalScoreCount++;
+                        }
+                    }
+                });
+            });
+
+            // Update DOM Stats
+            document.getElementById('totalLogs').innerText = filtered.length;
+            document.getElementById('avgScore').innerText = totalScoreCount > 0 ? (totalScoreSum / totalScoreCount).toFixed(1) : "0.0";
+
+            // Determine Top Skill & Prepare Chart Data
+            let chartLabels = [];
+            let chartData = [];
+            let bestSkillName = "N/A";
+            let bestSkillAvg = -1;
+
+            SKILLS_LIST.forEach(skill => {
+                const avg = skillCounts[skill] > 0 ? (skillSums[skill] / skillCounts[skill]) : 0;
+                chartLabels.push(skill); // Shorten if needed? No, Horizontal bar handles long text well.
+                chartData.push(avg.toFixed(1));
+
+                if (avg > bestSkillAvg) {
+                    bestSkillAvg = avg;
+                    bestSkillName = skill;
+                }
+            });
+
+            document.getElementById('topSkill').innerText = bestSkillName;
+
+            // Render Chart
+            renderChart(chartLabels, chartData);
+
+            // Render Comments (Last 5)
+            const commentsList = document.getElementById('commentsList');
+            commentsList.innerHTML = "";
+            const recentEntries = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+
+            recentEntries.forEach(e => {
+                if (e.comments) {
+                    const li = document.createElement('li');
+                    li.className = "border-b border-gray-100 last:border-0 pb-2";
+                    li.innerHTML = `
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">${formatDate(e.date)}</span>
+                            <span class="text-xs text-gray-400">Site: ${e.job_site}</span>
+                        </div>
+                        <p class="text-sm text-gray-700 italic">"${e.comments}"</p>
+                    `;
+                    commentsList.appendChild(li);
+                }
+            });
+            
+            if (commentsList.children.length === 0) {
+                commentsList.innerHTML = "<li class='text-gray-400 italic'>No written comments in this period.</li>";
             }
         }
-        async function attemptLogin() {
-            const input = document.getElementById('authInput').value;
-            const btn = document.getElementById('loginBtn');
-            const err = document.getElementById('authError');
-            btn.disabled = true; btn.innerText = "Verifying..."; err.classList.add('hidden');
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "verifyPassword", password: input }) });
-                const data = await res.json();
-                if (data.status === "success") { sessionStorage.setItem('auth', 'true'); checkAuth(); } 
-                else { err.classList.remove('hidden'); btn.disabled = false; btn.innerText = "Unlock System"; }
-            } catch (e) { alert("Connection Error"); btn.disabled = false; btn.innerText = "Unlock System"; }
-        }
-        function logout() { sessionStorage.removeItem('auth'); window.location.reload(); }
-        document.getElementById('authInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') attemptLogin(); });
 
-        async function init() {
-            const today = new Date();
-            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-            document.getElementById('endDate').valueAsDate = today;
-            document.getElementById('startDate').valueAsDate = firstDay;
-            try {
-                const sRes = await fetch(API_URL + "?action=getStudents");
-                const sData = await sRes.json();
-                students = sData.data;
-                const sel = document.getElementById('studentSelect');
-                sel.innerHTML = '<option value="">Select a Student...</option>';
-                students.forEach(s => sel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`);
+        function renderChart(labels, data) {
+            const ctx = document.getElementById('skillsChart').getContext('2d');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
 
-                const jRes = await fetch(API_URL + "?action=getJobSites");
-                const jData = await jRes.json();
-                const siteSel = document.getElementById('siteFilter');
-                siteSel.innerHTML = '<option value="All">All Sites</option>';
-                if(jData.data) jData.data.forEach(s => siteSel.innerHTML += `<option value="${s}">${s}</option>`);
-
-                const eRes = await fetch(API_URL + "?action=getEntries");
-                const eData = await eRes.json();
-                allEntries = eData.data;
-            } catch(e) { console.error(e); }
-        }
-
-        function loadStudentData() {
-            // (Same reporting logic as previous version, omitted for brevity, it is compatible)
-            // Copy logic from previous report.html: loadStudentData, renderBarChart, renderGrid, renderTable
-            const sid = document.getElementById('studentSelect').value;
-            const startStr = document.getElementById('startDate').value;
-            const endStr = document.getElementById('endDate').value;
-            const siteFilter = document.getElementById('siteFilter').value;
-            if(!sid) { document.getElementById('reportContainer').classList.add('hidden'); return; }
-            const student = students.find(s => s.student_id == sid);
-            document.getElementById('studentName').innerText = student.name;
-            document.getElementById('dateRangeDisplay').innerText = `${new Date(startStr).toLocaleDateString()} - ${new Date(endStr).toLocaleDateString()}`;
-            document.getElementById('siteDisplay').innerText = siteFilter;
-            document.getElementById('reportContainer').classList.remove('hidden');
-            const startDate = new Date(startStr); const endDate = new Date(endStr); endDate.setHours(23,59,59);
-            filteredEntries = allEntries.filter(e => {
-                const eDate = new Date(e.date);
-                return e.student_id == sid && eDate >= startDate && eDate <= endDate && (siteFilter === "All" || e.job_site === siteFilter);
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Score (1-5)',
+                        data: data,
+                        backgroundColor: 'rgba(79, 70, 229, 0.6)', // Indigo-600
+                        borderColor: 'rgba(79, 70, 229, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // MAKES IT HORIZONTAL
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            min: 0,
+                            max: 5,
+                            grid: { color: '#f3f4f6' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: {
+                                autoSkip: false, // Ensure all 16 skills show
+                                font: { size: 11 }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
             });
-            filteredEntries.sort((a,b) => new Date(b.date) - new Date(a.date));
-            let sums = new Array(16).fill(0), counts = new Array(16).fill(0), grandSum = 0, grandCount = 0;
-            filteredEntries.forEach(entry => { entry.scores.forEach((score, idx) => { if(score !== "" && score !== null) { const num = Number(score); sums[idx] += num; counts[idx]++; grandSum += num; grandCount++; } }); });
-            const averages = sums.map((s, i) => counts[i] ? (s / counts[i]).toFixed(1) : 0);
-            const overall = grandCount ? (grandSum / grandCount).toFixed(2) : "N/A";
-            const ovDiv = document.getElementById('overallScore');
-            ovDiv.innerText = overall;
-            ovDiv.className = "text-5xl font-bold leading-none " + (overall >= 3 ? "text-green-600" : (overall >= 2 ? "text-yellow-600" : "text-red-600"));
-            renderBarChart(averages); renderGrid(averages, counts); renderTable(filteredEntries);
         }
-        function renderBarChart(averages) {
-            const ctx = document.getElementById('skillsChart'); if(chartInstance) chartInstance.destroy();
-            const bgColors = averages.map(s => s >= 3.0 ? '#10B981' : (s >= 2.0 ? '#F59E0B' : '#EF4444'));
-            chartInstance = new Chart(ctx, { type: 'bar', data: { labels: SKILLS, datasets: [{ label: 'Avg', data: averages, backgroundColor: bgColors, borderRadius: 4 }] }, options: { indexAxis: 'y', maintainAspectRatio: false, scales: { x: { min: 0, max: 4 } }, plugins: { legend: { display: false } } } });
+
+        function formatDate(dateString) {
+            const options = { month: 'short', day: 'numeric', year: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
         }
-        function renderGrid(avgs, counts) {
-            const grid = document.getElementById('skillsGrid'); grid.innerHTML = '';
-            SKILLS.forEach((skill, i) => { let c = counts[i] > 0 ? (avgs[i]>=3?"bg-green-50 text-green-800":(avgs[i]>=2?"bg-yellow-50 text-yellow-800":"bg-red-50 text-red-800")) : "bg-gray-50"; grid.innerHTML += `<div class="border rounded p-3 flex flex-col justify-between ${c}"><span class="text-xs font-bold uppercase">${skill}</span><div class="mt-2 flex justify-between"><span class="text-2xl font-bold">${avgs[i]}</span><span class="text-[10px]">${counts[i]} logs</span></div></div>`; });
+
+        function showError(msg) {
+            document.getElementById('errorBanner').classList.remove('hidden');
+            document.getElementById('errorText').innerText = msg;
         }
-        function renderTable(entries) {
-            const tbody = document.getElementById('entriesTable'); tbody.innerHTML = '';
-            if(entries.length === 0) return tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-400">No records found.</td></tr>';
-            entries.forEach((e) => { let s=0,c=0; e.scores.forEach(v=>{if(v!==""){s+=Number(v);c++;}}); const avg=c?(s/c).toFixed(1):"-"; tbody.innerHTML += `<tr class="border-b"><td class="p-3">${new Date(e.date).toLocaleDateString()}</td><td class="p-3">${e.job_site||"-"}</td><td class="p-3">${e.evaluator}</td><td class="p-3 text-center font-bold">${avg}</td><td class="p-3 text-sm italic">${e.comments}</td></tr>`; });
-        }
-        checkAuth();
     </script>
 </body>
 </html>
