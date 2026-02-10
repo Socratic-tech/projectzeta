@@ -6,29 +6,13 @@
     <title>Daily Habit Entry - Berrien RESA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-
     <style>
         body { font-family: 'Inter', sans-serif; }
-
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        .ts-control {
-            border-radius: 0.375rem;
-            padding: 0.75rem 1rem;
-            border-color: #d1d5db;
-        }
-        .ts-wrapper.focus .ts-control {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
-        }
-        .ts-dropdown {
-            border-radius: 0.375rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-        }
+        .ts-control { border-radius: 0.375rem; padding: 0.75rem 1rem; border-color: #d1d5db; }
+        .ts-wrapper.focus .ts-control { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3); }
+        .ts-dropdown { border-radius: 0.375rem; }
     </style>
 </head>
 <body class="bg-[#F3F4F6] text-gray-900">
@@ -49,8 +33,15 @@
         </div>
     </nav>
 
+    <div id="configError" class="fixed inset-0 bg-gray-900 z-50 flex items-center justify-center hidden">
+        <div class="bg-white p-8 rounded text-center max-w-md">
+            <h2 class="text-xl font-bold mb-4">System Not Connected</h2>
+            <p class="mb-4">You need to connect this app to your Google Sheet database first.</p>
+            <a href="index.html" class="bg-indigo-600 text-white px-4 py-2 rounded">Go to Dashboard Setup</a>
+        </div>
+    </div>
+
     <div class="max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        
         <header class="mb-8">
             <h1 class="text-3xl font-bold leading-tight text-indigo-900">Daily Habit Entry</h1>
             <p class="mt-2 text-sm text-gray-600">Record student work habits and track progress over time</p>
@@ -60,111 +51,142 @@
             
             <div class="bg-white shadow-sm rounded-lg p-6 mb-6 border border-gray-100">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Student Information</h3>
-                
-                <!-- Student Dropdown -->
-                <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
-                <div class="relative mb-6">
-                    <select id="studentSelect" required placeholder="Type to search student name...">
-                        <option value="">Loading student list...</option>
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
+                        <div class="relative">
+                            <select id="studentSelect" required placeholder="Type to search student name..."><option value="">Loading student list...</option></select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Evaluator Name</label>
+                        <input type="text" name="evaluator" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. Mr. Smith">
+                    </div>
                 </div>
-
-                <!-- ⭐ ADDED — Evaluator Input -->
-                <label class="block text-sm font-medium text-gray-700 mb-1">Evaluator Name</label>
-                <input 
-                    type="text" 
-                    id="evaluatorInput" 
-                    class="w-full border border-gray-300 rounded-md p-2.5 text-gray-700"
-                    placeholder="Enter your name (e.g., Mr. Smith)"
-                    required
-                />
             </div>
 
-            <!-- HABITS, COMMENT, AND BUTTON REMAIN UNCHANGED BELOW -->
-            <!-- (TRUNCATED FOR BREVITY — kept exactly the same except for save logic at bottom) -->
-            <!-- I WILL NOT REMOVE ANY HABIT FIELDS OR CHANGE THEIR NAMES -->
+            <div class="bg-white shadow-sm rounded-lg p-6 border border-gray-100 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Work Habits Assessment</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div><label class="block text-sm font-medium text-gray-700">Self-Reflection</label><select name="h1" id="h1" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Time Management</label><select name="h2" id="h2" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Organization</label><select name="h3" id="h3" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Task Completion</label><select name="h4" id="h4" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Attention</label><select name="h5" id="h5" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Follow Directions</label><select name="h6" id="h6" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Problem Solving</label><select name="h7" id="h7" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Independence</label><select name="h8" id="h8" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Cooperation</label><select name="h9" id="h9" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Social Skills</label><select name="h10" id="h10" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Work Quality</label><select name="h11" id="h11" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Work Pace</label><select name="h12" id="h12" class="w-full border p-2 rounded"><option value="" disabled selected>Rate...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+                </div>
+            </div>
 
-            <!-- … your entire habits section … -->
-            <!-- … your comment section … -->
+            <div class="bg-white shadow-sm rounded-lg p-6 border border-gray-100 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Daily Comment</h3>
+                    <button type="button" onclick="generateAIComment()" class="text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300 px-3 py-1 rounded-full flex items-center transition-colors">
+                        <span class="mr-1">✨</span> Suggest Comment
+                    </button>
+                </div>
+                <textarea id="commentBox" name="comments" rows="3" class="w-full border border-gray-300 rounded-md p-3 text-sm" placeholder="Optional teacher comments..."></textarea>
+            </div>
 
             <div class="mt-6 flex justify-end">
-                <button type="submit" id="submitBtn" class="bg-indigo-600 border border-transparent rounded-md shadow-sm py-3 px-8 inline-flex justify-center text-base font-medium text-white hover:bg-indigo-700 w-full sm:w-auto transition-colors">
+                <button type="submit" id="submitBtn" class="bg-indigo-600 border border-transparent rounded-md shadow-sm py-3 px-8 inline-flex justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full sm:w-auto transition-colors">
                     Save Daily Entry
                 </button>
             </div>
-
         </form>
     </div>
 
-    <div id="toast" class="hidden fixed bottom-5 right-5 bg-green-600 text-white px-6 py-4 rounded-md shadow-xl flex items-center transition-all duration-300">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <div id="toast" class="hidden fixed bottom-5 right-5 bg-green-600 text-white px-6 py-4 rounded-md shadow-xl flex items-center">
         <span>Entry saved successfully!</span>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzpGmJVhrjvYUXtokK6QMeoJdqfR21IaiVfwHm1-Jnq9TRjTgB_oQ3BQf22XDE-cSQ1/exec";
+        // Check for saved API URL
+        const API_URL = localStorage.getItem('bresa_api_url');
+        
+        if (!API_URL) {
+            document.getElementById('configError').classList.remove('hidden');
+        }
 
         const studentSelect = document.getElementById('studentSelect');
-        const evaluatorInput = document.getElementById('evaluatorInput'); // ⭐ ADDED
-
         const habitForm = document.getElementById('habitForm');
         const submitBtn = document.getElementById('submitBtn');
         const toast = document.getElementById('toast');
         const commentBox = document.getElementById('commentBox');
-
         let tomSelectInstance = null;
 
-        const habitMap = { /* unchanged */ };
+        const habitMap = { 'h1': "Self-Reflection", 'h2': "Time Management", 'h3': "Organization", 'h4': "Task Completion", 'h5': "Attention", 'h6': "Following Directions", 'h7': "Problem Solving", 'h8': "Independence", 'h9': "Cooperation", 'h10': "Social Skills", 'h11': "Work Quality", 'h12': "Work Pace" };
 
-        async function loadStudents() { /* unchanged */ }
-        function generateAIComment() { /* unchanged */ }
+        async function loadStudents() {
+            if(!API_URL) return;
+            try {
+                const response = await fetch(API_URL + "?action=getStudents");
+                const result = await response.json();
+                studentSelect.innerHTML = '<option value="">Select or type name...</option>';
+                const sortedStudents = result.data.sort((a, b) => a.name.localeCompare(b.name));
+                sortedStudents.forEach(student => {
+                    const opt = document.createElement('option');
+                    opt.value = JSON.stringify({id: student.student_id, name: student.name});
+                    opt.innerText = student.name;
+                    studentSelect.appendChild(opt);
+                });
+                if (tomSelectInstance) tomSelectInstance.destroy();
+                tomSelectInstance = new TomSelect("#studentSelect", { create: false, sortField: { field: "text", direction: "asc" }, placeholder: "Search for a student..." });
+            } catch (error) { console.error("Error loading students", error); }
+        }
 
-        // ⭐ UPDATED — PAYLOAD NOW INCLUDES evaluator
+        function generateAIComment() {
+            let highSkills = [], lowSkills = [], midSkills = [];
+            for(let i=1; i<=12; i++) {
+                const el = document.getElementById('h' + i);
+                const val = parseInt(el.value);
+                const name = habitMap['h' + i];
+                if(val >= 4) highSkills.push(name); else if(val <= 2) lowSkills.push(name); else if(val === 3) midSkills.push(name);
+            }
+            let comment = "", name = "The student";
+            if(studentSelect.value) { try { const fullName = JSON.parse(studentSelect.value).name; name = fullName.split(' ')[0]; } catch(e){} }
+
+            if(highSkills.length === 0 && lowSkills.length === 0 && midSkills.length === 0) comment = "Please rate at least one habit.";
+            else if (highSkills.length > 0 && lowSkills.length === 0) comment = `${name} had an excellent day! They demonstrated strong performance in ${highSkills.join(", ")}, showing great effort overall.`;
+            else if (highSkills.length === 0 && lowSkills.length > 0) comment = `${name} had a challenging day. We need to work on improvement in ${lowSkills.join(", ")}.`;
+            else if (highSkills.length > 0 && lowSkills.length > 0) comment = `${name} showed great strength in ${highSkills[0]} and ${highSkills[1] || highSkills[0]}. However, they struggled with ${lowSkills.join(" and ")} today.`;
+            else comment = `${name} had a satisfactory day with steady performance in ${midSkills.slice(0, 3).join(", ")}.`;
+            
+            commentBox.value = comment;
+        }
+
         async function submitEntry(e) {
             e.preventDefault();
-
-            if (!studentSelect.value) {
-                alert("Please select a student.");
-                return;
-            }
-
+            if(!studentSelect.value) { alert("Please select a student."); return; }
             const studentData = JSON.parse(studentSelect.value);
-
+            const formData = new FormData(habitForm);
+            
             const payload = {
                 student_id: studentData.id,
                 student_name: studentData.name,
-                h1: h1.value, h2: h2.value, h3: h3.value, h4: h4.value,
-                h5: h5.value, h6: h6.value, h7: h7.value, h8: h8.value,
-                h9: h9.value, h10: h10.value, h11: h11.value, h12: h12.value,
-                comments: commentBox.value || "",
-                
-                // ⭐ NEW FIELD
-                evaluator: evaluatorInput.value.trim()
+                evaluator: formData.get('evaluator') || "", // Captured Evaluator
+                h1: formData.get('h1')||"", h2: formData.get('h2')||"", h3: formData.get('h3')||"", h4: formData.get('h4')||"", h5: formData.get('h5')||"", h6: formData.get('h6')||"", h7: formData.get('h7')||"", h8: formData.get('h8')||"", h9: formData.get('h9')||"", h10: formData.get('h10')||"", h11: formData.get('h11')||"", h12: formData.get('h12')||"",
+                comments: formData.get('comments')||"" 
             };
 
-            submitBtn.disabled = true;
-
+            submitBtn.innerText = "Saving..."; submitBtn.disabled = true;
             try {
-                await fetch(API_URL + "?action=logEntry", {
-                    method: "POST",
-                    body: JSON.stringify(payload)
-                });
-
-                showToast();
-                habitForm.reset();
+                await fetch(API_URL + "?action=logEntry", { method: "POST", body: JSON.stringify(payload) });
+                document.getElementById('toast').classList.remove('hidden');
+                setTimeout(() => { document.getElementById('toast').classList.add('hidden'); }, 3000);
                 if (tomSelectInstance) tomSelectInstance.clear();
-
-            } catch (error) {
-                console.error(error);
-                alert("Error saving entry.");
-            }
-
-            submitBtn.disabled = false;
+                habitForm.reset(); 
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (error) { alert("Error saving entry."); }
+            finally { submitBtn.innerText = "Save Daily Entry"; submitBtn.disabled = false; }
         }
 
-        function showToast() { /* unchanged */ }
         loadStudents();
     </script>
-
 </body>
 </html>
