@@ -2,194 +2,227 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Setup Guide - Replicating this Project</title>
+    <title>Setup Guide</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <script>
+        function copyCode() {
+            const codeText = document.getElementById('scriptCode').innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.innerText = "Copied!";
+                btn.classList.add("bg-green-600");
+                setTimeout(() => {
+                    btn.innerText = "Copy Script Code";
+                    btn.classList.remove("bg-green-600");
+                }, 2000);
+            });
+        }
+    </script>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body class="bg-gray-50 text-gray-900 font-sans pb-10">
 
-    <div class="max-w-4xl mx-auto py-12 px-6">
+    <nav class="bg-white shadow border-b border-gray-200 mb-8 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-xl font-bold text-indigo-600">Vocational Tracker</h1>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="index.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+                        <a href="entry.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">New Entry</a>
+                        <a href="report.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Reports</a>
+                        <a href="admin.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Admin</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4">
         
-        <header class="mb-12 text-center">
-            <h1 class="text-4xl font-bold text-indigo-900 mb-4">How to Replicate this Project</h1>
-            <p class="text-lg text-gray-600">A step-by-step guide for other districts to set up their own Work Habits Tracker.</p>
-        </header>
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl">Installation Guide</h1>
+            <p class="mt-4 text-xl text-gray-500">How to replicate this tool for your own school or program.</p>
+        </div>
 
-        <section class="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-8">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex items-center mb-4">
-                <span class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full mr-3">Step 1</span>
-                <h2 class="text-2xl font-bold text-gray-800">Create the Google Sheet</h2>
+                <span class="bg-indigo-600 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                <h2 class="text-xl font-bold">Create the Database (Google Sheets)</h2>
             </div>
-            <p class="mb-4 text-gray-600">Create a new Google Sheet. Rename the file to "Work Habits Database". You need to create <strong>3 Tabs</strong> with specific names and headers.</p>
-            
-            <div class="space-y-4">
-                <div class="bg-gray-50 p-4 rounded border">
-                    <h3 class="font-bold text-sm text-gray-700 uppercase mb-2">Tab 1: Students</h3>
-                    <p class="text-xs text-gray-500 font-mono">Row 1 Headers: uuid, name, student_id, grade, status</p>
-                </div>
-                <div class="bg-gray-50 p-4 rounded border">
-                    <h3 class="font-bold text-sm text-gray-700 uppercase mb-2">Tab 2: Entries</h3>
-                    <p class="text-xs text-gray-500 font-mono">Row 1 Headers: uuid, date, student_id, student_name, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, comments</p>
-                </div>
-                <div class="bg-gray-50 p-4 rounded border">
-                    <h3 class="font-bold text-sm text-gray-700 uppercase mb-2">Tab 3: Settings</h3>
-                    <p class="text-xs text-gray-500 font-mono">Row 1 Headers: key, value</p>
-                    <p class="text-xs text-gray-500 mt-1"><i>(Optional: Pre-fill Row 2 with 'low_threshold', '2.5' and Row 3 with 'high_threshold', '3.8')</i></p>
-                </div>
-            </div>
-        </section>
+            <p class="text-gray-600 ml-11 mb-2">
+                This tool uses a free Google Sheet to store all data.
+            </p>
+            <ol class="list-decimal list-inside ml-11 text-gray-700 space-y-2">
+                <li>Go to <a href="https://sheets.google.com" target="_blank" class="text-indigo-600 underline">sheets.google.com</a> and create a <strong>Blank Spreadsheet</strong>.</li>
+                <li>Name it <span class="font-mono bg-gray-100 px-1 rounded">Vocational Tracker Database</span>.</li>
+                <li><strong>Do not rename the tabs yet.</strong> The script will do this for you automatically.</li>
+            </ol>
+        </div>
 
-        <section class="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-8">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex items-center mb-4">
-                <span class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full mr-3">Step 2</span>
-                <h2 class="text-2xl font-bold text-gray-800">Add the Script</h2>
+                <span class="bg-indigo-600 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                <h2 class="text-xl font-bold">Install the Backend Script</h2>
             </div>
-            <p class="mb-4 text-gray-600">In your Google Sheet, go to <strong>Extensions > Apps Script</strong>. Delete any code there and paste the code below.</p>
+            <p class="text-gray-600 ml-11 mb-4">
+                This script acts as the "brain" connecting the website to your spreadsheet.
+            </p>
+            <ol class="list-decimal list-inside ml-11 text-gray-700 space-y-2 mb-4">
+                <li>In your new Google Sheet, click <strong>Extensions</strong> > <strong>Apps Script</strong>.</li>
+                <li>Delete any code currently in the editor (e.g., <code>function myFunction()...</code>).</li>
+                <li>Copy the code below and paste it into the editor.</li>
+            </ol>
             
-            <div class="relative">
-                <textarea id="scriptCode" class="w-full h-64 bg-gray-900 text-green-400 font-mono text-xs p-4 rounded" readonly>
-// --- CONFIGURATION ---
-function SET_PASSWORD() {
-  // CHANGE 'admin123' to your desired password then RUN this function once.
-  PropertiesService.getScriptProperties().setProperty('APP_PASSWORD', 'admin123'); 
+            <div class="ml-11 relative">
+                <button id="copyBtn" onclick="copyCode()" class="absolute top-2 right-2 bg-indigo-600 text-white text-xs px-3 py-1 rounded hover:bg-indigo-700 transition">
+                    Copy Script Code
+                </button>
+                <pre class="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-x-auto h-64 select-all" id="scriptCode">
+function doGet(e) {
+  const action = e.parameter.action;
+  if (action === "getStudents") return getStudents();
+  if (action === "getJobSites") return getJobSites();
+  if (action === "getEntries") return getEntries();
+  return ContentService.createTextOutput(JSON.stringify({ status: "error" })).setMimeType(ContentService.MimeType.JSON);
 }
 
-// --- API HANDLER ---
-function doGet(e) { return handleRequest(e); }
-function doPost(e) { return handleRequest(e); }
-
-function handleRequest(e) {
-  var action = e.parameter.action;
-  
-  if (action == 'login') {
-    var payload = JSON.parse(e.postData.contents);
-    var savedPass = PropertiesService.getScriptProperties().getProperty('APP_PASSWORD');
-    if (payload.password === savedPass) return response({status: 'success'});
-    return response({status: 'error', message: 'Incorrect password'});
-  }
-
-  if (action == 'getStudents') return getStudents();
-  if (action == 'addStudent') return addStudent(e);
-  if (action == 'deleteStudent') return deleteStudent(e);
-  if (action == 'logEntry') return logEntry(e);
-  if (action == 'getEntries') return getEntries();
-  if (action == 'getSettings') return getSettings();
-  if (action == 'saveSettings') return saveSettings(e);
-
-  return response({status: 'error', message: 'Invalid action'});
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const action = data.action;
+    if (action === "addEntry") return addEntry(data);
+    if (action === "addStudent") return addStudent(data);
+    if (action === "addJobSite") return addJobSite(data);
+    if (action === "deleteJobSite") return deleteJobSite(data);
+    return responseJSON({ status: "error" });
+  } catch (error) { return responseJSON({ status: "error", message: error.toString() }); }
 }
 
-// --- DATA FUNCTIONS ---
 function getStudents() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Students');
-  var data = sheet.getDataRange().getValues();
-  data.shift(); 
-  var students = data.map(row => ({ id: row[0], name: row[1], student_id: row[2], grade: row[3], status: row[4] }));
-  return response({status: 'success', data: students});
-}
-
-function addStudent(e) {
-  var payload = JSON.parse(e.postData.contents);
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Students');
-  sheet.appendRow([Utilities.getUuid(), payload.name, payload.student_id, payload.grade, "Active"]);
-  return response({status: 'success', message: 'Student added'});
-}
-
-function deleteStudent(e) {
-  var payload = JSON.parse(e.postData.contents);
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Students');
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] == payload.id) { sheet.deleteRow(i + 1); return response({status: 'success', message: 'Deleted'}); }
+  const sheet = getSheet("Students");
+  const data = sheet.getDataRange().getValues();
+  const students = [];
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0]) students.push({ student_id: data[i][0], name: data[i][1] });
   }
-  return response({status: 'error', message: 'ID not found'});
+  return responseJSON({ data: students });
 }
 
-function logEntry(e) {
-  var d = JSON.parse(e.postData.contents);
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Entries');
-  var timestamp = new Date().toISOString(); 
-  sheet.appendRow([
-    Utilities.getUuid(), timestamp, d.student_id, d.student_name, 
-    d.h1, d.h2, d.h3, d.h4, d.h5, d.h6, d.h7, d.h8, d.h9, d.h10, d.h11, d.h12,
-    d.comments 
-  ]);
-  return response({status: 'success', message: 'Entry saved'});
+function getJobSites() {
+  const sheet = getSheet("JobSites");
+  const data = sheet.getDataRange().getValues();
+  const sites = [];
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0]) sites.push(data[i][0]);
+  }
+  return responseJSON({ data: sites.sort() });
 }
 
 function getEntries() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Entries');
-  if (!sheet || sheet.getLastRow() <= 1) return response({status: 'success', data: []});
-  var data = sheet.getDataRange().getValues();
-  data.shift(); 
-  var entries = data.map(function(row) {
-    return {
-      id: row[0], date: row[1], student_id: row[2],
-      scores: [row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15]],
-      comments: row[16] || "" 
-    };
-  });
-  return response({status: 'success', data: entries});
-}
-
-function getSettings() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Settings');
-  if (!sheet) return response({status: 'success', data: {low: 2.5, high: 3.8}});
-  var data = sheet.getDataRange().getValues();
-  var settings = {low: 2.5, high: 3.8}; 
-  for(var i=1; i<data.length; i++) {
-    if(data[i][0] == 'low_threshold') settings.low = Number(data[i][1]);
-    if(data[i][0] == 'high_threshold') settings.high = Number(data[i][1]);
+  const sheet = getSheet("Entries");
+  const data = sheet.getDataRange().getValues();
+  const entries = [];
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][2]) { 
+      let scores = [];
+      try { scores = JSON.parse(data[i][5]); } catch(e) { scores = []; }
+      entries.push({
+        timestamp: data[i][0], date: data[i][1], student_id: data[i][2],
+        job_site: data[i][3], evaluator: data[i][4], scores: scores, comments: data[i][6]
+      });
+    }
   }
-  return response({status: 'success', data: settings});
+  return responseJSON({ data: entries });
 }
 
-function saveSettings(e) {
-  var d = JSON.parse(e.postData.contents);
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName('Settings');
-  if (!sheet) { sheet = ss.insertSheet('Settings'); sheet.appendRow(['key', 'value']); }
-  sheet.clearContents();
-  sheet.appendRow(['key', 'value']);
-  sheet.appendRow(['low_threshold', d.low]);
-  sheet.appendRow(['high_threshold', d.high]);
-  return response({status: 'success', message: 'Settings saved'});
+function addEntry(data) {
+  const sheet = getSheet("Entries");
+  sheet.appendRow([new Date(), data.date, data.student_id, data.job_site, data.evaluator, data.scores, data.comments]);
+  return responseJSON({ status: "success" });
 }
 
-function response(data) {
+function addStudent(data) {
+  const sheet = getSheet("Students");
+  const id = "STU" + Date.now(); 
+  sheet.appendRow([id, data.name]);
+  return responseJSON({ status: "success", id: id });
+}
+
+function addJobSite(data) {
+  const sheet = getSheet("JobSites");
+  sheet.appendRow([data.site_name]);
+  return responseJSON({ status: "success" });
+}
+
+function deleteJobSite(data) {
+  const sheet = getSheet("JobSites");
+  const rows = sheet.getDataRange().getValues();
+  for (let i = rows.length - 1; i >= 0; i--) {
+    if (rows[i][0] === data.site_name) sheet.deleteRow(i + 1);
+  }
+  return responseJSON({ status: "success" });
+}
+
+function getSheet(name) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    if (name === "Students") sheet.appendRow(["Student ID", "Name"]);
+    if (name === "JobSites") sheet.appendRow(["Site Name"]);
+    if (name === "Entries") sheet.appendRow(["Timestamp", "Date", "Student ID", "Job Site", "Evaluator", "Scores", "Comments"]);
+  }
+  return sheet;
+}
+
+function responseJSON(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
 }
-                </textarea>
-                <button onclick="copyCode()" class="absolute top-4 right-4 bg-white text-gray-900 px-3 py-1 rounded text-xs font-bold border hover:bg-gray-100">Copy Code</button>
+                </pre>
             </div>
-        </section>
+        </div>
 
-        <section class="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex items-center mb-4">
-                <span class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full mr-3">Step 3</span>
-                <h2 class="text-2xl font-bold text-gray-800">Deploy & Connect</h2>
+                <span class="bg-indigo-600 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                <h2 class="text-xl font-bold">Deploy the Script</h2>
             </div>
-            <ul class="list-disc list-inside space-y-2 text-gray-700">
-                <li>In the Apps Script editor, click <strong>Deploy > New Deployment</strong>.</li>
-                <li>Select <strong>Type: Web App</strong>.</li>
-                <li>Set <strong>Who has access</strong> to <strong>Anyone</strong>. (This is required for the app to talk to the sheet).</li>
-                <li>Click <strong>Deploy</strong> and copy the <strong>Web App URL</strong>.</li>
-                <li>Open the <code>index.html</code> file on your computer.</li>
-                <li>Find the line <code>const API_URL = "..."</code> and paste your URL there.</li>
+            <p class="text-gray-600 ml-11 mb-2">
+                This is the most important step to make the tool accessible.
+            </p>
+            <ul class="list-disc list-inside ml-11 text-gray-700 space-y-2">
+                <li>In the Apps Script window, click the blue <strong>Deploy</strong> button (top right) > <strong>New Deployment</strong>.</li>
+                <li>Click the <strong>Gear Icon</strong> (Select type) > <strong>Web App</strong>.</li>
+                <li><strong>Description:</strong> "Version 1" (or anything you like).</li>
+                <li><strong>Execute as:</strong> <span class="bg-yellow-100 px-1 rounded font-bold">Me (your email)</span>.</li>
+                <li><strong>Who has access:</strong> <span class="bg-red-100 px-1 rounded font-bold text-red-700">Anyone</span>. (Crucial for the app to work).</li>
+                <li>Click <strong>Deploy</strong>. You may need to authorize permissions (Click Review Permissions > Choose Account > Advanced > Go to Untitled Project (unsafe)).</li>
+                <li><strong>COPY THE WEB APP URL</strong> generated at the end.</li>
             </ul>
-        </section>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="flex items-center mb-4">
+                <span class="bg-indigo-600 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                <h2 class="text-xl font-bold">Connect the App</h2>
+            </div>
+            <p class="text-gray-600 ml-11 mb-2">
+                Link your new database to this interface.
+            </p>
+            <ol class="list-decimal list-inside ml-11 text-gray-700 space-y-2">
+                <li>Go to the <a href="admin.html" class="text-indigo-600 font-bold hover:underline">Admin Page</a> of this tool.</li>
+                <li>Paste the Web App URL into the <strong>API Connection</strong> box.</li>
+                <li>Click <strong>Save</strong>.</li>
+                <li>Once connected, try adding a <strong>New Student</strong> in the Admin panel. This will automatically create the necessary tabs in your Google Sheet.</li>
+            </ol>
+        </div>
+
+        <div class="bg-green-50 border border-green-200 rounded p-4 text-center text-green-800 font-bold">
+            🎉 You are all set! The tool is now running on your own Google Sheet.
+        </div>
 
     </div>
-
-    <script>
-        function copyCode() {
-            const copyText = document.getElementById("scriptCode");
-            copyText.select();
-            navigator.clipboard.writeText(copyText.value);
-            alert("Code copied to clipboard!");
-        }
-    </script>
 </body>
 </html>
