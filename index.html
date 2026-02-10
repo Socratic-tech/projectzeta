@@ -1,264 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Berrien RESA</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .loader { border-top-color: #4338ca; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
-        @media print {
-            body * { visibility: hidden; }
-            #reportCardModal, #reportCardModal * { visibility: visible; }
-            #reportCardModal { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: white; z-index: 9999; margin: 0; padding: 0; }
-            .no-print { display: none !important; }
-            .fixed.inset-0.bg-gray-500 { display: none; } 
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Project Zeta Dashboard</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f7f7fc;
+    color: #222;
+  }
+
+  header {
+    background: #6b6bff;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 1.8em;
+    font-weight: bold;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: auto;
+    padding: 30px 20px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+  }
+
+  .card {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  .card:hover {
+    background: #ececff;
+    transform: translateY(-4px);
+    border-color: #6b6bff;
+  }
+
+  .card svg {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 12px;
+    fill: #6b6bff;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+    color: #666;
+  }
+</style>
 </head>
-<body class="bg-[#F3F4F6] text-gray-900">
 
-    <div id="loginOverlay" class="fixed inset-0 z-[100] bg-gray-900 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md text-center">
-            <div class="flex justify-center mb-6"><img src="https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_1/v1688065006/berrienresaorg/us2um9v88w7rv6ublprl/berrien-resa-logo.png" alt="Berrien RESA" class="h-16 w-auto"></div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Admin Access</h2>
-            <form onsubmit="attemptLogin(event)">
-                <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border border-gray-300 rounded mb-4 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <button type="submit" id="loginBtn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded hover:bg-indigo-700 transition duration-200">Unlock Dashboard</button>
-            </form>
-            <p id="loginError" class="text-red-500 mt-4 hidden">Incorrect password.</p>
-        </div>
-    </div>
+<body>
 
-    <nav class="bg-white border-b border-gray-200 no-print">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center"><img src="https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_1/v1688065006/berrienresaorg/us2um9v88w7rv6ublprl/berrien-resa-logo.png" alt="Berrien RESA" class="h-10 w-auto"></div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="entry.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Entry</a>
-                        <a href="index.html" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Admin / Dashboard</a>
-                        <a href="setup.html" target="_blank" class="border-transparent text-indigo-600 hover:text-indigo-800 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold">🛠️ How to Replicate</a>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button onclick="openSettingsModal()" class="text-sm text-gray-500 hover:text-indigo-600 flex items-center">Settings</button>
-                    <button onclick="logout()" class="text-sm text-gray-500 hover:text-gray-700 underline">Logout</button>
-                </div>
-            </div>
-        </div>
-    </nav>
+<header>Project Zeta Dashboard</header>
 
-    <div class="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8 no-print">
-        <header class="mb-8 flex justify-between items-end">
-            <div><h1 class="text-3xl font-bold leading-tight text-indigo-900">Admin Dashboard</h1><p class="mt-2 text-sm text-gray-600">Manage roster and view student analytics</p></div>
-            <div><span id="connectionStatus" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Checking...</span></div>
-        </header>
-        <div class="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-100">
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                <h3 class="text-lg font-medium leading-6 text-gray-900">Student Roster</h3>
-                <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm flex items-center transition-colors">Add Student</button>
-            </div>
-            <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grade</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th></tr></thead><tbody id="studentTableBody" class="bg-white divide-y divide-gray-200"></tbody></table></div>
-        </div>
-    </div>
+<div class="container">
 
-    <div id="settingsModal" class="fixed z-50 inset-0 overflow-y-auto hidden">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75" onclick="closeSettingsModal()"></div>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl sm:my-8 sm:align-middle sm:max-w-md sm:w-full p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Grading Thresholds</h3>
-                <div class="grid grid-cols-2 gap-2 mb-4">
-                    <div><label class="text-xs">Low (Red)</label><input type="number" step="0.1" id="setLow" class="w-full border p-2 rounded"></div>
-                    <div><label class="text-xs">High (Green)</label><input type="number" step="0.1" id="setHigh" class="w-full border p-2 rounded"></div>
-                </div>
-                <div class="flex justify-end"><button onclick="saveSettings()" class="bg-indigo-600 text-white px-4 py-2 rounded">Save</button><button onclick="closeSettingsModal()" class="ml-2 text-gray-600">Cancel</button></div>
-            </div>
-        </div>
-    </div>
+  <h2>Welcome</h2>
+  <p>Select a tool to get started.</p>
 
-    <div id="addModal" class="fixed z-50 inset-0 overflow-y-auto hidden">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75" onclick="closeAddModal()"></div>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-6">
-                 <h3 class="text-lg font-medium text-gray-900 mb-4">Add Student</h3>
-                 <input type="text" id="inputName" placeholder="Name" class="w-full border p-2 mb-2 rounded">
-                 <input type="text" id="inputId" placeholder="Student ID" class="w-full border p-2 mb-2 rounded">
-                 <select id="inputGrade" class="w-full border p-2 mb-4 rounded"><option>4th</option><option>5th</option><option>6th</option><option>7th</option><option>8th</option></select>
-                 <button onclick="submitStudent()" class="bg-indigo-600 text-white px-4 py-2 rounded">Save</button><button onclick="closeAddModal()" class="ml-2 text-gray-600">Cancel</button>
-            </div>
-        </div>
-    </div>
+  <div class="grid">
 
-    <div id="progressModal" class="fixed z-50 inset-0 overflow-y-auto hidden">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75" onclick="closeProgressModal()"></div>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full p-6">
-                <h3 class="text-xl font-bold mb-4" id="progressModalTitle">Progress</h3>
-                <div id="noDataMessage" class="hidden">No data.</div>
-                <div id="chartsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><canvas id="trendChart"></canvas></div><div><canvas id="skillsChart"></canvas></div></div>
-                <button onclick="closeProgressModal()" class="mt-4 border px-4 py-2 rounded">Close</button>
-            </div>
-        </div>
-    </div>
+    <!-- Daily Entry -->
+    <a class="card" href="entry.html">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 5a2 2 0 0 1 2-2h3l1-1h4l1 1h3a2 2 0 0 1 2 2v2H3V5zm0 4h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9zm5 3v2h8v-2H8z"/>
+      </svg>
+      <h3>Daily Entry</h3>
+      <p>Enter student daily habit evaluations.</p>
+    </a>
 
-    <div id="reportCardModal" class="fixed z-50 inset-0 overflow-y-auto hidden bg-white">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-3xl border-2 border-gray-800 p-8 shadow-2xl relative">
-                <button onclick="closeReportCard()" class="no-print absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded">Close</button>
-                <button onclick="window.print()" class="no-print absolute top-4 right-20 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded">Print Report</button>
-                <div class="text-center border-b-2 border-gray-800 pb-4 mb-6"><div class="flex justify-center mb-4"><img src="https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_1/v1688065006/berrienresaorg/us2um9v88w7rv6ublprl/berrien-resa-logo.png" alt="Berrien RESA" class="h-20 w-auto"></div><h1 class="text-3xl font-serif font-bold text-gray-900">Student Progress Report</h1></div>
-                <div class="grid grid-cols-2 gap-4 mb-6 text-sm"><div><p class="text-gray-500">Student Name</p><p class="font-bold text-lg" id="rcName">--</p></div><div><p class="text-gray-500">Student ID</p><p class="font-bold text-lg" id="rcId">--</p></div><div><p class="text-gray-500">Report Date</p><p class="font-bold" id="rcDate">--</p></div><div><p class="text-gray-500">Total Entries</p><p class="font-bold" id="rcCount">--</p></div></div>
-                <div class="mb-8 bg-indigo-50 border-l-4 border-indigo-500 p-4"><h3 class="text-indigo-900 font-bold mb-2">Teacher's Executive Summary</h3><p id="rcAutoSummary" class="text-gray-700 leading-relaxed text-sm">Generating...</p></div>
-                <div class="mb-8"><h3 class="text-lg font-bold border-b border-gray-300 mb-4 pb-1">Performance Summary</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4" id="rcGrid"></div></div>
-                <div class="mb-8"><h3 class="text-lg font-bold border-b border-gray-300 mb-4 pb-1">Recent Teacher Comments</h3><div id="rcComments" class="space-y-3 text-sm text-gray-700 italic bg-gray-50 p-4 rounded border border-gray-100 min-h-[4rem]"></div></div>
-                <div class="border-t border-gray-300 pt-4 text-xs text-gray-500 flex justify-between"><div>Need Imp. (1.0 - <span class="txt-low">2.5</span>)</div><div>Satisfactory (<span class="txt-low-next">2.6</span> - <span class="txt-high-prev">3.7</span>)</div><div>Excellent (<span class="txt-high">3.8</span> - 5.0)</div></div>
-                <div class="mt-8 pt-8 flex justify-between"><div class="border-t border-gray-400 w-1/3 text-center text-sm text-gray-500">Teacher Signature</div><div class="border-t border-gray-400 w-1/3 text-center text-sm text-gray-500">Parent Signature</div></div>
-            </div>
-        </div>
-    </div>
+    <!-- Reports -->
+    <a class="card" href="report.html">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h12v2H3v-2zm0 4h12v2H3v-2zm0 4h18v2H3v-2z"/>
+      </svg>
+      <h3>Reports</h3>
+      <p>View student progress charts and history.</p>
+    </a>
 
-    <script>
-        // --- CONFIG ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbzpGmJVhrjvYUXtokK6QMeoJdqfR21IaiVfwHm1-Jnq9TRjTgB_oQ3BQf22XDE-cSQ1/exec";
-        
-        let allStudents = [], allEntries = [], trendChartInstance = null, skillsChartInstance = null;
-        let appSettings = { low: 2.5, high: 3.8 }; // Defaults to prevent gray charts if load fails
-        const habitNames = ["Self-Reflection", "Time Mgmt", "Organization", "Task Comp", "Attention", "Follow Directions", "Problem Solving", "Independence", "Cooperation", "Social Skills", "Quality", "Pace"];
+    <!-- Students -->
+    <a class="card" href="students.html">
+      <svg viewBox="0 0 24 24">
+        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5c0-2.33-4.67-3.5-7-3.5zm10 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V20h4v-3.5c0-2.33-4.67-3.5-7-3.5z"/>
+      </svg>
+      <h3>Students</h3>
+      <p>Manage student profiles and data.</p>
+    </a>
 
-        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
-            document.getElementById('loginOverlay').classList.add('hidden');
-            init();
-        } else { document.getElementById('loginOverlay').classList.remove('hidden'); }
+    <!-- Settings -->
+    <a class="card" href="settings.html">
+      <svg viewBox="0 0 24 24">
+        <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .11-.66l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.007 7.007 0 0 0-1.62-.94L14.5 2h-5l-.24 2.2c-.59.23-1.13.54-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.72 8.82a.5.5 0 0 0 .11.66L4.86 11.06c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.11.66l1.92 3.32c.14.24.44.34.7.22l2.39-.96c.49.4 1.03.71 1.62.94L9.5 22h5l.24-2.2c.59-.23 1.13-.54 1.62-.94l2.39.96c.26.11.56.02.7-.22l1.92-3.32a.5.5 0 0 0-.11-.66l-2.03-1.58zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5S10.07 8.5 12 8.5s3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+      </svg>
+      <h3>Settings</h3>
+      <p>Configure system options and preferences.</p>
+    </a>
 
-        async function attemptLogin(e) {
-            e.preventDefault();
-            const pass = document.getElementById('loginPassword').value;
-            const btn = document.getElementById('loginBtn');
-            btn.innerText = "Verifying..."; btn.disabled = true;
-            try {
-                const response = await fetch(API_URL + "?action=login", { method: "POST", body: JSON.stringify({ password: pass }) });
-                const result = await response.json();
-                if (result.status === 'success') { sessionStorage.setItem('adminLoggedIn', 'true'); document.getElementById('loginOverlay').classList.add('hidden'); init(); } 
-                else { document.getElementById('loginError').classList.remove('hidden'); }
-            } catch (error) { alert("Connection failed."); } finally { btn.innerText = "Unlock Dashboard"; btn.disabled = false; }
-        }
-        function logout() { sessionStorage.removeItem('adminLoggedIn'); location.reload(); }
+  </div>
+</div>
 
-        async function init() {
-            updateStatus(false);
-            try {
-                // Fetch Settings with fallback
-                const settingsRes = await fetch(API_URL + "?action=getSettings");
-                const settingsJson = await settingsRes.json();
-                if(settingsJson.data) appSettings = settingsJson.data;
+<footer>
+  Project Zeta © 2026
+</footer>
 
-                const sResponse = await fetch(API_URL + "?action=getStudents");
-                allStudents = (await sResponse.json()).data;
-                const eResponse = await fetch(API_URL + "?action=getEntries");
-                allEntries = (await eResponse.json()).data || [];
-                renderTable(allStudents); updateStatus(true);
-            } catch (error) { console.error(error); updateStatus(false); }
-        }
-
-        function updateStatus(isOnline) {
-            const badge = document.getElementById('connectionStatus');
-            if(isOnline) { badge.innerHTML = "● Online"; badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"; } 
-            else { badge.innerHTML = "● Syncing..."; badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"; }
-        }
-
-        function renderTable(students) {
-            const tbody = document.getElementById('studentTableBody'); tbody.innerHTML = '';
-            students.slice().reverse().forEach(s => {
-                tbody.innerHTML += `<tr><td class="px-6 py-4">${s.name}</td><td class="px-6 py-4">${s.student_id}</td><td class="px-6 py-4">${s.grade}</td><td class="px-6 py-4 text-right"><button onclick="viewProgress('${s.student_id}','${s.name}')" class="text-indigo-600 mr-3">Charts</button><button onclick="generateReportCard('${s.student_id}','${s.name}')" class="text-green-600 mr-3">Report</button><button onclick="deleteStudent('${s.id}')" class="text-red-400">Delete</button></td></tr>`;
-            });
-        }
-
-        // --- CHARTS LOGIC (Fixed Colors) ---
-        function calculateSmartAverage(arr) { let sum=0,count=0; arr.forEach(v=>{if(v){sum+=Number(v);count++}}); return count===0?0:sum/count; }
-        
-        function viewProgress(id, name) {
-            document.getElementById('progressModal').classList.remove('hidden');
-            const entries = allEntries.filter(e => e.student_id == id);
-            if (entries.length === 0) { document.getElementById('noDataMessage').classList.remove('hidden'); document.getElementById('chartsContainer').classList.add('hidden'); return; }
-            document.getElementById('noDataMessage').classList.add('hidden'); document.getElementById('chartsContainer').classList.remove('hidden');
-            
-            entries.sort((a, b) => new Date(a.date) - new Date(b.date));
-            const dates = entries.map(e => new Date(e.date).toLocaleDateString());
-            const daily = entries.map(e => calculateSmartAverage(e.scores).toFixed(1));
-            
-            const skillBuckets = Array.from({ length: 12 }, () => []);
-            entries.forEach(e => { e.scores.forEach((s, i) => { if (s) skillBuckets[i].push(s); }); });
-            const skills = skillBuckets.map(bucket => calculateSmartAverage(bucket).toFixed(1));
-
-            // Logic to prevent "Gray" bars: Force comparison against defaults if appSettings is somehow missing
-            const low = appSettings.low || 2.5;
-            const high = appSettings.high || 3.8;
-
-            const chartColors = skills.map(score => {
-                const s = Number(score);
-                if (s >= high) return '#10B981'; // Green
-                if (s > low) return '#F59E0B'; // Yellow
-                return '#EF4444'; // Red
-            });
-
-            if(trendChartInstance) trendChartInstance.destroy();
-            if(skillsChartInstance) skillsChartInstance.destroy();
-
-            trendChartInstance = new Chart(document.getElementById('trendChart'), { type: 'line', data: { labels: dates, datasets: [{ label: 'Daily Avg', data: daily, borderColor: '#4F46E5', backgroundColor: 'rgba(79, 70, 229, 0.1)', fill: true }] }, options: { scales: { y: { min: 0, max: 5 } } } });
-            skillsChartInstance = new Chart(document.getElementById('skillsChart'), { type: 'bar', data: { labels: habitNames, datasets: [{ label: 'Avg Score', data: skills, backgroundColor: chartColors }] }, options: { indexAxis: 'y', scales: { x: { min: 0, max: 5 } } } });
-        }
-
-        // --- REPORT CARD & SETTINGS ---
-        function generateReportCard(id, name) { /* (Same logic as previous, utilizing appSettings) */ 
-            const entries = allEntries.filter(e => e.student_id == id);
-            if(entries.length===0) return alert("No data");
-            document.querySelectorAll('.txt-low').forEach(e => e.innerText = appSettings.low);
-            document.querySelectorAll('.txt-low-next').forEach(e => e.innerText = (appSettings.low + 0.1).toFixed(1));
-            document.querySelectorAll('.txt-high-prev').forEach(e => e.innerText = (appSettings.high - 0.1).toFixed(1));
-            document.querySelectorAll('.txt-high').forEach(e => e.innerText = appSettings.high);
-            document.getElementById('rcName').innerText = name; document.getElementById('rcId').innerText = id; document.getElementById('rcDate').innerText = new Date().toLocaleDateString(); document.getElementById('rcCount').innerText = entries.length + " entries";
-            document.getElementById('rcAutoSummary').innerHTML = generateSummaryText(name, entries);
-            const skillBuckets = Array.from({ length: 12 }, () => []); entries.forEach(e => { e.scores.forEach((s, i) => { if(s) skillBuckets[i].push(s); }); });
-            const grid = document.getElementById('rcGrid'); grid.innerHTML = '';
-            habitNames.forEach((n, i) => {
-                const avg = calculateSmartAverage(skillBuckets[i]); const disp = avg > 0 ? avg.toFixed(1) : "N/A";
-                let c = "text-gray-400", b = "bg-gray-100", w = "0%";
-                if(avg > 0) { w=(avg/5*100)+"%"; if(avg>=appSettings.high){c="text-green-700";b="bg-green-500"} else if(avg>appSettings.low){c="text-yellow-600";b="bg-yellow-400"} else{c="text-red-600";b="bg-red-500"} }
-                grid.innerHTML += `<div class="flex items-center justify-between border-b pb-2"><div class="w-1/3 text-sm font-medium">${n}</div><div class="w-1/3 px-2"><div class="h-2 w-full bg-gray-200 rounded-full"><div class="h-full ${b}" style="width:${w}"></div></div></div><div class="w-1/6 text-right font-bold ${c}">${disp}</div></div>`;
-            });
-            const commentsDiv = document.getElementById('rcComments'); commentsDiv.innerHTML = "";
-            const recent = entries.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).filter(e=>e.comments).slice(0,3);
-            if(recent.length>0) recent.forEach(e => commentsDiv.innerHTML += `<p><span class="text-xs font-bold text-gray-500 mr-2">[${new Date(e.date).toLocaleDateString()}]</span> ${e.comments}</p>`); else commentsDiv.innerHTML = "<p class='text-gray-400'>No comments.</p>";
-            document.getElementById('reportCardModal').classList.remove('hidden');
-        }
-
-        function generateSummaryText(name, entries) { /* (Same logic using appSettings) */ 
-            const habitTotals = new Array(12).fill(0); const habitCounts = new Array(12).fill(0);
-            entries.forEach(e => { e.scores.forEach((s, i) => { if(s){ habitTotals[i]+=Number(s); habitCounts[i]++; }})});
-            const habitResults = habitNames.map((n, i) => ({name: n, avg: habitCounts[i]>0?habitTotals[i]/habitCounts[i]:0})).filter(h=>h.avg>0).sort((a,b)=>b.avg-a.avg);
-            if(habitResults.length===0) return "No data.";
-            const top = habitResults.slice(0, 3); const bottom = habitResults.slice(-2).reverse();
-            const overall = (habitResults.reduce((a,b)=>a+b.avg,0)/habitResults.length).toFixed(1);
-            let s = ""; const fName = name.split(' ')[0];
-            if(overall >= appSettings.high) s += `<strong>${fName}</strong> has demonstrated outstanding performance (Avg: ${overall}). `; else if(overall > appSettings.low) s += `<strong>${fName}</strong> has shown consistent effort (Avg: ${overall}). `; else s += `<strong>${fName}</strong> has faced challenges (Avg: ${overall}). `;
-            s += `Strengths: <strong>${top[0].name}</strong> and <strong>${top[1].name}</strong>. `;
-            if(bottom[0].avg <= appSettings.low) s += `Focus recommended on: <strong>${bottom[0].name}</strong>.`; else s += `Maintained well-rounded skills otherwise.`;
-            return s;
-        }
-
-        function closeReportCard() { document.getElementById('reportCardModal').classList.add('hidden'); }
-        function openSettingsModal() { document.getElementById('settingsModal').classList.remove('hidden'); document.getElementById('setLow').value = appSettings.low; document.getElementById('setHigh').value = appSettings.high; }
-        function closeSettingsModal() { document.getElementById('settingsModal').classList.add('hidden'); }
-        function openAddModal() { document.getElementById('addModal').classList.remove('hidden'); }
-        function closeAddModal() { document.getElementById('addModal').classList.add('hidden'); }
-        function closeProgressModal() { document.getElementById('progressModal').classList.add('hidden'); }
-        async function saveSettings() { const l = Number(document.getElementById('setLow').value); const h = Number(document.getElementById('setHigh').value); if(l >= h) return alert("Error"); await fetch(API_URL+"?action=saveSettings", {method:"POST", body:JSON.stringify({low:l, high:h})}); appSettings={low:l, high:h}; closeSettingsModal(); }
-        async function submitStudent() { const n=document.getElementById('inputName').value; const i=document.getElementById('inputId').value; const g=document.getElementById('inputGrade').value; if(!n||!i) return alert("Missing fields"); await fetch(API_URL+"?action=addStudent",{method:"POST",body:JSON.stringify({name:n,student_id:i,grade:g})}); closeAddModal(); init(); }
-        async function deleteStudent(id) { if(confirm("Delete?")) { await fetch(API_URL+"?action=deleteStudent",{method:"POST",body:JSON.stringify({id})}); init(); } }
-    </script>
 </body>
 </html>
