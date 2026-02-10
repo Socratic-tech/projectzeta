@@ -7,25 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        /* Custom Range Slider Styling */
-        input[type=range] {
-            height: 28px;
-            -webkit-appearance: none;
-            margin: 10px 0;
-            width: 100%;
-            background: transparent;
-        }
-        input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 10px; cursor: pointer;
-            background: #e2e8f0; border-radius: 5px;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            height: 24px; width: 24px; border-radius: 50%;
-            background: #2563eb; cursor: pointer;
-            -webkit-appearance: none; margin-top: -7px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
+        /* Smooth transition for button colors */
+        .score-btn { transition: all 0.2s ease; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans pb-20">
@@ -97,27 +80,27 @@
             </div>
 
             <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                <h3 class="text-xs font-bold text-blue-800 uppercase mb-3 text-center">Scoring Guide (0 - 4)</h3>
+                <h3 class="text-xs font-bold text-blue-800 uppercase mb-3 text-center">Scoring Key</h3>
                 <div class="grid grid-cols-5 gap-1 text-center">
-                    <div class="bg-white p-2 rounded shadow-sm">
-                        <div class="font-bold text-red-500 text-lg">0</div>
-                        <div class="text-[10px] leading-tight text-slate-500 font-bold">Refusal</div>
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-bold text-red-500">0</span>
+                        <span class="text-[10px] text-slate-500 leading-none mt-1">Refusal</span>
                     </div>
-                    <div class="bg-white p-2 rounded shadow-sm">
-                        <div class="font-bold text-orange-500 text-lg">1</div>
-                        <div class="text-[10px] leading-tight text-slate-500 font-bold">Physical Assist</div>
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-bold text-orange-500">1</span>
+                        <span class="text-[10px] text-slate-500 leading-none mt-1">Physical</span>
                     </div>
-                    <div class="bg-white p-2 rounded shadow-sm">
-                        <div class="font-bold text-yellow-500 text-lg">2</div>
-                        <div class="text-[10px] leading-tight text-slate-500 font-bold">Modeling</div>
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-bold text-yellow-600">2</span>
+                        <span class="text-[10px] text-slate-500 leading-none mt-1">Model</span>
                     </div>
-                    <div class="bg-white p-2 rounded shadow-sm">
-                        <div class="font-bold text-blue-500 text-lg">3</div>
-                        <div class="text-[10px] leading-tight text-slate-500 font-bold">Verbal Prompt</div>
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-bold text-blue-500">3</span>
+                        <span class="text-[10px] text-slate-500 leading-none mt-1">Verbal</span>
                     </div>
-                    <div class="bg-white p-2 rounded shadow-sm">
-                        <div class="font-bold text-green-600 text-lg">4</div>
-                        <div class="text-[10px] leading-tight text-slate-500 font-bold">Independent</div>
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-bold text-green-600">4</span>
+                        <span class="text-[10px] text-slate-500 leading-none mt-1">Indep.</span>
                     </div>
                 </div>
             </div>
@@ -126,7 +109,7 @@
                 <h2 class="text-lg font-bold text-slate-800 mb-6 border-b pb-2 flex items-center gap-2">
                     <span class="material-icons text-purple-600">psychology</span> Skills Assessment
                 </h2>
-                <div id="skillsContainer" class="space-y-8">
+                <div id="skillsContainer" class="space-y-6">
                     </div>
             </div>
 
@@ -156,14 +139,19 @@
             "Asks for help appropriately", "Demonstrates self-reflection"
         ];
 
-        const SCORES = {
-            0: { label: "Refusal / N/A", color: "text-red-500" },
-            1: { label: "Physical Assist", color: "text-orange-500" },
-            2: { label: "Modeling / Gesture", color: "text-yellow-600" },
-            3: { label: "Verbal Prompts", color: "text-blue-500" },
-            4: { label: "Independent", color: "text-green-600" }
+        // Configuration for button styles (Active colors)
+        const SCORE_CONFIG = {
+            0: { label: "Refusal", class: "bg-red-500 text-white border-red-600" },
+            1: { label: "Physical", class: "bg-orange-500 text-white border-orange-600" },
+            2: { label: "Modeling", class: "bg-yellow-500 text-white border-yellow-600 shadow-sm" },
+            3: { label: "Verbal", class: "bg-blue-500 text-white border-blue-600" },
+            4: { label: "Indep.", class: "bg-green-600 text-white border-green-700" }
         };
 
+        const INACTIVE_CLASS = "bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100";
+
+        // State object to store current scores [index] -> value
+        let skillScores = {}; 
         let API_URL = localStorage.getItem('vocational_backend_url') || "";
 
         // --- 2. INIT ---
@@ -200,43 +188,62 @@
             container.innerHTML = "";
 
             SKILLS_LIST.forEach((skill, index) => {
+                // Initialize default score to 4 (Independent)
+                skillScores[index] = 4;
+
                 const html = `
                     <div class="skill-row">
-                        <label class="block text-sm font-bold text-slate-700 mb-2">${skill}</label>
-                        <div class="flex items-center gap-4">
-                            <div class="flex-1 relative">
-                                <input type="range" min="0" max="4" value="4" step="1" 
-                                    id="skill_${index}" 
-                                    oninput="updateLabel(${index}, this.value)"
-                                    class="w-full">
-                                <div class="flex justify-between text-[10px] text-gray-400 font-mono mt-1 px-1">
-                                    <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span>
-                                </div>
-                            </div>
-                            
-                            <div class="w-24 text-right">
-                                <span id="num_${index}" class="block text-2xl font-bold text-green-600">4</span>
-                                <span id="lbl_${index}" class="block text-[10px] font-bold text-green-600 uppercase leading-tight">Independent</span>
-                            </div>
+                        <label class="block text-sm font-bold text-slate-800 mb-2">${skill}</label>
+                        <div class="grid grid-cols-5 gap-2">
+                            ${generateButtons(index)}
                         </div>
                     </div>
                 `;
                 container.innerHTML += html;
             });
+            // Apply initial visual state
+            updateAllButtonVisuals();
         }
 
-        function updateLabel(index, value) {
-            const def = SCORES[value];
-            
-            // Update Number
-            const numSpan = document.getElementById(`num_${index}`);
-            numSpan.innerText = value;
-            numSpan.className = `block text-2xl font-bold ${def.color}`;
+        function generateButtons(skillIndex) {
+            let buttonsHtml = '';
+            for (let i = 0; i <= 4; i++) {
+                buttonsHtml += `
+                    <button type="button" 
+                        id="btn_${skillIndex}_${i}"
+                        onclick="setScore(${skillIndex}, ${i})"
+                        class="score-btn py-3 rounded-lg border font-bold text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-300">
+                        ${i}
+                    </button>
+                `;
+            }
+            return buttonsHtml;
+        }
 
-            // Update Text Label
-            const lblSpan = document.getElementById(`lbl_${index}`);
-            lblSpan.innerText = def.label;
-            lblSpan.className = `block text-[10px] font-bold uppercase leading-tight ${def.color}`;
+        function setScore(skillIndex, value) {
+            // Update State
+            skillScores[skillIndex] = value;
+            // Update Visuals for this row
+            updateRowVisuals(skillIndex);
+        }
+
+        function updateAllButtonVisuals() {
+            SKILLS_LIST.forEach((_, index) => updateRowVisuals(index));
+        }
+
+        function updateRowVisuals(skillIndex) {
+            const currentScore = skillScores[skillIndex];
+            
+            for (let i = 0; i <= 4; i++) {
+                const btn = document.getElementById(`btn_${skillIndex}_${i}`);
+                if (i === currentScore) {
+                    // Apply Active Style
+                    btn.className = `score-btn py-3 rounded-lg border font-bold text-lg shadow-md transform scale-105 ${SCORE_CONFIG[i].class}`;
+                } else {
+                    // Apply Inactive Style
+                    btn.className = `score-btn py-3 rounded-lg border font-bold text-lg shadow-sm ${INACTIVE_CLASS}`;
+                }
+            }
         }
 
         async function loadDropdowns() {
@@ -282,9 +289,9 @@
                 scores: {}
             };
 
+            // Read from State Object
             SKILLS_LIST.forEach((skill, index) => {
-                const val = document.getElementById(`skill_${index}`).value;
-                payload.scores[skill] = parseInt(val);
+                payload.scores[skill] = skillScores[index];
             });
 
             try {
@@ -302,12 +309,12 @@
                 setTimeout(() => {
                     document.getElementById('entryForm').reset();
                     document.getElementById('dateInput').valueAsDate = new Date();
-                    // Reset all sliders to 4 (Independent)
+                    
+                    // Reset State to all 4s
                     SKILLS_LIST.forEach((_, i) => {
-                        const slider = document.getElementById(`skill_${i}`);
-                        slider.value = 4;
-                        updateLabel(i, 4);
+                        skillScores[i] = 4;
                     });
+                    updateAllButtonVisuals();
                     
                     btn.disabled = false;
                     btn.classList.add("bg-blue-600", "hover:bg-blue-700");
