@@ -10,6 +10,14 @@
         .cartoon-card { background-color: #F0F9FF; border: 2px dashed #3B82F6; border-radius: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; position: relative; overflow: hidden; }
         .icon-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 1rem; z-index: 10; }
         .bg-pattern { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.1; background-image: radial-gradient(#3B82F6 1px, transparent 1px); background-size: 20px 20px; z-index: 0; }
+        
+        /* Privacy Shield Animation */
+        @keyframes pulse-shield {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .shield-icon { animation: pulse-shield 3s infinite ease-in-out; }
     </style>
     <script>
         function copyCode() {
@@ -47,10 +55,27 @@
 
     <div class="max-w-4xl mx-auto px-4">
         
-        <div class="text-center mb-12">
+        <div class="text-center mb-8">
             <h1 class="text-4xl font-extrabold text-gray-900">Let's Get Connected!</h1>
-            <p class="mt-4 text-xl text-gray-500">Follow these 6 steps to create your database.</p>
+            <p class="mt-4 text-xl text-gray-500">Follow these 6 steps to create your private database.</p>
         </div>
+
+        <section class="mb-12 bg-teal-50 border-l-4 border-teal-500 p-6 rounded-r-xl shadow-sm flex flex-col md:flex-row gap-6 items-center">
+            <div class="flex-shrink-0">
+                <div class="bg-white p-4 rounded-full shadow-sm border border-teal-100">
+                    <span class="material-icons text-5xl text-teal-500 shield-icon">security</span>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-teal-900 mb-2">🔒 Your Student Data is 100% Private</h3>
+                <p class="text-teal-800 text-sm leading-relaxed mb-2">
+                    <strong>We do not see your data.</strong> This tool is a "static interface." When you enter data, it goes directly from this device to <strong>your personal Google Spreadsheet</strong>.
+                </p>
+                <p class="text-teal-800 text-sm leading-relaxed">
+                    The creators of this site have no access to your students' names, scores, or logs. You own the database completely within your Google Drive. Only people you share your Spreadsheet with can see the data.
+                </p>
+            </div>
+        </section>
 
         <section class="mb-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
