@@ -19,6 +19,22 @@
     margin-bottom: 10px;
   }
 
+  .section {
+    margin-bottom: 20px;
+  }
+
+  .student-select {
+    margin-bottom: 15px;
+    background: #eef0ff;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .student-select select {
+    padding: 8px;
+    font-size: 1.1em;
+  }
+
   .date-filter {
     display: flex;
     gap: 14px;
@@ -30,7 +46,7 @@
   }
 
   .comment-toggle {
-    margin: 10px 0 20px 0;
+    margin: 10px 0;
     font-size: 1.12em;
   }
 
@@ -81,6 +97,15 @@
     border-left: 4px solid #6b6bff;
     border-radius: 6px;
   }
+
+  .evaluator-box {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f3f7ff;
+    border-left: 4px solid #3b7bff;
+    border-radius: 6px;
+  }
+
 </style>
 </head>
 
@@ -88,7 +113,13 @@
 
 <h1>Student Evaluation Report</h1>
 
-<!-- Date Range Filter -->
+<!-- STUDENT SELECTOR -->
+<div class="student-select">
+  <label><strong>Select Student:</strong></label>
+  <select id="studentSelect"></select>
+</div>
+
+<!-- DATE RANGE FILTER -->
 <div class="date-filter">
   <label>From:
     <input type="date" id="startDate">
@@ -99,7 +130,7 @@
   <button id="filterBtn">Filter</button>
 </div>
 
-<!-- Show/Hide Comments Toggle -->
+<!-- COMMENT TOGGLE -->
 <div class="comment-toggle">
   <label>
     <input type="checkbox" id="showComments" checked>
@@ -107,74 +138,128 @@
   </label>
 </div>
 
-<!-- Date List -->
+<!-- DATE LIST -->
 <ul id="entryDateList" class="pretty-list"></ul>
 
-<!-- Entry Details -->
+<!-- ENTRY DETAILS -->
 <div id="entryDetails" class="details-panel hidden"></div>
 
-<!-- Trend Chart -->
+<!-- TREND GRAPH -->
 <div class="chart-container hidden" id="chartContainer">
   <h3>Trend Graph</h3>
   <canvas id="trendChart" height="150"></canvas>
 </div>
 
 <script>
-/* ===============================================
-   DATE FORMAT HELPER
-   =============================================== */
-function formatDate(dateStr) {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString(undefined, { year:"numeric", month:"long", day:"numeric" });
+/* ==========================================================
+   MOCK: Fetch student list  
+   Replace with your backend call
+   ========================================================== */
+async function getStudents() {
+  return [
+    { id: "s1", name: "Alice Johnson" },
+    { id: "s2", name: "Brandon Lee" },
+    { id: "s3", name: "Charlotte Rivera" }
+  ];
 }
 
-/* ===============================================
-   MOCK BACKEND DATA (Replace With Yours)
-   =============================================== */
+/* ==========================================================
+   MOCK: Fetch entries for a student
+   Replace this with your real data source
+   ========================================================== */
 async function getEntriesForStudent(studentId) {
   return [
     {
       date: "2026-01-12",
-      values: { attention: 4, cooperation: 5, pace: 3 },
-      comment: "Excellent cooperation today."
+      values: {
+        attention: 4,
+        cooperation: 5,
+        pace: 3,
+        comment: "Excellent cooperation today.",
+        evaluator: "Mr. Thomas"
+      }
     },
     {
       date: "2026-01-10",
-      values: { attention: 3, cooperation: 4, pace: 4 },
-      comment: "Improvement in pace, good effort."
+      values: {
+        attention: 3,
+        cooperation: 4,
+        pace: 4,
+        comment: "Improvement in pace.",
+        evaluator: "Ms. Clark"
+      }
     },
     {
       date: "2026-01-05",
-      values: { attention: 2, cooperation: 3, pace: 5 },
-      comment: ""
+      values: {
+        attention: 2,
+        cooperation: 3,
+        pace: 5,
+        comment: "",
+        evaluator: "Mr. Thomas"
+      }
     }
   ];
 }
 
-/* ===============================================
+/* ==========================================================
    GLOBAL STATE
-   =============================================== */
+   ========================================================== */
 let allEntries = [];
 let currentEntry = null;
 let chart = null;
 
-/* ===============================================
-   LOAD REPORT
-   =============================================== */
-async function loadReport() {
-  const studentId = "example-student";
+/* ==========================================================
+   LOAD STUDENT SELECTOR
+   ========================================================== */
+async function loadStudentSelector() {
+  const students = await getStudents();
+  const select = document.getElementById("studentSelect");
+
+  students.forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s.id;
+    opt.textContent = s.name;
+    select.appendChild(opt);
+  });
+
+  // load first student automatically
+  loadReportForStudent(select.value);
+
+  select.onchange = () => {
+    loadReportForStudent(select.value);
+  };
+}
+
+/* ==========================================================
+   LOAD REPORT FOR STUDENT
+   ========================================================== */
+async function loadReportForStudent(studentId) {
   allEntries = await getEntriesForStudent(studentId);
 
-  // sort by date ascending for graphing
+  // Sort by date ascending
   allEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
 
   renderDateList(allEntries);
   generateTrendGraph(allEntries);
+
+  document.getElementById("entryDetails").classList.add("hidden");
+  currentEntry = null;
 }
 
-/* ===============================================
-   RENDER DATE LIST
-   =============================================== */
+/* ==========================================================
+   FORMAT DATE
+   ========================================================== */
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString(undefined, {
+    year:"numeric", month:"long", day:"numeric"
+  });
+}
+
+/* ==========================================================
+   DATE LIST
+   ========================================================== */
 function renderDateList(entries) {
   const list = document.getElementById("entryDateList");
   list.innerHTML = "";
@@ -194,9 +279,9 @@ function renderDateList(entries) {
   });
 }
 
-/* ===============================================
-   SHOW ENTRY DETAILS (WITH COMMENTS TOGGLE)
-   =============================================== */
+/* ==========================================================
+   ENTRY DETAILS (WITH EVALUATOR + COMMENT TOGGLE)
+   ========================================================== */
 function showEntryDetails(entry) {
   currentEntry = entry;
 
@@ -207,29 +292,34 @@ function showEntryDetails(entry) {
 
   panel.innerHTML = `
     <h3>Entry for ${formatDate(entry.date)}</h3>
+
+    <div class="evaluator-box">
+      <strong>Evaluator:</strong> ${entry.values.evaluator || "Unknown"}
+    </div>
+
     <pre>${JSON.stringify(entry.values, null, 2)}</pre>
 
-    ${showComments && entry.comment ? `
+    ${showComments && entry.values.comment ? `
       <div class="comment-box">
         <h4>Comment</h4>
-        <p>${entry.comment}</p>
+        <p>${entry.values.comment}</p>
       </div>
     ` : ""}
   `;
 }
 
-/* ===============================================
-   COMMENT TOGGLE REFRESHES DETAILS
-   =============================================== */
+/* ==========================================================
+   COMMENT TOGGLE REFRESH
+   ========================================================== */
 document.getElementById("showComments").onchange = () => {
   if (currentEntry) {
     showEntryDetails(currentEntry);
   }
 };
 
-/* ===============================================
-   TREND GRAPH (Chart.js)
-   =============================================== */
+/* ==========================================================
+   TREND GRAPH
+   ========================================================== */
 function generateTrendGraph(entries) {
   const container = document.getElementById("chartContainer");
   container.classList.remove("hidden");
@@ -239,18 +329,19 @@ function generateTrendGraph(entries) {
   if (chart) chart.destroy();
 
   const labels = entries.map(e => formatDate(e.date));
-  const categories = Object.keys(entries[0].values);
 
-  const datasets = categories.map((category, idx) => {
-    return {
-      label: category,
-      data: entries.map(e => e.values[category]),
-      borderColor: getColor(idx),
-      backgroundColor: getColor(idx) + "55",
-      borderWidth: 2,
-      tension: 0.3
-    };
-  });
+  // Values except comment and evaluator
+  const categories = Object.keys(entries[0].values)
+    .filter(k => k !== "comment" && k !== "evaluator");
+
+  const datasets = categories.map((category, idx) => ({
+    label: category,
+    data: entries.map(e => e.values[category]),
+    borderColor: getColor(idx),
+    backgroundColor: getColor(idx) + "55",
+    borderWidth: 2,
+    tension: 0.3
+  }));
 
   chart = new Chart(ctx, {
     type: "line",
@@ -264,9 +355,9 @@ function generateTrendGraph(entries) {
   });
 }
 
-/* ===============================================
+/* ==========================================================
    LINE COLORS
-   =============================================== */
+   ========================================================== */
 function getColor(i) {
   const colors = [
     "#ff6384", "#36a2eb", "#4bc0c0", "#9966ff",
@@ -275,9 +366,9 @@ function getColor(i) {
   return colors[i % colors.length];
 }
 
-/* ===============================================
+/* ==========================================================
    DATE RANGE FILTER
-   =============================================== */
+   ========================================================== */
 document.getElementById("filterBtn").onclick = () => {
   const start = new Date(document.getElementById("startDate").value);
   const end = new Date(document.getElementById("endDate").value);
@@ -306,8 +397,13 @@ document.getElementById("filterBtn").onclick = () => {
   currentEntry = null;
 };
 
-loadReport();
+/* ==========================================================
+   INIT
+   ========================================================== */
+loadStudentSelector();
+
 </script>
 
 </body>
 </html>
+
