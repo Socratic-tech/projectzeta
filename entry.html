@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Entry - Project Zeta</title>
+    <title>Daily Entry</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
@@ -69,30 +69,37 @@
         const API_URL = localStorage.getItem('bresa_api_url');
         const habitNames = ["Self-Reflection", "Time Mgmt", "Organization", "Task Comp", "Attention", "Follow Directions", "Problem Solving", "Independence", "Cooperation", "Social Skills", "Quality", "Pace"];
         let scores = new Array(12).fill(null); 
+        let studentData = [];
 
         async function init() {
             if(!API_URL) return alert("System not setup.");
             document.getElementById('entryDate').valueAsDate = new Date();
 
             try {
-                // Fetch Students AND Job Sites in one call
-                const res = await fetch(API_URL + "?action=getData");
-                const data = await res.json();
+                // 1. Get Students
+                const sRes = await fetch(API_URL + "?action=getStudents");
+                const sData = await sRes.json();
+                studentData = sData.data;
 
-                // Populate Students
                 const sSelect = document.getElementById('studentSelect');
                 sSelect.innerHTML = '<option value="">Select...</option>';
-                data.students.forEach(s => {
+                studentData.forEach(s => {
                     sSelect.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
                 });
                 new TomSelect("#studentSelect");
 
-                // Populate Job Sites (Standard dropdown is fine here, or use TomSelect)
+                // 2. Get Job Sites
+                const jRes = await fetch(API_URL + "?action=getJobSites");
+                const jData = await jRes.json();
                 const jSelect = document.getElementById('jobSiteSelect');
                 jSelect.innerHTML = '<option value="">Select Job Site...</option>';
-                data.jobSites.forEach(site => {
-                    jSelect.innerHTML += `<option value="${site}">${site}</option>`;
-                });
+                if(jData.data.length === 0) {
+                     jSelect.innerHTML += `<option value="Unknown">No sites configured</option>`;
+                } else {
+                    jData.data.forEach(site => {
+                        jSelect.innerHTML += `<option value="${site}">${site}</option>`;
+                    });
+                }
 
             } catch(e) { console.error(e); }
             
@@ -136,18 +143,32 @@
             const evaluator = document.getElementById('evaluatorName').value;
             const jobSite = document.getElementById('jobSiteSelect').value;
             
-            if(!studentId || !date || !jobSite) return alert("Please fill in Student, Date, and Job Site.");
+            if(!studentId || !date) return alert("Please fill in Student and Date.");
             if(scores.every(s => s === null)) return alert("Please select at least one score.");
+
+            const studentObj = studentData.find(s => s.student_id == studentId);
+            const studentName = studentObj ? studentObj.name : "Unknown";
 
             const btn = document.getElementById('submitBtn');
             btn.disabled = true; btn.innerText = "Saving...";
 
+            // Match structure expected by Apps Script "logEntry"
+            const payload = {
+                action: 'logEntry',
+                student_id: studentId,
+                student_name: studentName,
+                evaluator: evaluator,
+                job_site: jobSite,
+                comments: document.getElementById('comments').value,
+                // Spread scores into h1...h12
+                h1: scores[0], h2: scores[1], h3: scores[2], h4: scores[3],
+                h5: scores[4], h6: scores[5], h7: scores[6], h8: scores[7],
+                h9: scores[8], h10: scores[9], h11: scores[10], h12: scores[11]
+            };
+
             await fetch(API_URL, {
                 method: 'POST', mode: 'no-cors',
-                body: JSON.stringify({ 
-                    student_id: studentId, date: date, evaluator: evaluator, 
-                    job_site: jobSite, scores: scores, comments: document.getElementById('comments').value 
-                })
+                body: JSON.stringify(payload)
             });
 
             alert("Entry Saved!");
