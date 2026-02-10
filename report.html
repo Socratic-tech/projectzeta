@@ -2,310 +2,314 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Performance Report</title>
+    <title>Student Progress Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #F9FAFB; }
         @media print {
             .no-print { display: none !important; }
-            body { background-color: white; }
-            .shadow-sm { box-shadow: none !important; border: 1px solid #eee; }
+            .print-break { page-break-before: always; }
+            /* Hide the modal during print unless you want it */
+            #entryModal { display: none; }
         }
+        /* Modal Transitions */
+        .modal { transition: opacity 0.25s ease; }
     </style>
 </head>
-<body class="text-gray-900">
+<body class="bg-gray-100 text-gray-900 font-sans p-6">
 
-    <nav class="bg-white border-b border-gray-200 no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <h1 class="text-xl font-bold text-indigo-600">Project Zeta</h1>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="home.html" class="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Home</a>
-                        <a href="report.html" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Reports</a>
-                    </div>
-                </div>
-            </div>
+    <div class="max-w-6xl mx-auto flex justify-between items-center mb-6 no-print">
+        <h1 class="text-3xl font-bold text-gray-800">Vocational Reports</h1>
+        <div class="space-x-4">
+            <a href="home.html" class="text-indigo-600 hover:underline">Back to Dashboard</a>
         </div>
-    </nav>
+    </div>
 
-    <div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto bg-white p-4 rounded shadow mb-6 no-print">
+        <label class="font-bold mr-2">Select Student:</label>
+        <select id="studentSelect" onchange="loadStudentData()" class="border p-2 rounded w-64">
+            <option value="">Loading...</option>
+        </select>
+        <button onclick="window.print()" class="ml-4 bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Print Summary</button>
+    </div>
+
+    <div id="reportContainer" class="max-w-6xl mx-auto bg-white p-8 rounded shadow hidden">
         
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8 no-print">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                
-                <div class="md:col-span-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
-                    <select id="studentSelect" placeholder="Search student..."></select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                    <input type="date" id="startDate" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border p-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                    <input type="date" id="endDate" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border p-2">
-                </div>
-
-                <div class="flex gap-2">
-                    <button onclick="applyFilters()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition shadow-sm">
-                        Filter
-                    </button>
-                    <button onclick="window.print()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md transition border border-gray-300">
-                        Print
-                    </button>
-                </div>
+        <div class="flex justify-between items-end border-b pb-4 mb-6">
+            <div>
+                <h2 id="studentName" class="text-3xl font-bold text-indigo-900">Student Name</h2>
+                <p class="text-gray-500">ID: <span id="studentIdDisplay">--</span></p>
+            </div>
+            <div class="text-right">
+                <div class="text-sm text-gray-500">Overall Vocational Average</div>
+                <div id="overallScore" class="text-4xl font-bold text-green-600">--</div>
             </div>
         </div>
 
-        <div id="reportContainer" class="hidden space-y-8">
-
-            <div class="border-b border-gray-200 pb-4 flex justify-between items-end">
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-900" id="displayStudentName">Student Name</h2>
-                    <p class="text-sm text-gray-500 mt-1">
-                        Reporting Period: <span id="displayDateRange" class="font-medium">All Time</span>
-                    </p>
-                </div>
-                <div class="text-right">
-                    <div class="text-sm text-gray-500">Overall Average</div>
-                    <div class="text-4xl font-bold text-indigo-600" id="displayOverallScore">0.0</div>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="font-bold text-lg mb-4 text-center">Skill Breakdown (Average)</h3>
+                <canvas id="skillsChart"></canvas>
             </div>
-
-            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-                <h3 class="text-xl font-bold text-gray-900 mb-6 border-b pb-2">Performance Summary</h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-6" id="summaryGrid">
-                    </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="font-bold text-lg mb-4 text-center">Performance Over Time</h3>
+                <canvas id="trendChart"></canvas>
             </div>
+        </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <h3 class="text-lg font-bold text-gray-900">Evaluation History</h3>
-                </div>
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Evaluator</th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+        <div class="print-break">
+            <h3 class="font-bold text-xl mb-4 border-b pb-2">Session History</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="bg-gray-100 border-b text-gray-600 uppercase">
+                            <th class="p-3">Date</th>
+                            <th class="p-3">Job Site</th>
+                            <th class="p-3">Evaluator</th>
+                            <th class="p-3">Avg Score</th>
+                            <th class="p-3 w-1/3">Notes</th>
+                            <th class="p-3 text-right no-print">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200" id="historyTableBody">
-                        </tbody>
+                    <tbody id="entriesTable" class="divide-y divide-gray-200"></tbody>
                 </table>
             </div>
-
         </div>
+    </div>
 
-        <div id="emptyState" class="text-center py-24">
-            <p class="text-gray-500 text-lg">Select a student above to generate report.</p>
+    <div id="entryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            
+            <div class="flex justify-between items-center border-b pb-2 mb-4">
+                <div>
+                    <h3 class="text-xl font-bold text-indigo-900" id="modalDate">Date</h3>
+                    <p class="text-sm text-gray-500" id="modalSite">Site</p>
+                </div>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-900 text-2xl font-bold">&times;</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="modalScores">
+                </div>
+
+            <div class="mt-6 bg-yellow-50 p-4 rounded border border-yellow-100">
+                <h4 class="font-bold text-sm text-yellow-800 mb-1">Evaluator Notes:</h4>
+                <p id="modalComments" class="text-gray-700 italic">No comments.</p>
+            </div>
+
+            <div class="mt-6 text-right">
+                <button onclick="closeModal()" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Close</button>
+            </div>
         </div>
-
     </div>
 
     <script>
-        // --- CONFIG ---
         const API_URL = localStorage.getItem('bresa_api_url');
-        const habitNames = [
-            "Self-Reflection", "Time Mgmt", "Organization", "Task Comp", 
-            "Attention", "Follow Directions", "Problem Solving", "Independence", 
-            "Cooperation", "Social Skills", "Quality", "Pace"
+
+        // THE 15 SKILLS
+        const SKILLS = [
+            "Punctual", "Prepared with Materials", "Hygiene/Dress", "Initiates Tasks", 
+            "Work Rate", "Logical Order", "Adaptability", "Quality Standards", 
+            "Awareness/Safety", "Social Interactions", "Communication", 
+            "Constructive Criticism", "Positive Attitude", "Asks for Help", "Self-Reflection"
         ];
-        // Thresholds for colors
-        const THRESHOLD_HIGH = 3.8; // Green
-        const THRESHOLD_MED = 3.0;  // Yellow
 
         let allEntries = [];
         let students = [];
-        let currentStudentId = null;
+        let currentStudentEntries = []; // Store filtered entries here for the modal to access
+        let chartInstance = null;
+        let trendInstance = null;
 
-        // --- INIT ---
         async function init() {
-            if (!API_URL) return alert("System not setup. Please go to Setup.");
-
-            // Set default dates (First day of current month to Today)
-            const today = new Date();
-            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-            document.getElementById('endDate').valueAsDate = today;
-            document.getElementById('startDate').valueAsDate = firstDay;
-
-            try {
-                // Fetch Students
-                const sRes = await fetch(API_URL + "?action=getStudents");
-                const sData = await sRes.json();
-                students = sData.data;
-
-                // Populate Dropdown
-                const selectEl = document.getElementById('studentSelect');
-                selectEl.innerHTML = '<option value="">Select a student...</option>';
-                students.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s.student_id;
-                    opt.innerText = s.name;
-                    selectEl.appendChild(opt);
-                });
-
-                new TomSelect("#studentSelect", {
-                    create: false,
-                    sortField: { field: "text", direction: "asc" },
-                    onChange: (val) => { 
-                        currentStudentId = val; 
-                        applyFilters(); 
-                    }
-                });
-
-                // Fetch Entries
-                const eRes = await fetch(API_URL + "?action=getEntries");
-                const eData = await eRes.json();
-                allEntries = eData.data || [];
-
-            } catch (error) { console.error("Error loading data", error); }
-        }
-
-        // --- FILTER LOGIC ---
-        function applyFilters() {
-            if(!currentStudentId) {
-                document.getElementById('reportContainer').classList.add('hidden');
-                document.getElementById('emptyState').classList.remove('hidden');
-                return;
-            }
-
-            const student = students.find(s => s.student_id == currentStudentId);
-            const startStr = document.getElementById('startDate').value;
-            const endStr = document.getElementById('endDate').value;
+            if(!API_URL) return alert("API Not Connected");
             
-            // Parse dates (set end date to end of day)
-            const startDate = startStr ? new Date(startStr) : new Date('2000-01-01');
-            const endDate = endStr ? new Date(endStr) : new Date();
-            endDate.setHours(23, 59, 59);
+            // Fetch Data
+            const sRes = await fetch(API_URL + "?action=getStudents");
+            const sData = await sRes.json();
+            students = sData.data;
+            
+            const sel = document.getElementById('studentSelect');
+            sel.innerHTML = '<option value="">Select a Student...</option>';
+            students.forEach(s => {
+                sel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
+            });
 
-            // Filter entries
-            const filteredEntries = allEntries.filter(e => {
-                const eDate = new Date(e.date);
-                return e.student_id == currentStudentId && eDate >= startDate && eDate <= endDate;
-            }).sort((a,b) => new Date(b.date) - new Date(a.date)); // Newest first
-
-            renderReport(student, filteredEntries, startStr, endStr);
+            const eRes = await fetch(API_URL + "?action=getEntries");
+            const eData = await eRes.json();
+            allEntries = eData.data;
         }
 
-        // --- RENDER LOGIC ---
-        function renderReport(student, entries, startStr, endStr) {
-            document.getElementById('emptyState').classList.add('hidden');
+        function loadStudentData() {
+            const sid = document.getElementById('studentSelect').value;
+            if(!sid) { document.getElementById('reportContainer').classList.add('hidden'); return; }
+
+            const student = students.find(s => s.student_id == sid);
+            document.getElementById('studentName').innerText = student.name;
+            document.getElementById('studentIdDisplay').innerText = student.student_id;
             document.getElementById('reportContainer').classList.remove('hidden');
 
-            // 1. Header Info
-            document.getElementById('displayStudentName').innerText = student.name;
+            // Filter entries for this student
+            currentStudentEntries = allEntries.filter(e => e.student_id == sid);
             
-            // Format Date Range Text
-            const sText = startStr ? new Date(startStr).toLocaleDateString() : "Beginning";
-            const eText = endStr ? new Date(endStr).toLocaleDateString() : "Now";
-            document.getElementById('displayDateRange').innerText = entries.length > 0 ? `${sText} - ${eText}` : "No data in range";
-
-            // 2. Calculate Stats
-            const habitSums = new Array(12).fill(0);
-            const habitCounts = new Array(12).fill(0);
+            // Calculate Stats
             let totalSum = 0;
             let totalCount = 0;
+            let sums = new Array(15).fill(0);
+            let counts = new Array(15).fill(0);
 
-            entries.forEach(e => {
-                e.scores.forEach((score, index) => {
-                    if(score && score > 0) {
-                        habitSums[index] += parseFloat(score);
-                        habitCounts[index]++;
-                        totalSum += parseFloat(score);
+            currentStudentEntries.forEach(entry => {
+                entry.scores.forEach((score, idx) => {
+                    if(score !== "" && score !== null) {
+                        sums[idx] += Number(score);
+                        counts[idx]++;
+                        totalSum += Number(score);
                         totalCount++;
                     }
                 });
             });
 
-            const overallAvg = totalCount > 0 ? (totalSum / totalCount).toFixed(1) : "0.0";
-            document.getElementById('displayOverallScore').innerText = overallAvg;
-            
-            // 3. Render Summary Grid (The Screenshot Part)
-            const gridContainer = document.getElementById('summaryGrid');
-            gridContainer.innerHTML = '';
+            const averages = sums.map((s, i) => counts[i] ? (s / counts[i]).toFixed(1) : 0);
+            const overall = totalCount ? (totalSum / totalCount).toFixed(2) : "N/A";
 
-            habitNames.forEach((name, index) => {
-                const count = habitCounts[index];
-                const avg = count > 0 ? (habitSums[index] / count).toFixed(1) : 0;
-                
-                // Determine Colors based on score
-                let barColorClass = "bg-gray-300";
-                let textColorClass = "text-gray-400";
-                
-                if (avg >= THRESHOLD_HIGH) {
-                    barColorClass = "bg-green-400"; // Green
-                    textColorClass = "text-green-600";
-                } else if (avg >= THRESHOLD_MED) {
-                    barColorClass = "bg-yellow-400"; // Yellow/Gold
-                    textColorClass = "text-yellow-600";
-                } else if (avg > 0) {
-                    barColorClass = "bg-red-400";
-                    textColorClass = "text-red-500";
+            document.getElementById('overallScore').innerText = overall;
+
+            renderCharts(averages, currentStudentEntries);
+            renderTable(currentStudentEntries);
+        }
+
+        function renderCharts(averages, entries) {
+            const ctx1 = document.getElementById('skillsChart');
+            if(chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx1, {
+                type: 'radar',
+                data: {
+                    labels: SKILLS,
+                    datasets: [{
+                        label: 'Average Score',
+                        data: averages,
+                        backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                        borderColor: '#4F46E5',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#4F46E5'
+                    }]
+                },
+                options: {
+                    scales: { r: { min: 0, max: 4, ticks: { stepSize: 1 } } }
                 }
-
-                // Width percentage
-                const widthPct = (avg / 5) * 100;
-
-                // Create HTML String matching the visual style
-                const rowHtml = `
-                    <div class="flex items-center justify-between border-b border-gray-100 pb-2 last:border-0">
-                        <span class="text-gray-700 font-medium w-1/3">${name}</span>
-                        <div class="flex items-center flex-1 justify-end space-x-4">
-                            <div class="w-32 h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div class="h-full ${barColorClass} rounded-full" style="width: ${widthPct}%"></div>
-                            </div>
-                            <span class="text-lg font-bold ${textColorClass} w-8 text-right">${avg > 0 ? avg : '-'}</span>
-                        </div>
-                    </div>
-                `;
-                gridContainer.innerHTML += rowHtml;
             });
 
-            // 4. Render History Table
-            const tbody = document.getElementById('historyTableBody');
+            const ctx2 = document.getElementById('trendChart');
+            if(trendInstance) trendInstance.destroy();
+
+            // Sort by date for the line chart
+            const sortedEntries = [...entries].sort((a,b) => new Date(a.date) - new Date(b.date));
+            const dates = sortedEntries.map(e => new Date(e.date).toLocaleDateString());
+            const dailyAvgs = sortedEntries.map(e => {
+                let s = 0, c = 0;
+                e.scores.forEach(v => { if(v!=="") { s+=Number(v); c++; }});
+                return c ? (s/c).toFixed(1) : 0;
+            });
+
+            trendInstance = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Daily Average',
+                        data: dailyAvgs,
+                        borderColor: '#10B981',
+                        backgroundColor: '#D1FAE5',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: { scales: { y: { min: 0, max: 4 } } }
+            });
+        }
+
+        function renderTable(entries) {
+            const tbody = document.getElementById('entriesTable');
             tbody.innerHTML = '';
+            
+            // Sort Newest First for the table
+            const sorted = [...entries].sort((a,b) => new Date(b.date) - new Date(a.date));
 
-            if (entries.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">No entries found for this period.</td></tr>';
-            } else {
-                entries.forEach(e => {
-                    // Calculate daily avg
-                    let dSum = 0, dCount = 0;
-                    e.scores.forEach(s => { if(s){ dSum+=parseFloat(s); dCount++; }});
-                    const dAvg = dCount ? (dSum/dCount).toFixed(1) : "-";
+            sorted.forEach((e, index) => {
+                let s = 0, c = 0;
+                e.scores.forEach(v => { if(v!=="") { s+=Number(v); c++; }});
+                const avg = c ? (s/c).toFixed(1) : "-";
+                
+                // Color code the average
+                let avgColor = "text-gray-600";
+                if(avg >= 3) avgColor = "text-green-600 font-bold";
+                else if(avg >= 2) avgColor = "text-yellow-600 font-bold";
+                else if(avg > 0) avgColor = "text-red-600 font-bold";
 
-                    // Evaluator Name (Fallback to 'Unknown' if old data)
-                    const evaluatorName = e.evaluator || "Unknown";
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="p-3 text-gray-800">${new Date(e.date).toLocaleDateString()}</td>
+                        <td class="p-3 font-medium text-indigo-900">${e.job_site || "N/A"}</td>
+                        <td class="p-3 text-gray-500 text-sm">${e.evaluator}</td>
+                        <td class="p-3 ${avgColor}">${avg}</td>
+                        <td class="p-3 text-gray-500 italic text-sm truncate max-w-xs">${e.comments}</td>
+                        <td class="p-3 text-right no-print">
+                            <button onclick="openModal(${index})" class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded text-xs font-bold hover:bg-indigo-200">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
 
-                    const row = `
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                ${new Date(e.date).toLocaleDateString()}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-indigo-600">
-                                ${evaluatorName}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-700">
-                                ${dAvg}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-500 italic">
-                                ${e.comments || '<span class="text-gray-300">No notes</span>'}
-                            </td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
-                });
+        // --- MODAL FUNCTIONS ---
+
+        function openModal(index) {
+            // Because we sorted the table by Newest First, we need to grab from the sorted array
+            const sortedEntries = [...currentStudentEntries].sort((a,b) => new Date(b.date) - new Date(a.date));
+            const entry = sortedEntries[index];
+
+            document.getElementById('modalDate').innerText = new Date(entry.date).toLocaleDateString();
+            document.getElementById('modalSite').innerText = entry.job_site + " (Evaluator: " + entry.evaluator + ")";
+            document.getElementById('modalComments').innerText = entry.comments || "No comments provided.";
+
+            const grid = document.getElementById('modalScores');
+            grid.innerHTML = '';
+
+            SKILLS.forEach((skill, i) => {
+                const score = entry.scores[i];
+                let colorClass = "bg-gray-100 text-gray-400"; // Default for empty
+                let scoreText = "-";
+
+                if (score !== "" && score !== null) {
+                    scoreText = score;
+                    // Color Logic
+                    if (score == 4) colorClass = "bg-green-100 text-green-800 border-green-200";
+                    else if (score == 3) colorClass = "bg-green-50 text-green-700 border-green-100";
+                    else if (score == 2) colorClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
+                    else if (score <= 1) colorClass = "bg-red-100 text-red-800 border-red-200";
+                }
+
+                grid.innerHTML += `
+                    <div class="flex justify-between items-center p-2 rounded border ${colorClass}">
+                        <span class="text-sm font-medium truncate pr-2">${skill}</span>
+                        <span class="font-bold text-lg">${scoreText}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('entryModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('entryModal').classList.add('hidden');
+        }
+
+        // Close modal if clicking outside the box
+        window.onclick = function(event) {
+            const modal = document.getElementById('entryModal');
+            if (event.target == modal) {
+                closeModal();
             }
         }
 
