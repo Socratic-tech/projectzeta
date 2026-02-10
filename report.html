@@ -18,6 +18,7 @@
             #reportContainer { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
             .chart-card { break-inside: avoid; page-break-inside: avoid; border: 1px solid #ddd; }
             #historyTable { display: table !important; }
+            canvas { max-height: 250px !important; }
         }
     </style>
 </head>
@@ -77,10 +78,14 @@
                 </div>
 
                 <div class="md:col-span-2 text-right">
-                    <button onclick="window.print()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow transition text-sm">
-                        Print Report
+                    <button onclick="window.print()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow transition text-sm flex items-center justify-center gap-2">
+                        <span class="material-icons text-sm">print</span> Print
                     </button>
                 </div>
+            </div>
+            
+            <div class="mt-2 text-xs text-slate-400 italic text-right">
+                Leave dates blank to see all history.
             </div>
         </div>
 
@@ -90,7 +95,7 @@
                 <div>
                     <h1 id="reportStudentName" class="text-4xl font-extrabold text-slate-900 mb-2">Student Name</h1>
                     <div class="text-sm text-slate-500 space-y-1">
-                        <p><strong>Report Period:</strong> <span id="reportPeriod"></span></p>
+                        <p><strong>Report Period:</strong> <span id="reportPeriod" class="text-indigo-600 font-bold">All Time</span></p>
                         <p><strong>Job Site Filter:</strong> <span id="reportSiteFilter">All</span></p>
                         <p><strong>Total Evaluations:</strong> <span id="reportCount">0</span></p>
                     </div>
@@ -147,7 +152,7 @@
                 </div>
             </div>
 
-            <div class="hidden print:flex justify-between mt-12 pt-8">
+            <div class="hidden print:flex justify-between mt-12 pt-8 break-inside-avoid">
                 <div class="w-5/12 border-t border-slate-400 pt-2">
                     <p class="font-bold text-slate-900">Teacher Signature</p>
                 </div>
@@ -171,25 +176,30 @@
         ];
 
         let allEntries = [], students = {};
-        // Chart instances
         let charts = { skills: null, trend: null, dist: null, site: null };
 
-        // Helper: Date Formatting
-        function parseDate(str) { return new Date(str.replace(/-/g, '\/')); } // Fix browser dash issues
-        function toISODate(d) { return d.toISOString().split('T')[0]; }
+        // Helper: Date Parsing to solve browser inconsistencies
+        function parseDate(str) { 
+            // Expects "YYYY-MM-DD" or similar ISO
+            if(!str) return new Date();
+            const parts = str.split('T')[0].split('-');
+            return new Date(parts[0], parts[1]-1, parts[2]); // Local Time
+        }
+        
+        // Pretty Print Date
+        function fmtDate(dStr) {
+            const d = parseDate(dStr);
+            return d.toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'});
+        }
 
         window.onload = async () => {
-            // Set default dates (1st of current month to today)
-            const today = new Date();
-            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-            document.getElementById('endDate').value = toISODate(today);
-            document.getElementById('startDate').value = toISODate(firstDay);
+            // Note: We do NOT set default values for startDate/endDate anymore.
+            // Leaving them blank implies "All Time".
 
             const url = localStorage.getItem('vocational_backend_url');
             if(!url) return alert("Database not connected. Please go to Admin Setup.");
 
             try {
-                // Fetch Data
                 const t = Date.now();
                 const [sRes, eRes] = await Promise.all([
                     fetch(`${url}?action=getStudents&t=${t}`), fetch(`${url}?action=getEntries&t=${t}`)
@@ -197,7 +207,6 @@
                 const sData = await sRes.json();
                 const eData = await eRes.json();
 
-                // Populate Student Dropdown
                 const sel = document.getElementById('studentSelect');
                 sData.data.forEach(s => {
                     students[s.student_id] = s.name;
@@ -216,7 +225,6 @@
             const sid = document.getElementById('studentSelect').value;
             const siteSel = document.getElementById('siteSelect');
             
-            // Reset Site Filter
             siteSel.innerHTML = '<option value="All">All Sites</option>';
             siteSel.disabled = !sid;
 
@@ -244,44 +252,48 @@
             const endVal = document.getElementById('endDate').value;
             const siteFilter = document.getElementById('siteSelect').value;
 
-            // Date Objects for comparison (set times to start/end of day)
-            const startD = new Date(startVal); startD.setHours(0,0,0,0);
-            const endD = new Date(endVal); endD.setHours(23,59,59,999);
+            // Date filtering logic
+            // If inputs are empty, we allow ALL dates (min/max possible)
+            const startD = startVal ? new Date(startVal + 'T00:00:00') : new Date('2000-01-01');
+            const endD = endVal ? new Date(endVal + 'T23:59:59') : new Date('2100-01-01');
 
-            // Filter Data
             const filtered = allEntries.filter(e => {
                 const d = parseDate(e.date);
                 const isStudent = e.student_id == sid;
-                const isDate = d >= startD && d <= endD;
+                // Compare timestamps to ensure accuracy
+                const isDate = d.getTime() >= startD.getTime() && d.getTime() <= endD.getTime();
                 const isSite = siteFilter === "All" || e.job_site === siteFilter;
                 return isStudent && isDate && isSite;
             });
 
-            updateUI(filtered, students[sid], startVal, endVal, siteFilter);
+            // Format label for UI
+            let periodLabel = "All Time";
+            if(startVal && endVal) periodLabel = `${fmtDate(startVal)} to ${fmtDate(endVal)}`;
+            else if(startVal) periodLabel = `Since ${fmtDate(startVal)}`;
+            else if(endVal) periodLabel = `Until ${fmtDate(endVal)}`;
+
+            updateUI(filtered, students[sid], periodLabel, siteFilter);
         }
 
-        function updateUI(data, name, start, end, site) {
+        function updateUI(data, name, periodLabel, site) {
             document.getElementById('reportContainer').classList.remove('hidden');
             
-            // 1. Header Info
             document.getElementById('reportStudentName').innerText = name;
-            document.getElementById('reportPeriod').innerText = `${start} to ${end}`;
+            document.getElementById('reportPeriod').innerText = periodLabel;
             document.getElementById('reportSiteFilter').innerText = site;
             document.getElementById('reportCount').innerText = data.length;
 
-            // 2. Process Data Metrics
             let skillSums = {}, skillCounts = {}, totalSum = 0, totalCount = 0;
             let trendMap = {}, distCounts = {0:0, 1:0, 2:0, 3:0, 4:0};
             let siteSums = {}, siteCounts = {};
             
             SKILLS.forEach(s => { skillSums[s]=0; skillCounts[s]=0; });
 
-            // Table Body
             const tbody = document.getElementById('historyTableBody');
             tbody.innerHTML = "";
-            if(data.length === 0) tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">No records found for this period.</td></tr>`;
+            if(data.length === 0) tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">No records found for this criteria.</td></tr>`;
 
-            // Sort newest first for table
+            // Sort newest first
             const sortedData = [...data].sort((a,b) => parseDate(b.date) - parseDate(a.date));
 
             sortedData.forEach(e => {
@@ -299,21 +311,21 @@
 
                 const dailyAvg = dayCount ? (daySum/dayCount) : 0;
                 
-                // Trend Data (Key: Date String)
-                const dateKey = e.date.substring(0,10);
+                // Trend
+                const dateKey = parseDate(e.date).toISOString().split('T')[0];
                 if(!trendMap[dateKey]) trendMap[dateKey] = [];
                 trendMap[dateKey].push(dailyAvg);
 
-                // Site Data
+                // Site
                 if(!siteSums[e.job_site]) { siteSums[e.job_site] = 0; siteCounts[e.job_site] = 0; }
                 siteSums[e.job_site] += dailyAvg;
                 siteCounts[e.job_site]++;
 
-                // Add Row
+                // Table Row
                 const rowColor = dailyAvg >= 3 ? 'text-green-600' : (dailyAvg >= 2 ? 'text-blue-600' : 'text-orange-600');
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="px-6 py-4 font-medium">${dateKey}</td>
+                        <td class="px-6 py-4 font-medium">${fmtDate(e.date)}</td>
                         <td class="px-6 py-4">${e.job_site}</td>
                         <td class="px-6 py-4 text-xs uppercase text-slate-500">${e.evaluator}</td>
                         <td class="px-6 py-4 font-bold ${rowColor}">${dailyAvg.toFixed(1)}</td>
@@ -322,13 +334,11 @@
                 `;
             });
 
-            // 3. Overall Score Card
             const overallAvg = totalCount ? (totalSum/totalCount).toFixed(1) : "N/A";
             const scoreEl = document.getElementById('overallScoreDisplay');
             scoreEl.innerText = overallAvg;
             
-            // Color Coding the Big Score
-            scoreEl.className = "text-5xl font-black transition-colors duration-300"; // Reset
+            scoreEl.className = "text-5xl font-black transition-colors duration-300"; 
             if(overallAvg === "N/A") scoreEl.classList.add("text-slate-300");
             else if(overallAvg >= 3.5) scoreEl.classList.add("text-green-600");
             else if(overallAvg >= 2.5) scoreEl.classList.add("text-blue-600");
@@ -340,7 +350,7 @@
 
         function updateCharts(sSums, sCounts, trendMap, dCounts, siteSums, siteCounts) {
             
-            // 1. Skills Bar
+            // 1. Skills
             const sLabels = SKILLS;
             const sData = SKILLS.map(s => sCounts[s] ? (sSums[s]/sCounts[s]).toFixed(1) : 0);
             const sColors = sData.map(v => v>=3?'#16a34a': v>=2?'#2563eb': '#ea580c');
@@ -352,8 +362,7 @@
                 options: { indexAxis: 'y', maintainAspectRatio: false, scales: { x: { min:0, max:4 } }, plugins: { legend: { display: false } } }
             });
 
-            // 2. Trend Line
-            // Sort dates chronologically
+            // 2. Trend
             const tLabels = Object.keys(trendMap).sort();
             const tData = tLabels.map(d => {
                 const arr = trendMap[d];
@@ -382,7 +391,7 @@
                 options: { maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
             });
 
-            // 4. Site Performance
+            // 4. Site
             const siteLabels = Object.keys(siteSums);
             const siteData = siteLabels.map(s => (siteSums[s]/siteCounts[s]).toFixed(1));
 
