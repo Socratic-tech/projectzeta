@@ -12,44 +12,36 @@
     <div class="bg-white max-w-5xl w-full rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
         
         <div class="w-full md:w-1/2 p-8 bg-slate-50 border-r border-slate-200">
-            <div class="flex items-center gap-2 mb-6">
-                <span class="material-icons text-blue-600 text-3xl">settings_suggest</span>
-                <h1 class="text-2xl font-bold text-slate-800">System Setup</h1>
-            </div>
+            <h1 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <span class="material-icons text-blue-600">settings_suggest</span> System Setup
+            </h1>
 
             <div class="space-y-6">
                 
                 <div>
-                    <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
-                        <span class="bg-slate-200 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs">1</span>
-                        Get the Code
-                    </h3>
-                    <p class="text-xs text-slate-500 mb-2">Click copy below. This is your backend script.</p>
+                    <h3 class="font-bold text-slate-700 mb-2">1. Get the Code</h3>
                     <div class="relative group">
 <textarea id="scriptCode" readonly class="w-full h-24 p-3 text-[10px] font-mono bg-slate-800 text-green-400 rounded-lg focus:outline-none resize-none">
 function initialSetup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  // 1. Create Students Sheet
   let studentsSheet = ss.getSheetByName("Students");
   if (!studentsSheet) {
     studentsSheet = ss.insertSheet("Students");
     studentsSheet.appendRow(["student_id", "name", "grade", "active"]);
   }
 
-  // 2. Create Entries Sheet
   let entriesSheet = ss.getSheetByName("Entries");
   if (!entriesSheet) {
     entriesSheet = ss.insertSheet("Entries");
     entriesSheet.appendRow(["entry_id", "date", "student_id", "job_site", "evaluator", "comments", "scores_json"]);
   }
 
-  // 3. Create Settings Sheet (For Admin Password)
   let settingsSheet = ss.getSheetByName("Settings");
   if (!settingsSheet) {
     settingsSheet = ss.insertSheet("Settings");
     settingsSheet.appendRow(["key", "value"]);
-    settingsSheet.appendRow(["password", "voc123"]); // Default Password
+    settingsSheet.appendRow(["password", "voc123"]); 
   }
 
   return "Setup Complete";
@@ -108,11 +100,9 @@ function verifyAdmin(data) {
   const sheet = ss.getSheetByName("Settings");
   const values = sheet.getDataRange().getValues();
   let storedPass = "voc123"; 
-  // Find password row
   for(let i=1; i<values.length; i++) {
     if(values[i][0] == "password") { storedPass = values[i][1]; break; }
   }
-  
   if (String(data.password).trim() === String(storedPass).trim()) {
     return responseJSON({ status: "success" });
   } else {
@@ -124,130 +114,102 @@ function responseJSON(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 </textarea>
-                        <button onclick="copyCode()" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs backdrop-blur-sm transition">
-                            Copy
-                        </button>
+                        <button onclick="copyCode()" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs backdrop-blur-sm">Copy</button>
                     </div>
                 </div>
 
                 <div>
-                    <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
-                        <span class="bg-slate-200 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs">2</span>
-                        Google Sheet Setup
-                    </h3>
-                    <ol class="list-decimal pl-6 space-y-2 text-slate-600 text-xs leading-relaxed">
-                        <li>Open a new <a href="https://sheets.new" target="_blank" class="text-blue-600 underline font-bold">Google Sheet</a>.</li>
-                        <li>Go to <strong>Extensions > Apps Script</strong>.</li>
-                        <li class="text-red-600 font-bold bg-red-50 p-1 rounded">Important: Delete any existing text in the code editor first!</li>
-                        <li>Paste the code you copied from Step 1.</li>
-                        <li class="font-bold">Click the "Save" icon (Floppy Disk) in the toolbar.</li>
-                        <li>In the toolbar dropdown, select <strong>initialSetup</strong> and click <strong>Run</strong>.</li>
-                        <li>Accept permissions (Review Permissions > Choose Account > Advanced > Go to (Unsafe) > Allow).</li>
-                        <li class="italic text-slate-400">Note: This creates the "Settings" sheet with your default password.</li>
+                    <h3 class="font-bold text-slate-700 mb-2">2. Google Sheet Setup</h3>
+                    <ol class="list-decimal pl-6 space-y-2 text-slate-600 text-xs">
+                        <li>New <a href="https://sheets.new" target="_blank" class="text-blue-600 underline">Google Sheet</a> > <strong>Extensions > Apps Script</strong>.</li>
+                        <li class="text-red-600 font-bold">Delete any existing code first!</li>
+                        <li>Paste code > Click <strong>Save</strong> (Floppy Disk Icon).</li>
+                        <li>Select <strong>initialSetup</strong> > Click <strong>Run</strong>. (Accept Permissions).</li>
                     </ol>
                 </div>
 
                 <div>
-                    <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
-                        <span class="bg-slate-200 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs">3</span>
-                        Deploy
-                    </h3>
-                    <ol class="list-decimal pl-6 space-y-2 text-slate-600 text-xs leading-relaxed">
-                        <li>Click <strong>Deploy > New Deployment</strong> (Top Right).</li>
-                        <li>Click the Gear Icon > Select <strong>Web App</strong>.</li>
-                        <li>Description: "V1".</li>
+                    <h3 class="font-bold text-slate-700 mb-2">3. Deploy (Crucial Step!)</h3>
+                    <ol class="list-decimal pl-6 space-y-2 text-slate-600 text-xs">
+                        <li>Click <strong>Deploy > New Deployment</strong>.</li>
+                        <li>Gear Icon > <strong>Web App</strong>.</li>
                         <li>Execute as: <strong>Me</strong>.</li>
-                        <li>Who has access: <strong>Anyone</strong> (Vital for the app to work).</li>
-                        <li>Click <strong>Deploy</strong>. (You may be asked to authorize a second time).</li>
-                        <li>Copy the <strong>Web App URL</strong> generated.</li>
+                        <li class="bg-yellow-100 p-1 rounded font-bold text-slate-800">Who has access: Anyone</li>
+                        <li>Click <strong>Deploy</strong> > Copy the URL.</li>
                     </ol>
                 </div>
 
             </div>
         </div>
 
-        <div class="w-full md:w-1/2 p-8 flex flex-col bg-white relative">
+        <div class="w-full md:w-1/2 p-8 flex flex-col justify-center bg-white">
             
-            <div class="flex-1 flex flex-col justify-center">
-                <div class="mb-8 text-center">
-                    <span class="material-icons text-slate-300 text-6xl mb-4">link</span>
-                    <h2 class="text-xl font-bold text-slate-800">Connect Your Database</h2>
-                    <p class="text-slate-500 text-sm mt-2">Paste the Web App URL you just created.</p>
-                </div>
+            <div class="mb-8 text-center">
+                <span class="material-icons text-slate-300 text-6xl mb-4">link</span>
+                <h2 class="text-xl font-bold text-slate-800">Connect Your Database</h2>
+                <p class="text-slate-500 text-sm mt-2">Paste your Web App URL below.</p>
+            </div>
 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Web App URL</label>
-                        <input type="text" id="dbUrl" placeholder="https://script.google.com/macros/s/..." 
-                            class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono text-slate-600">
-                    </div>
-
-                    <button onclick="saveAndConnect()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition flex justify-center items-center gap-2">
-                        <span class="material-icons text-sm">save</span> Save & Connect
-                    </button>
-                    
-                    <p id="statusMsg" class="text-center text-xs text-red-500 font-bold hidden"></p>
-                </div>
+            <div class="space-y-4">
+                <input type="text" id="dbUrl" placeholder="https://script.google.com/macros/s/..." 
+                    class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono text-slate-600">
+                
+                <button onclick="saveAndConnect()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition">
+                    Save & Connect
+                </button>
+                
+                <div id="statusMsg" class="hidden text-center text-xs font-bold p-2 rounded"></div>
             </div>
 
             <div class="mt-8 pt-6 border-t border-slate-100 bg-slate-50 rounded-lg p-4">
-                <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">System Credentials</h4>
+                <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">After connecting:</h4>
                 <div class="flex justify-between items-center text-sm">
-                    <span class="text-slate-600">Default Password:</span>
+                    <span class="text-slate-600">Default Admin Password:</span>
                     <code class="bg-white px-2 py-1 rounded border border-slate-200 font-mono font-bold text-slate-800">voc123</code>
                 </div>
-                <p class="text-[10px] text-slate-400 mt-2">This is stored in the "Settings" tab of your Google Sheet.</p>
             </div>
 
         </div>
-
     </div>
 
     <script>
         const existingUrl = localStorage.getItem('vocational_backend_url');
-        if(existingUrl) {
-            document.getElementById('dbUrl').value = existingUrl;
-        }
+        if(existingUrl) document.getElementById('dbUrl').value = existingUrl;
 
         function copyCode() {
-            const code = document.getElementById('scriptCode');
-            code.select();
+            document.getElementById('scriptCode').select();
             document.execCommand('copy');
-            alert("Code copied to clipboard!");
+            alert("Copied!");
         }
 
         async function saveAndConnect() {
             const url = document.getElementById('dbUrl').value.trim();
             const msg = document.getElementById('statusMsg');
             
-            if(!url.includes('script.google.com')) {
-                msg.innerText = "Invalid URL. It must start with script.google.com";
-                msg.classList.remove('hidden');
-                return;
-            }
-
-            msg.innerText = "Testing connection...";
-            msg.classList.remove('hidden');
-            msg.className = "text-center text-xs text-blue-500 font-bold";
+            msg.innerText = "Testing connection... (No password needed for this step)";
+            msg.className = "text-center text-xs font-bold text-blue-600 block";
 
             try {
-                // Test the connection by trying to fetch students
+                // We attempt to fetch students. If this fails, it's usually a permissions error
+                // because the user didn't select "Anyone" in deployment.
                 const response = await fetch(`${url}?action=getStudents`);
+                
+                // If Google redirects to a login page, response.url will change or status will be opaque
+                if(response.redirected) throw new Error("Redirected");
+
                 const result = await response.json();
 
                 if(result.status === 'success') {
                     localStorage.setItem('vocational_backend_url', url);
-                    msg.className = "text-center text-xs text-green-500 font-bold";
-                    msg.innerText = "Success! Redirecting...";
-                    setTimeout(() => {
-                        window.location.href = "index.html";
-                    }, 1500);
+                    msg.className = "text-center text-xs font-bold text-green-600 block";
+                    msg.innerText = "Connected! Redirecting...";
+                    setTimeout(() => window.location.href = "index.html", 1500);
                 } else {
-                    throw new Error("Script reachable, but returned error.");
+                    throw new Error("Script error");
                 }
             } catch (e) {
-                msg.className = "text-center text-xs text-red-500 font-bold";
-                msg.innerText = "Connection Failed. Did you set access to 'Anyone'?";
+                msg.className = "text-center text-xs font-bold text-red-600 block bg-red-50 p-2 rounded";
+                msg.innerHTML = "Connection Failed!<br>Make sure you deployed as <u>'Who has access: Anyone'</u>.";
                 console.error(e);
             }
         }
