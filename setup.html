@@ -9,7 +9,7 @@
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex items-center justify-center p-4">
 
-    <div class="bg-white max-w-4xl w-full rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+    <div class="bg-white max-w-5xl w-full rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
         
         <div class="w-full md:w-1/2 p-8 bg-slate-50 border-r border-slate-200">
             <div class="flex items-center gap-2 mb-6">
@@ -24,9 +24,9 @@
                         <span class="bg-slate-200 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs">1</span>
                         Get the Code
                     </h3>
-                    <p class="text-sm text-slate-500 mb-2">Copy the script below. This is your backend "brain".</p>
+                    <p class="text-xs text-slate-500 mb-2">Click copy below. This is your backend script.</p>
                     <div class="relative group">
-                        <textarea id="scriptCode" readonly class="w-full h-32 p-3 text-xs font-mono bg-slate-800 text-green-400 rounded-lg focus:outline-none resize-none">
+                        <textarea id="scriptCode" readonly class="w-full h-24 p-3 text-[10px] font-mono bg-slate-800 text-green-400 rounded-lg focus:outline-none resize-none">
 function initialSetup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let studentsSheet = ss.getSheetByName("Students");
@@ -94,7 +94,7 @@ function responseJSON(obj) {
 }
                         </textarea>
                         <button onclick="copyCode()" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs backdrop-blur-sm transition">
-                            Copy Code
+                            Copy
                         </button>
                     </div>
                 </div>
@@ -102,55 +102,69 @@ function responseJSON(obj) {
                 <div>
                     <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
                         <span class="bg-slate-200 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs">2</span>
-                        Deploy to Google
+                        Google Sheet Setup
                     </h3>
-                    <ol class="list-decimal pl-10 space-y-2 text-slate-600 text-xs">
-                        <li>Open a new <a href="https://sheets.new" target="_blank" class="text-blue-600 underline">Google Sheet</a>.</li>
+                    <ol class="list-decimal pl-6 space-y-2 text-slate-600 text-xs leading-relaxed">
+                        <li>Open a new <a href="https://sheets.new" target="_blank" class="text-blue-600 underline font-bold">Google Sheet</a>.</li>
                         <li>Go to <strong>Extensions > Apps Script</strong>.</li>
-                        <li>Paste the code you copied above.</li>
-                        <li class="font-bold text-red-600 bg-red-50 p-1 rounded border border-red-100">
-                            CRITICAL: Select 'initialSetup' from the toolbar dropdown and click 'Run'.  Accept permissions.
-                        </li>
-                        <li>Click <strong>Deploy > New Deployment</strong>.</li>
-                        <li>Select type: <strong>Web App</strong>.</li>
+                        <li class="text-red-600 font-bold bg-red-50 p-1 rounded">Important: Delete any existing code (like "myFunction") in the editor first.</li>
+                        <li>Paste the code you copied from Step 1.</li>
+                        <li class="font-bold">Click the "Save" icon (Floppy Disk) in the toolbar.</li>
+                        <li>In the toolbar dropdown, select <strong>initialSetup</strong> and click <strong>Run</strong>.</li>
+                        <li>Accept permissions (Click Review Permissions > Choose Account > Advanced > Go to (Unsafe) > Allow).</li>
+                    </ol>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
+                        <span class="bg-slate-200 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs">3</span>
+                        Deploy
+                    </h3>
+                    <ol class="list-decimal pl-6 space-y-2 text-slate-600 text-xs leading-relaxed">
+                        <li>Click <strong>Deploy > New Deployment</strong> (Top Right).</li>
+                        <li>Click the Gear Icon > Select <strong>Web App</strong>.</li>
+                        <li>Description: "V1".</li>
                         <li>Execute as: <strong>Me</strong>.</li>
-                        <li>Who has access: <strong>Anyone</strong>.</li>
-                        <li>Click Deploy and copy the <strong>Web App URL</strong>.</li>
+                        <li>Who has access: <strong>Anyone</strong> (Vital for the app to work).</li>
+                        <li>Click <strong>Deploy</strong>. (You may be asked to authorize a second time).</li>
+                        <li>Copy the <strong>Web App URL</strong> generated.</li>
                     </ol>
                 </div>
 
             </div>
         </div>
 
-        <div class="w-full md:w-1/2 p-8 flex flex-col justify-center bg-white">
+        <div class="w-full md:w-1/2 p-8 flex flex-col bg-white relative">
             
-            <div class="mb-8 text-center">
-                <span class="material-icons text-slate-300 text-6xl mb-4">link</span>
-                <h2 class="text-xl font-bold text-slate-800">Connect Your Sheet</h2>
-                <p class="text-slate-500 text-sm mt-2">Paste the Web App URL you just created to link this app to your database.</p>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Web App URL</label>
-                    <input type="text" id="dbUrl" placeholder="https://script.google.com/macros/s/..." 
-                        class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono text-slate-600">
+            <div class="flex-1 flex flex-col justify-center">
+                <div class="mb-8 text-center">
+                    <span class="material-icons text-slate-300 text-6xl mb-4">link</span>
+                    <h2 class="text-xl font-bold text-slate-800">Connect Your Database</h2>
+                    <p class="text-slate-500 text-sm mt-2">Paste the Web App URL you just created.</p>
                 </div>
 
-                <button onclick="saveAndConnect()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition flex justify-center items-center gap-2">
-                    <span class="material-icons text-sm">save</span> Save & Connect
-                </button>
-                
-                <p id="statusMsg" class="text-center text-xs text-red-500 font-bold hidden"></p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Web App URL</label>
+                        <input type="text" id="dbUrl" placeholder="https://script.google.com/macros/s/..." 
+                            class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono text-slate-600">
+                    </div>
+
+                    <button onclick="saveAndConnect()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition flex justify-center items-center gap-2">
+                        <span class="material-icons text-sm">save</span> Save & Connect
+                    </button>
+                    
+                    <p id="statusMsg" class="text-center text-xs text-red-500 font-bold hidden"></p>
+                </div>
             </div>
 
-            <div class="mt-8 border-t pt-6">
-                <h4 class="text-xs font-bold text-slate-400 uppercase mb-3">Troubleshooting</h4>
-                <ul class="text-xs text-slate-500 space-y-1 list-disc pl-4">
-                    <li>Ensure you clicked "Run" on <code>initialSetup</code> first.</li>
-                    <li>Ensure access is set to "Anyone" (not "Anyone with Google Account").</li>
-                    <li>If you change the code later, you must do a <strong>New Deployment</strong>.</li>
-                </ul>
+            <div class="mt-8 pt-6 border-t border-slate-100 bg-slate-50 rounded-lg p-4">
+                <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">System Credentials</h4>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-600">Admin Password:</span>
+                    <code class="bg-white px-2 py-1 rounded border border-slate-200 font-mono font-bold text-slate-800">voc123</code>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-2">Use this password to access the Admin Dashboard.</p>
             </div>
 
         </div>
@@ -186,7 +200,7 @@ function responseJSON(obj) {
             msg.className = "text-center text-xs text-blue-500 font-bold";
 
             try {
-                // Test the connection by trying to fetch students (even if empty)
+                // Test the connection by trying to fetch students
                 const response = await fetch(`${url}?action=getStudents`);
                 const result = await response.json();
 
@@ -196,7 +210,7 @@ function responseJSON(obj) {
                     msg.innerText = "Success! Redirecting...";
                     setTimeout(() => {
                         window.location.href = "index.html";
-                    }, 1000);
+                    }, 1500);
                 } else {
                     throw new Error("Script reachable, but returned error.");
                 }
