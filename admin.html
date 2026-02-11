@@ -34,105 +34,85 @@
                 <span class="material-icons text-red-600 text-3xl">lock</span>
             </div>
             <h2 class="text-2xl font-bold text-slate-800 mb-2">Admin Access</h2>
-            <p class="text-slate-500 text-sm mb-6">Enter the password stored in your Google Sheet (Settings tab).</p>
-            
-            <input type="password" id="adminPassInput" placeholder="Password" 
-                class="w-full p-3 border border-slate-300 rounded-lg mb-4 focus:ring-2 focus:ring-red-500 outline-none text-center text-lg">
-            
-            <button onclick="verifyPassword()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg transition shadow-lg">
-                Unlock Dashboard
-            </button>
+            <input type="password" id="adminPassInput" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-4 text-center text-lg">
+            <button onclick="verifyPassword()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg transition">Unlock Dashboard</button>
             <p id="authError" class="text-red-600 text-xs font-bold mt-3 hidden">Incorrect Password</p>
         </div>
     </div>
 
     <main id="adminContent" class="hidden max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-8 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-icons text-green-500">check_circle</span>
+                <span class="text-sm font-bold text-slate-700">Database Connected</span>
+            </div>
+            <a href="setup.html" class="text-xs text-blue-600 hover:underline">Reconfigure</a>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <h3 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
-                    <span class="material-icons text-green-500">check_circle</span> System Status
-                </h3>
-                <div class="space-y-3 text-sm text-slate-600">
-                    <div class="flex justify-between border-b border-slate-100 pb-2">
-                        <span>Database Connection:</span>
-                        <span class="font-mono text-green-600 font-bold">Active</span>
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col">
+                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-700 flex items-center gap-2">
+                            <span class="material-icons text-slate-400">group</span> Student Roster
+                        </h3>
+                        <button onclick="loadStudents()" class="text-slate-500 hover:text-blue-600"><span class="material-icons">refresh</span></button>
                     </div>
-                    <div class="flex justify-between border-b border-slate-100 pb-2">
-                        <span>Database URL:</span>
-                        <span id="displayUrl" class="font-mono text-xs text-slate-400 truncate w-48 text-right">...</span>
-                    </div>
-                    <div class="mt-4 pt-2">
-                        <a href="setup.html" class="text-blue-600 hover:underline text-xs flex items-center gap-1 justify-end">
-                            <span class="material-icons text-[14px]">settings</span> Reconfigure Connection
-                        </a>
+                    <div class="p-6 flex-1 overflow-auto">
+                        <p class="text-xs text-slate-500 mb-4 bg-yellow-50 p-2 rounded border border-yellow-100">
+                            <strong>Note:</strong> Manage students directly in the Google Sheet "Students" tab.
+                        </p>
+                        <table class="w-full text-sm text-left text-slate-600">
+                            <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+                                <tr>
+                                    <th class="px-4 py-2">ID</th>
+                                    <th class="px-4 py-2">Name</th>
+                                    <th class="px-4 py-2">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <h3 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
-                    <span class="material-icons text-blue-500">manage_accounts</span> Settings
-                </h3>
-                <p class="text-sm text-slate-500 mb-4">
-                    To change your Admin Password, open your Google Sheet and edit the <strong>"Settings"</strong> tab directly.
-                </p>
-                <div class="bg-slate-50 p-4 rounded border border-slate-200 text-center">
-                    <a id="sheetLink" href="#" target="_blank" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition shadow">
-                        <span class="material-icons text-sm">table_view</span> Open Google Sheet
-                    </a>
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col">
+                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                        <h3 class="font-bold text-slate-700 flex items-center gap-2">
+                            <span class="material-icons text-slate-400">work</span> Job Sites
+                        </h3>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col">
+                        
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="newSiteInput" placeholder="New Site Name" class="flex-1 p-2 border border-slate-300 rounded text-sm">
+                            <button onclick="addSite()" class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700 font-bold text-xs">ADD</button>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto border rounded border-slate-100 bg-slate-50 p-2">
+                            <ul id="sitesList" class="space-y-1">
+                                <li class="text-xs text-slate-400 text-center py-4">Loading sites...</li>
+                            </ul>
+                        </div>
+
+                    </div>
                 </div>
             </div>
 
         </div>
-
-        <div class="mt-8 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
-                <h3 class="font-bold text-slate-700">Student Roster</h3>
-                <button onclick="refreshStudents()" class="text-slate-500 hover:text-blue-600 transition">
-                    <span class="material-icons">refresh</span>
-                </button>
-            </div>
-            <div class="p-6">
-                <p class="text-sm text-slate-500 mb-4">
-                    Students are managed directly in the Google Sheet <strong>"Students"</strong> tab. Add new rows there and click refresh here to verify they are loading.
-                </p>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-slate-600">
-                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
-                            <tr>
-                                <th class="px-6 py-3">ID</th>
-                                <th class="px-6 py-3">Name</th>
-                                <th class="px-6 py-3">Grade</th>
-                                <th class="px-6 py-3">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="studentTableBody">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
     </main>
 
     <script>
         const url = localStorage.getItem('vocational_backend_url');
 
         window.onload = () => {
-            // CRITICAL CHECK: If no database is linked, redirect to Setup immediately.
-            // This prevents the "Password Loop" where you can't log in to configure the DB.
             if(!url) {
-                alert("Database not connected yet. Redirecting to Setup...");
                 window.location.href = "setup.html";
                 return;
             }
-
-            document.getElementById('displayUrl').innerText = url;
-            
-            // If connected, show password prompt
-            // (The modal is visible by default via HTML)
         };
 
         async function verifyPassword() {
@@ -142,30 +122,25 @@
 
             btn.innerText = "Verifying...";
             btn.disabled = true;
-            err.classList.add('hidden');
-
+            
             try {
-                // Send password to backend to verify against Settings sheet
                 const response = await fetch(url, {
                     method: 'POST',
                     body: JSON.stringify({ action: 'verifyAdmin', password: pass })
                 });
-                
                 const result = await response.json();
 
                 if(result.status === 'success') {
-                    // Success!
                     document.getElementById('authModal').classList.add('hidden');
                     document.getElementById('adminContent').classList.remove('hidden');
                     loadStudents();
+                    loadSites();
                 } else {
                     throw new Error("Invalid Password");
                 }
-
             } catch (e) {
-                console.error(e);
-                err.innerText = "Incorrect Password. Check your 'Settings' tab in Google Sheets.";
                 err.classList.remove('hidden');
+                err.innerText = "Incorrect Password";
             } finally {
                 btn.innerText = "Unlock Dashboard";
                 btn.disabled = false;
@@ -178,28 +153,70 @@
                 const json = await response.json();
                 const tbody = document.getElementById('studentTableBody');
                 tbody.innerHTML = '';
-                
                 json.data.forEach(s => {
                     tbody.innerHTML += `
-                        <tr class="bg-white border-b hover:bg-slate-50">
-                            <td class="px-6 py-4 font-mono text-xs">${s.student_id}</td>
-                            <td class="px-6 py-4 font-medium text-slate-900">${s.name}</td>
-                            <td class="px-6 py-4">${s.grade}</td>
-                            <td class="px-6 py-4">
-                                <span class="px-2 py-1 text-xs font-bold rounded-full ${s.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                                    ${s.active ? 'Active' : 'Inactive'}
-                                </span>
-                            </td>
-                        </tr>
-                    `;
+                        <tr class="border-b hover:bg-slate-50">
+                            <td class="px-4 py-3 font-mono text-xs">${s.student_id}</td>
+                            <td class="px-4 py-3 font-medium">${s.name}</td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 text-[10px] font-bold rounded-full ${s.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${s.active ? 'Active' : 'Inactive'}</span></td>
+                        </tr>`;
                 });
-            } catch(e) {
-                alert("Error loading student data.");
-            }
+            } catch(e) { console.error(e); }
         }
 
-        function refreshStudents() {
-            loadStudents();
+        async function loadSites() {
+            try {
+                const response = await fetch(`${url}?action=getSites`);
+                const json = await response.json();
+                const list = document.getElementById('sitesList');
+                list.innerHTML = '';
+                
+                if(json.data.length === 0) {
+                    list.innerHTML = '<li class="text-xs text-slate-400 text-center py-4">No sites found.</li>';
+                    return;
+                }
+
+                json.data.forEach(site => {
+                    list.innerHTML += `
+                        <li class="flex justify-between items-center bg-white p-2 rounded shadow-sm border border-slate-200">
+                            <span class="text-sm font-medium text-slate-700">${site}</span>
+                            <button onclick="deleteSite('${site}')" class="text-slate-400 hover:text-red-500">
+                                <span class="material-icons text-sm">delete</span>
+                            </button>
+                        </li>`;
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        async function addSite() {
+            const input = document.getElementById('newSiteInput');
+            const name = input.value.trim();
+            if(!name) return;
+
+            input.value = "Adding...";
+            input.disabled = true;
+
+            await fetch(url, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'addSite', site_name: name })
+            });
+
+            input.value = "";
+            input.disabled = false;
+            loadSites();
+        }
+
+        async function deleteSite(name) {
+            if(!confirm(`Delete "${name}"?`)) return;
+            
+            // Optimistic UI update (remove immediately)
+            loadSites(); // Refreshing actually handles the UI, but let's just trigger the fetch
+            
+            await fetch(url, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'deleteSite', site_name: name })
+            });
+            loadSites();
         }
     </script>
 </body>
