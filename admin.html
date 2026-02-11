@@ -7,248 +7,200 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans h-screen flex flex-col overflow-hidden">
+<body class="bg-slate-100 font-sans">
 
-    <div id="loginOverlay" class="fixed inset-0 bg-slate-900 z-50 flex flex-col justify-center items-center p-4">
-        <div class="bg-slate-800 p-8 rounded-xl shadow-2xl border border-slate-700 w-full max-w-md text-center">
-            <span class="material-icons text-6xl text-blue-500 mb-4">admin_panel_settings</span>
-            <h1 class="text-2xl font-bold mb-2">Restricted Access</h1>
-            <p class="text-slate-400 mb-6 text-sm">Enter admin password</p>
-            <input type="password" id="passwordInput" placeholder="Password" 
-                class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white mb-4 outline-none focus:border-blue-500">
-            <button onclick="attemptLogin()" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition">
-                UNLOCK
-            </button>
-            <p id="loginError" class="text-red-500 text-sm mt-4 hidden">Incorrect Password</p>
-            <div class="mt-6 border-t border-slate-700 pt-4">
-                <a href="index.html" class="text-slate-500 text-xs hover:text-white">← Return to Entry Page</a>
-            </div>
-        </div>
-    </div>
-
-    <div id="adminContent" class="hidden flex-1 flex flex-col h-full">
-        <nav class="bg-slate-800 border-b border-slate-700 p-4 shrink-0">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
+    <nav class="bg-slate-900 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center gap-2">
-                    <span class="material-icons text-green-400">settings_applications</span>
-                    <span class="font-bold text-xl">System Admin</span>
+                    <span class="material-icons text-red-500">admin_panel_settings</span>
+                    <span class="font-bold text-xl">Admin Dashboard</span>
                 </div>
-                <div class="flex gap-3">
-                    <a href="index.html" class="px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-sm">Entry App</a>
-                    <a href="report.html" class="px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-sm">Reports</a>
-                    <button onclick="location.reload()" class="px-3 py-1 rounded bg-red-900/50 hover:bg-red-900 text-red-200 text-sm">Logout</button>
+                <div class="flex gap-4">
+                    <a href="index.html" class="hover:bg-slate-800 px-3 py-2 rounded transition flex items-center gap-1 text-sm font-medium">
+                        <span class="material-icons text-sm">assignment</span> Entry
+                    </a>
+                    <a href="reports.html" class="hover:bg-slate-800 px-3 py-2 rounded transition flex items-center gap-1 text-sm font-medium">
+                        <span class="material-icons text-sm">analytics</span> Reports
+                    </a>
                 </div>
-            </div>
-        </nav>
-
-        <div class="flex-1 overflow-auto p-4 md:p-8">
-            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-                <div class="lg:col-span-2 bg-slate-800 p-6 rounded-xl border border-slate-700">
-                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
-                        <span class="material-icons text-blue-400">link</span> Database Connection
-                    </h2>
-                    <div class="flex gap-2">
-                        <input type="text" id="dbUrl" placeholder="Google Script Web App URL..." 
-                            class="flex-1 bg-slate-900 border border-slate-600 rounded p-2 text-green-400 font-mono text-sm">
-                        <button onclick="saveUrl()" class="bg-blue-600 hover:bg-blue-500 px-6 rounded font-bold text-sm">SAVE</button>
-                    </div>
-                </div>
-
-                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 flex flex-col h-[500px]">
-                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white">
-                        <span class="material-icons text-purple-400">school</span> Manage Students
-                    </h2>
-                    <form onsubmit="addStudent(event)" class="flex gap-2 mb-4">
-                        <input type="text" id="newStudentName" placeholder="Student Name" required
-                            class="flex-1 bg-slate-900 border border-slate-600 rounded p-2 text-sm outline-none focus:border-purple-500">
-                        <input type="text" id="newStudentGrade" placeholder="Grade" required
-                            class="w-20 bg-slate-900 border border-slate-600 rounded p-2 text-sm outline-none focus:border-purple-500">
-                        <button type="submit" class="bg-purple-600 hover:bg-purple-500 px-3 rounded text-white font-bold">
-                            <span class="material-icons text-sm">add</span>
-                        </button>
-                    </form>
-                    <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                        <ul id="studentList" class="space-y-2">
-                            <li class="text-slate-500 text-sm text-center italic mt-10">Loading...</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 flex flex-col h-[500px]">
-                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white">
-                        <span class="material-icons text-orange-400">work</span> Manage Job Sites
-                    </h2>
-                    <form onsubmit="addJobSite(event)" class="flex gap-2 mb-4">
-                        <input type="text" id="newSiteName" placeholder="Job Site Name" required
-                            class="flex-1 bg-slate-900 border border-slate-600 rounded p-2 text-sm outline-none focus:border-orange-500">
-                        <button type="submit" class="bg-orange-600 hover:bg-orange-500 px-3 rounded text-white font-bold">
-                            <span class="material-icons text-sm">add</span>
-                        </button>
-                    </form>
-                    <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                        <ul id="siteList" class="space-y-2">
-                            <li class="text-slate-500 text-sm text-center italic mt-10">Loading...</li>
-                        </ul>
-                    </div>
-                </div>
-
             </div>
         </div>
+    </nav>
+
+    <div id="authModal" class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full text-center">
+            <div class="bg-red-100 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <span class="material-icons text-red-600 text-3xl">lock</span>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Admin Access</h2>
+            <p class="text-slate-500 text-sm mb-6">Enter the password stored in your Google Sheet (Settings tab).</p>
+            
+            <input type="password" id="adminPassInput" placeholder="Password" 
+                class="w-full p-3 border border-slate-300 rounded-lg mb-4 focus:ring-2 focus:ring-red-500 outline-none text-center text-lg">
+            
+            <button onclick="verifyPassword()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg transition shadow-lg">
+                Unlock Dashboard
+            </button>
+            <p id="authError" class="text-red-600 text-xs font-bold mt-3 hidden">Incorrect Password</p>
+        </div>
     </div>
+
+    <main id="adminContent" class="hidden max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <span class="material-icons text-green-500">check_circle</span> System Status
+                </h3>
+                <div class="space-y-3 text-sm text-slate-600">
+                    <div class="flex justify-between border-b border-slate-100 pb-2">
+                        <span>Database Connection:</span>
+                        <span class="font-mono text-green-600 font-bold">Active</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-100 pb-2">
+                        <span>Database URL:</span>
+                        <span id="displayUrl" class="font-mono text-xs text-slate-400 truncate w-48 text-right">...</span>
+                    </div>
+                    <div class="mt-4 pt-2">
+                        <a href="setup.html" class="text-blue-600 hover:underline text-xs flex items-center gap-1 justify-end">
+                            <span class="material-icons text-[14px]">settings</span> Reconfigure Connection
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <span class="material-icons text-blue-500">manage_accounts</span> Settings
+                </h3>
+                <p class="text-sm text-slate-500 mb-4">
+                    To change your Admin Password, open your Google Sheet and edit the <strong>"Settings"</strong> tab directly.
+                </p>
+                <div class="bg-slate-50 p-4 rounded border border-slate-200 text-center">
+                    <a id="sheetLink" href="#" target="_blank" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition shadow">
+                        <span class="material-icons text-sm">table_view</span> Open Google Sheet
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-8 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="font-bold text-slate-700">Student Roster</h3>
+                <button onclick="refreshStudents()" class="text-slate-500 hover:text-blue-600 transition">
+                    <span class="material-icons">refresh</span>
+                </button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-slate-500 mb-4">
+                    Students are managed directly in the Google Sheet <strong>"Students"</strong> tab. Add new rows there and click refresh here to verify they are loading.
+                </p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+                            <tr>
+                                <th class="px-6 py-3">ID</th>
+                                <th class="px-6 py-3">Name</th>
+                                <th class="px-6 py-3">Grade</th>
+                                <th class="px-6 py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
 
     <script>
-        let API_URL = localStorage.getItem('vocational_backend_url');
-        if (API_URL) document.getElementById('dbUrl').value = API_URL;
+        const url = localStorage.getItem('vocational_backend_url');
 
-        async function attemptLogin() {
-            const pass = document.getElementById('passwordInput').value;
-            const btn = document.getElementById('loginBtn');
-            const err = document.getElementById('loginError');
-            
-            if(!API_URL) {
-                alert("Please paste your Database URL first.");
-                document.getElementById('loginOverlay').classList.add('hidden');
-                document.getElementById('adminContent').classList.remove('hidden');
+        window.onload = () => {
+            // CRITICAL CHECK: If no database is linked, redirect to Setup immediately.
+            // This prevents the "Password Loop" where you can't log in to configure the DB.
+            if(!url) {
+                alert("Database not connected yet. Redirecting to Setup...");
+                window.location.href = "setup.html";
                 return;
             }
 
-            btn.disabled = true;
-            btn.innerText = "Checking...";
+            document.getElementById('displayUrl').innerText = url;
             
-            try {
-                const res = await fetch(`${API_URL}?action=checkAdmin&password=${pass}`);
-                const data = await res.json();
+            // If connected, show password prompt
+            // (The modal is visible by default via HTML)
+        };
 
-                if (data.result === 'success') {
-                    document.getElementById('loginOverlay').classList.add('hidden');
+        async function verifyPassword() {
+            const pass = document.getElementById('adminPassInput').value;
+            const btn = document.querySelector('button');
+            const err = document.getElementById('authError');
+
+            btn.innerText = "Verifying...";
+            btn.disabled = true;
+            err.classList.add('hidden');
+
+            try {
+                // Send password to backend to verify against Settings sheet
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'verifyAdmin', password: pass })
+                });
+                
+                const result = await response.json();
+
+                if(result.status === 'success') {
+                    // Success!
+                    document.getElementById('authModal').classList.add('hidden');
                     document.getElementById('adminContent').classList.remove('hidden');
-                    loadData();
+                    loadStudents();
                 } else {
                     throw new Error("Invalid Password");
                 }
+
             } catch (e) {
                 console.error(e);
-                btn.disabled = false;
-                btn.innerText = "UNLOCK";
+                err.innerText = "Incorrect Password. Check your 'Settings' tab in Google Sheets.";
                 err.classList.remove('hidden');
+            } finally {
+                btn.innerText = "Unlock Dashboard";
+                btn.disabled = false;
             }
         }
 
-        function saveUrl() {
-            const url = document.getElementById('dbUrl').value.trim();
-            localStorage.setItem('vocational_backend_url', url);
-            alert("Saved! Reloading...");
-            location.reload();
-        }
-
-        async function loadData() {
-            if(!API_URL) return;
-
-            // Load Students
-            fetch(`${API_URL}?action=getStudents`)
-                .then(r => r.json())
-                .then(d => {
-                    const list = document.getElementById('studentList');
-                    list.innerHTML = "";
-                    if(!d.data || d.data.length === 0) {
-                        list.innerHTML = "<li class='text-slate-500 text-center'>No students found.</li>";
-                        return;
-                    }
-                    d.data.forEach(s => {
-                        list.innerHTML += `
-                            <li class="flex justify-between items-center bg-slate-700/50 p-3 rounded border border-slate-600 group">
-                                <div>
-                                    <p class="font-bold text-slate-200">${s.name}</p>
-                                    <p class="text-xs text-slate-400">Grade: ${s.grade}</p>
-                                </div>
-                                <button onclick="deleteStudent('${s.student_id}')" class="text-slate-500 hover:text-red-400">
-                                    <span class="material-icons text-sm">delete</span>
-                                </button>
-                            </li>`;
-                    });
-                })
-                .catch(e => console.error("Student load error", e));
-
-            // Load Job Sites
-            fetch(`${API_URL}?action=getJobSites`)
-                .then(r => r.json())
-                .then(d => {
-                    const list = document.getElementById('siteList');
-                    list.innerHTML = "";
-                    
-                    if(!d.data || d.data.length === 0) {
-                        list.innerHTML = "<li class='text-slate-500 text-center mt-4'>No sites found in 'JobSites' sheet.</li>";
-                        return;
-                    }
-                    
-                    d.data.forEach(site => {
-                        list.innerHTML += `
-                            <li class="flex justify-between items-center bg-slate-700/50 p-3 rounded border border-slate-600">
-                                <span class="font-bold text-slate-200">${site}</span>
-                                <button onclick="deleteJobSite('${site}')" class="text-slate-500 hover:text-red-400">
-                                    <span class="material-icons text-sm">delete</span>
-                                </button>
-                            </li>`;
-                    });
-                })
-                .catch(e => {
-                    console.error("Job site load error", e);
-                    document.getElementById('siteList').innerHTML = "<li class='text-red-400 text-center'>Error loading sites.</li>";
+        async function loadStudents() {
+            try {
+                const response = await fetch(`${url}?action=getStudents`);
+                const json = await response.json();
+                const tbody = document.getElementById('studentTableBody');
+                tbody.innerHTML = '';
+                
+                json.data.forEach(s => {
+                    tbody.innerHTML += `
+                        <tr class="bg-white border-b hover:bg-slate-50">
+                            <td class="px-6 py-4 font-mono text-xs">${s.student_id}</td>
+                            <td class="px-6 py-4 font-medium text-slate-900">${s.name}</td>
+                            <td class="px-6 py-4">${s.grade}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 text-xs font-bold rounded-full ${s.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                    ${s.active ? 'Active' : 'Inactive'}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
                 });
+            } catch(e) {
+                alert("Error loading student data.");
+            }
         }
 
-        async function addStudent(e) {
-            e.preventDefault();
-            const name = document.getElementById('newStudentName').value;
-            const grade = document.getElementById('newStudentGrade').value;
-            
-            document.getElementById('studentList').innerHTML += `<li class="p-3 text-center text-slate-400">Adding...</li>`;
-            
-            await fetch(API_URL, {
-                method: "POST", mode: "no-cors",
-                body: JSON.stringify({ action: "addStudent", name, grade })
-            });
-            document.getElementById('newStudentName').value = "";
-            document.getElementById('newStudentGrade').value = "";
-            setTimeout(loadData, 1000);
-        }
-
-        async function deleteStudent(id) {
-            if(!confirm("Are you sure?")) return;
-            await fetch(API_URL, {
-                method: "POST", mode: "no-cors",
-                body: JSON.stringify({ action: "deleteStudent", student_id: id })
-            });
-            setTimeout(loadData, 1000);
-        }
-
-        async function addJobSite(e) {
-            e.preventDefault();
-            const name = document.getElementById('newSiteName').value;
-            document.getElementById('siteList').innerHTML += `<li class="p-3 text-center text-slate-400">Adding...</li>`;
-
-            await fetch(API_URL, {
-                method: "POST", mode: "no-cors",
-                body: JSON.stringify({ action: "addJobSite", site_name: name })
-            });
-            document.getElementById('newSiteName').value = "";
-            setTimeout(loadData, 1000);
-        }
-
-        async function deleteJobSite(name) {
-            if(!confirm("Remove this job site?")) return;
-            await fetch(API_URL, {
-                method: "POST", mode: "no-cors",
-                body: JSON.stringify({ action: "deleteJobSite", site_name: name })
-            });
-            setTimeout(loadData, 1000);
+        function refreshStudents() {
+            loadStudents();
         }
     </script>
-    <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-    </style>
 </body>
 </html>
