@@ -10,8 +10,8 @@
 
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex items-center justify-center p-4">
 
+<!-- Magic Link Auto-Connect -->
 <script>
-/* Handle magic link auto-connect */
 const params = new URLSearchParams(window.location.search);
 const magicUrl = params.get("connect");
 
@@ -30,66 +30,60 @@ if (magicUrl) {
 
     <!-- LEFT PANEL -->
     <div class="w-full md:w-5/12 p-8 bg-slate-50 border-r border-slate-200 overflow-y-auto max-h-[80vh]">
+
         <h1 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <span class="material-icons text-blue-600">build</span> Setup Guide
+            <span class="material-icons text-blue-600">build</span>
+            Setup Guide
         </h1>
 
-        <div class="space-y-6">
+        <!-- Google Sheet Template -->
+        <div class="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+            <h3 class="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                <span class="material-icons text-indigo-600">description</span>
+                Google Sheet Template
+            </h3>
 
+            <p class="text-sm text-indigo-800 mb-3">
+                Every school needs their own copy of the data spreadsheet.
+            </p>
+
+            <a href="https://docs.google.com/spreadsheets/d/1QM1JYApZxAtazpsSWZ0pFpwStFJ2n_EB8Pu1XbZcWRg/copy"
+               target="_blank"
+               class="inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-sm">
+                Create Your Spreadsheet
+            </a>
+
+            <p class="text-xs text-slate-500 mt-2">
+                Clicking the button will prompt you to make your own copy.
+            </p>
+        </div>
+
+        <!-- Backend Script Code -->
+        <div class="space-y-6">
             <div>
                 <h3 class="font-bold text-slate-700 mb-2 border-b pb-1">1. Install Backend Code</h3>
                 <div class="relative group">
-
-<textarea id="scriptCode" readonly class="w-full h-24 p-3 text-[10px] font-mono bg-slate-800 text-green-400 rounded-lg focus:outline-none resize-none">
-function initialSetup() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  let studentsSheet = ss.getSheetByName("Students");
-  if (!studentsSheet) {
-    studentsSheet = ss.insertSheet("Students");
-    studentsSheet.appendRow(["student_id", "name", "grade", "active"]);
-  }
-
-  let entriesSheet = ss.getSheetByName("Entries");
-  if (!entriesSheet) {
-    entriesSheet = ss.insertSheet("Entries");
-    entriesSheet.appendRow(["entry_id", "date", "student_id", "job_site", "evaluator", "comments", "scores_json"]);
-  }
-
-  let settingsSheet = ss.getSheetByName("Settings");
-  if (!settingsSheet) {
-    settingsSheet = ss.insertSheet("Settings");
-    settingsSheet.appendRow(["key", "value"]);
-    settingsSheet.appendRow(["password", "voc123"]);
-  }
-
-  let sitesSheet = ss.getSheetByName("Sites");
-  if (!sitesSheet) {
-    sitesSheet = ss.insertSheet("Sites");
-    sitesSheet.appendRow(["site_name"]);
-    sitesSheet.appendRow(["Cafeteria"]);
-    sitesSheet.appendRow(["Library"]);
-    sitesSheet.appendRow(["Front Office"]);
-  }
-
-  return "Setup Complete";
-}
+<textarea id="scriptCode" readonly class="w-full h-40 p-3 text-[10px] font-mono bg-slate-800 text-green-400 rounded-lg resize-none">
+( BACKEND CODE IS NOW IN THE INSTRUCTIONS — DO NOT COPY FROM HERE )
+Use the GitHub instructions to paste the backend script.
 </textarea>
-
-                    <button onclick="copyCode()" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs">
+                    <button onclick="copyCode()"
+                            class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs">
                         Copy
                     </button>
                 </div>
             </div>
 
+            <!-- Setup Instructions -->
             <div class="text-xs text-slate-600 space-y-2">
-                <p><strong>2.</strong> Open Google Sheets → Extensions → Apps Script.</p>
-                <p><strong>3.</strong> Replace default script with this one → Save.</p>
-                <p><strong>4.</strong> Run <strong>initialSetup()</strong>.</p>
-                <p><strong>5.</strong> Deploy Web App → "Anyone with link" → Copy URL.</p>
+                <p><strong>2.</strong> Open your Google Sheet → Extensions → Apps Script.</p>
+                <p><strong>3.</strong> Paste the backend script into Code.gs → Save.</p>
+                <p><strong>4.</strong> Run <strong>initialSetup()</strong> to create system tabs.</p>
+                <p><strong>5.</strong> Deploy Web App → New Version → Anyone → Copy URL.</p>
+                <p><strong>6.</strong> Paste that URL below to connect your database.</p>
             </div>
-
         </div>
+
     </div>
 
     <!-- RIGHT PANEL -->
@@ -99,22 +93,25 @@ function initialSetup() {
 
         <div class="flex gap-2 mb-4">
             <input type="text" id="dbUrl" placeholder="https://script.google.com/…"
-                   class="flex-1 p-3 border rounded-lg text-sm">
-            <button onclick="saveAndConnect()" class="bg-blue-600 text-white font-bold px-6 rounded-lg">
+                   class="flex-1 p-3 border border-slate-300 rounded-lg text-sm">
+            <button onclick="saveAndConnect()"
+                    class="bg-blue-600 text-white font-bold px-6 rounded-lg">
                 Connect
             </button>
         </div>
 
         <div id="statusMsg" class="hidden text-xs font-bold mb-4"></div>
 
-        <!-- MAGIC SECTION -->
-        <div id="magicSection" class="hidden bg-indigo-50 border rounded-xl p-6">
+        <!-- Magic Link Sharing -->
+        <div id="magicSection" class="hidden bg-indigo-50 border border-indigo-100 rounded-xl p-6">
             <h3 class="font-bold text-indigo-900 mb-2">Share Connection</h3>
             <div class="flex flex-col md:flex-row gap-4 items-center">
                 <img id="qrImage" src="" class="w-24 h-24 bg-white p-1 rounded" />
                 <div class="flex-1">
-                    <input id="magicLinkInput" readonly class="w-full bg-white border text-xs p-2 rounded font-mono">
-                    <button onclick="copyMagicLink()" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs mt-2">
+                    <input id="magicLinkInput" readonly
+                           class="w-full bg-white border text-xs p-2 rounded font-mono">
+                    <button onclick="copyMagicLink()"
+                            class="bg-indigo-600 text-white px-3 py-1 rounded text-xs mt-2">
                         Copy Link
                     </button>
                 </div>
@@ -125,14 +122,6 @@ function initialSetup() {
 </div>
 
 <script>
-/* Load previous saved connection */
-const existingUrl = localStorage.getItem("vocational_backend_url");
-if (existingUrl) {
-    document.getElementById("dbUrl").value = existingUrl;
-    showMagicSection(existingUrl);
-}
-
-/* Copy Script Code */
 function copyCode() {
     const el = document.getElementById("scriptCode");
     el.select();
@@ -140,7 +129,23 @@ function copyCode() {
     alert("Copied!");
 }
 
-/* FIXED & IMPROVED CONNECTION CHECKER */
+function copyMagicLink() {
+    const el = document.getElementById("magicLinkInput");
+    el.select();
+    document.execCommand("copy");
+    alert("Copied!");
+}
+
+/* Load URL if already saved */
+const existingUrl = localStorage.getItem("vocational_backend_url");
+if (existingUrl) {
+    document.getElementById("dbUrl").value = existingUrl;
+    showMagicSection(existingUrl);
+}
+
+/************************************************************
+ * STEP: Connect to Backend
+ ************************************************************/
 async function saveAndConnect() {
     const msg = document.getElementById("statusMsg");
     let url = document.getElementById("dbUrl").value.trim();
@@ -153,18 +158,26 @@ async function saveAndConnect() {
     if (!url.endsWith("/exec")) url = url.replace(/\/+$/, "") + "/exec";
 
     try {
-        const response = await fetch(url + "?action=getStudents", { method: "GET" });
-        const text = await response.text();
-        const json = JSON.parse(text);
+        // Test student fetch
+        const studentRes = await fetch(url + "?action=getStudents");
+        const studentText = await studentRes.text();
+        const studentJson = JSON.parse(studentText);
 
-        if (json.status === "success") {
-            localStorage.setItem("vocational_backend_url", url);
-            msg.textContent = "Connected!";
-            msg.className = "text-green-600 block";
-            showMagicSection(url);
-        } else {
-            throw new Error();
-        }
+        if (studentJson.status !== "success") throw new Error();
+
+        // GET ADMIN PASSWORD FROM BACKEND
+        const adminRes = await fetch(url + "?action=getAdminConfig");
+        const adminJson = await adminRes.json();
+
+        // Save backend URL + admin password
+        localStorage.setItem("vocational_backend_url", url);
+        localStorage.setItem("vt_admin_password", adminJson.password);
+
+        msg.textContent = "Connected!";
+        msg.className = "text-green-600 block";
+
+        showMagicSection(url);
+
     } catch (err) {
         console.error(err);
         msg.textContent = "Connection Failed.";
@@ -172,7 +185,9 @@ async function saveAndConnect() {
     }
 }
 
-/* Display sharable magic link */
+/************************************************************
+ * Build Magic Link + QR
+ ************************************************************/
 function showMagicSection(url) {
     const magic = document.getElementById("magicSection");
     const input = document.getElementById("magicLinkInput");
@@ -182,16 +197,12 @@ function showMagicSection(url) {
     const link = base + "?connect=" + btoa(url);
 
     input.value = link;
-    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(link);
+
+    qr.src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" +
+        encodeURIComponent(link);
 
     magic.classList.remove("hidden");
-}
-
-function copyMagicLink() {
-    const el = document.getElementById("magicLinkInput");
-    el.select();
-    document.execCommand("copy");
-    alert("Copied!");
 }
 </script>
 
