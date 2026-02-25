@@ -7,343 +7,303 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
     <style>
         body { background-color: #f8fafc; font-family: ui-sans-serif, system-ui, sans-serif; }
+        
         @media print {
             @page { size: landscape; margin: 0.5cm; }
-            body { background: white; -webkit-print-color-adjust: exact; }
             nav, .no-print, #filterBar { display: none !important; }
             #reportContainer { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
-            .chart-card { break-inside: avoid; page-break-inside: avoid; border: 1px solid #ddd; }
-            #historyTable { display: table !important; }
+            .chart-card { page-break-inside: avoid; border: 1px solid #ddd; }
         }
     </style>
 </head>
+
 <body class="flex flex-col min-h-screen">
 
-    <nav class="bg-blue-900 text-white shadow-lg z-50 no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-2">
-                    <span class="material-icons text-yellow-400">analytics</span>
-                    <span class="font-bold text-xl">Vocational Reports</span>
-                </div>
-                <div class="flex gap-4">
-                    <a href="index.html" class="hover:bg-blue-800 px-3 py-2 rounded transition flex items-center gap-1 text-sm font-medium">
-                        <span class="material-icons text-sm">assignment</span> Entry
-                    </a>
-                    <a href="admin.html" class="hover:bg-blue-800 px-3 py-2 rounded transition flex items-center gap-1 text-sm font-medium">
-                        <span class="material-icons text-sm">settings</span> Admin
-                    </a>
-                </div>
+<nav class="bg-blue-900 text-white shadow-lg z-50 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-icons text-yellow-400">analytics</span>
+                <span class="font-bold text-xl">Vocational Reports</span>
+            </div>
+            <div class="flex gap-4">
+                <a href="index.html" class="hover:bg-blue-800 px-3 py-2 rounded">Entry</a>
+                <a href="admin.html" class="hover:bg-blue-800 px-3 py-2 rounded">Admin</a>
             </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <div id="loadingIndicator" class="fixed inset-0 bg-white z-50 flex flex-col justify-center items-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <p class="text-slate-500 font-medium">Loading Database...</p>
+<div id="loadingIndicator" class="fixed inset-0 bg-white z-50 flex flex-col justify-center items-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+    <p class="text-slate-500 font-medium">Loading Database...</p>
+</div>
+
+<main id="mainContent" class="hidden flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+
+    <!-- FILTER BAR -->
+    <div id="filterBar" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+            
+            <div class="md:col-span-3">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Student</label>
+                <select id="studentSelect" onchange="handleStudentChange()" class="w-full p-2.5 bg-white border rounded-lg">
+                    <option value="">-- Select Student --</option>
+                </select>
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Start Date</label>
+                <input type="date" id="startDate" onchange="runReport()" class="w-full p-2.5 border rounded-lg">
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">End Date</label>
+                <input type="date" id="endDate" onchange="runReport()" class="w-full p-2.5 border rounded-lg">
+            </div>
+
+            <div class="md:col-span-3">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Job Site</label>
+                <select id="siteSelect" onchange="runReport()" class="w-full p-2.5 border rounded-lg" disabled>
+                    <option value="All">All Sites</option>
+                </select>
+            </div>
+
+            <div class="md:col-span-2 text-right">
+                <button onclick="window.print()" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg">Print</button>
+            </div>
+        </div>
     </div>
 
-    <main id="mainContent" class="hidden flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+    <!-- REPORT BODY -->
+    <div id="reportContainer" class="space-y-6 hidden">
 
-        <div id="filterBar" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-                
-                <div class="md:col-span-3">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Student</label>
-                    <select id="studentSelect" onchange="handleStudentChange()" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="">-- Select Student --</option>
-                    </select>
-                </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Start Date (Optional)</label>
-                    <input type="date" id="startDate" onchange="runReport()" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">End Date (Optional)</label>
-                    <input type="date" id="endDate" onchange="runReport()" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-
-                <div class="md:col-span-3">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Job Site</label>
-                    <select id="siteSelect" onchange="runReport()" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" disabled>
-                        <option value="All">All Sites</option>
-                    </select>
-                </div>
-
-                <div class="md:col-span-2 text-right">
-                    <button onclick="window.print()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow transition text-sm flex items-center justify-center gap-2">
-                        <span class="material-icons text-sm">print</span> Print
-                    </button>
-                </div>
+        <div class="bg-white rounded-xl shadow-sm border p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div>
+                <h1 id="reportStudentName" class="text-4xl font-extrabold text-slate-900 mb-2"></h1>
+                <p><strong>Report Period:</strong> <span id="reportPeriod"></span></p>
+                <p><strong>Job Site Filter:</strong> <span id="reportSiteFilter"></span></p>
+                <p><strong>Total Evaluations:</strong> <span id="reportCount"></span></p>
             </div>
-            <div class="mt-2 text-xs text-slate-400 italic text-right">
-                Leave dates blank to view all history.
+
+            <div class="bg-slate-50 border rounded-xl p-6 text-center w-full md:w-64">
+                <p class="text-xs uppercase tracking-wider mb-2">Overall Average</p>
+                <div id="overallScoreDisplay" class="text-5xl font-black text-slate-300">N/A</div>
+                <p class="text-xs mt-2">Scale: 0.0 - 4.0</p>
             </div>
         </div>
 
-        <div id="reportContainer" class="space-y-6 hidden">
-            
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-                <div>
-                    <h1 id="reportStudentName" class="text-4xl font-extrabold text-slate-900 mb-2">Student Name</h1>
-                    <div class="text-sm text-slate-500 space-y-1">
-                        <p><strong>Report Period:</strong> <span id="reportPeriod" class="text-indigo-600 font-bold">All Time</span></p>
-                        <p><strong>Job Site Filter:</strong> <span id="reportSiteFilter">All</span></p>
-                        <p><strong>Total Evaluations:</strong> <span id="reportCount">0</span></p>
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center w-full md:w-64 shrink-0">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Overall Average</p>
-                    <div id="overallScoreDisplay" class="text-5xl font-black text-slate-300">N/A</div>
-                    <p class="text-xs text-slate-400 mt-2">Scale: 0.0 - 4.0</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 chart-card">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Skills Profile</h3>
-                    <div class="h-64 relative"><canvas id="skillsChart"></canvas></div>
-                </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 chart-card">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Progress Over Time</h3>
-                    <div class="h-64 relative"><canvas id="trendChart"></canvas></div>
-                </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 chart-card">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Support Level Breakdown</h3>
-                    <div class="h-64 relative flex justify-center"><canvas id="distributionChart"></canvas></div>
-                </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 chart-card">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Performance by Job Site</h3>
-                    <div class="h-64 relative"><canvas id="siteChart"></canvas></div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
-                    <h3 class="font-bold text-slate-700">Detailed Log</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-slate-600">
-                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
-                            <tr>
-                                <th class="px-6 py-3">Date</th>
-                                <th class="px-6 py-3">Job Site</th>
-                                <th class="px-6 py-3">Evaluator</th>
-                                <th class="px-6 py-3">Score</th>
-                                <th class="px-6 py-3 w-1/2">Notes</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyTableBody" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="hidden print:flex justify-between mt-12 pt-8 break-inside-avoid">
-                <div class="w-5/12 border-t border-slate-400 pt-2">
-                    <p class="font-bold text-slate-900">Teacher Signature</p>
-                </div>
-                <div class="w-5/12 border-t border-slate-400 pt-2">
-                    <p class="font-bold text-slate-900">Parent/Guardian Signature</p>
-                </div>
-            </div>
+        <div class="bg-white rounded-xl shadow-sm border p-5">
+            <h3 class="text-sm font-bold mb-3">Skill Performance</h3>
+            <div class="h-80"><canvas id="skillsChart"></canvas></div>
         </div>
-    </main>
 
-    <script>
-        const SKILLS = [
-            "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
-            "Initiates familiar tasks", "Maintains a productive work rate", "Complete tasks in a logical order",
-            "Demonstrates adaptability", "Work is completed to quality standards", "Maintains clean and organized work space",
-            "Awareness of surroundings and good decision making", "Appropriate and respectful social interactions",
-            "Displays effective communication skills", "Accepts constructive criticism", "Demonstrates a positive attitude",
-            "Asks for help appropriately", "Demonstrates self-reflection"
-        ];
+        <!-- DETAILED GRID -->
+        <div id="skillGrid" class="grid grid-cols-1 md:grid-cols-4 gap-4"></div>
 
-        let allEntries = [], students = {};
-        let charts = { skills: null, trend: null, dist: null, site: null };
+    </div>
+</main>
 
-        function parseDate(str) { 
-            if(!str) return new Date();
-            const parts = str.split('T')[0].split('-');
-            // Create date in local timezone
-            return new Date(parts[0], parts[1]-1, parts[2]);
-        }
-        function fmtDate(dStr) {
-            return parseDate(dStr).toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'});
-        }
+<script>
+/* SKILL MAP (long → short) */
+const SKILL_MAP = {
+    "Punctual": "Punctual",
+    "Prepared with Necessary Materials": "Prepared",
+    "Demonstrates appropriate hygiene/dress": "Hygiene/Dress",
+    "Initiates familiar tasks": "Task Initiation",
+    "Maintains a productive work rate": "Work Rate",
+    "Complete tasks in a logical order": "Logical Order",
+    "Demonstrates adaptability": "Adaptability",
+    "Work is completed to quality standards": "Quality Standards",
+    "Maintains clean and organized work space": "Clean Workspace",
+    "Awareness of surroundings and good decision making": "Awareness/Safety",
+    "Appropriate and respectful social interactions": "Social Interactions",
+    "Displays effective communication skills": "Communication",
+    "Accepts constructive criticism": "Constructive Criticism",
+    "Demonstrates a positive attitude": "Positive Attitude",
+    "Asks for help appropriately": "Asks for Help",
+    "Demonstrates self-reflection": "Self-Reflection"
+};
 
-        window.onload = async () => {
-            const url = localStorage.getItem('vocational_backend_url');
-            if(!url) return alert("Database not connected.");
+const SKILLS = Object.keys(SKILL_MAP);
 
-            try {
-                const t = Date.now();
-                const [sRes, eRes] = await Promise.all([
-                    fetch(`${url}?action=getStudents&t=${t}`), fetch(`${url}?action=getEntries&t=${t}`)
-                ]);
-                const sData = await sRes.json();
-                const eData = await eRes.json();
+let allEntries = [];
+let students = {};
+let charts = { skills: null };
 
-                const sel = document.getElementById('studentSelect');
-                sData.data.forEach(s => {
-                    students[s.student_id] = s.name;
-                    sel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
-                });
-                allEntries = eData.data;
-                document.getElementById('loadingIndicator').classList.add('hidden');
-                document.getElementById('mainContent').classList.remove('hidden');
-            } catch(e) { console.error(e); alert("Failed to load data."); }
-        };
+function safeDate(str) {
+    if (!str) return new Date();
+    if (str.includes("-")) return new Date(str);
+    return new Date(Date.parse(str));
+}
 
-        function handleStudentChange() {
-            const sid = document.getElementById('studentSelect').value;
-            const siteSel = document.getElementById('siteSelect');
-            
-            // Clear filters when switching students
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
-            siteSel.innerHTML = '<option value="All">All Sites</option>';
-            siteSel.disabled = !sid;
+const fmt = d => d.toLocaleDateString("en-US");
 
-            if(!sid) {
-                document.getElementById('reportContainer').classList.add('hidden');
-                return;
+window.onload = async () => {
+    const url = localStorage.getItem('vocational_backend_url');
+    if (!url) return alert("Database not connected.");
+
+    try {
+        const [sRes, eRes] = await Promise.all([
+            fetch(url + "?action=getStudents"),
+            fetch(url + "?action=getEntries")
+        ]);
+
+        const sData = await sRes.json();
+        const eData = await eRes.json();
+
+        const sel = document.getElementById('studentSelect');
+        sData.data.forEach(s => {
+            students[s.student_id] = s.name;
+            sel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
+        });
+
+        allEntries = eData.data;
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
+
+    } catch (e) {
+        console.error(e);
+        alert("Failed to load data.");
+    }
+};
+
+function handleStudentChange() {
+    const sid = document.getElementById('studentSelect').value;
+    const siteSel = document.getElementById('siteSelect');
+    siteSel.innerHTML = '<option value="All">All Sites</option>';
+    siteSel.disabled = !sid;
+
+    if (!sid) {
+        document.getElementById('reportContainer').classList.add('hidden');
+        return;
+    }
+
+    const studentEntries = allEntries.filter(e => e.student_id == sid);
+
+    [...new Set(studentEntries.map(e => e.job_site))]
+        .sort()
+        .forEach(site => siteSel.innerHTML += `<option value="${site}">${site}</option>`);
+
+    runReport();
+}
+
+function runReport() {
+    const sid = document.getElementById('studentSelect').value;
+    if (!sid) return;
+
+    const siteFilter = document.getElementById('siteSelect').value;
+    const startVal = document.getElementById('startDate').value;
+    const endVal = document.getElementById('endDate').value;
+
+    const startD = startVal ? new Date(startVal) : new Date("2000-01-01");
+    const endD = endVal ? new Date(endVal) : new Date("2100-01-01");
+
+    const filtered = allEntries.filter(e => {
+        const d = safeDate(e.date);
+        return (
+            e.student_id == sid &&
+            d >= startD && d <= endD &&
+            (siteFilter === "All" || e.job_site === siteFilter)
+        );
+    });
+
+    let period = "All Time";
+    if (startVal && endVal) period = `${fmt(new Date(startVal))} - ${fmt(new Date(endVal))}`;
+    else if (startVal) period = `Since ${fmt(new Date(startVal))}`;
+    else if (endVal) period = `Until ${fmt(new Date(endVal))}`;
+
+    updateUI(filtered, students[sid], period, siteFilter);
+}
+
+function updateUI(entries, name, period, site) {
+    document.getElementById('reportContainer').classList.remove('hidden');
+    document.getElementById('reportStudentName').innerText = name;
+    document.getElementById('reportPeriod').innerText = period;
+    document.getElementById('reportSiteFilter').innerText = site;
+    document.getElementById('reportCount').innerText = entries.length;
+
+    let sums = {}, counts = {};
+    SKILLS.forEach(k => { sums[k] = 0; counts[k] = 0; });
+
+    entries.forEach(e => {
+        SKILLS.forEach(k => {
+            const val = Number(e.scores?.[k]);
+            if (!isNaN(val)) {
+                sums[k] += val;
+                counts[k]++;
             }
+        });
+    });
 
-            const studentEntries = allEntries.filter(e => e.student_id == sid);
-            const sites = [...new Set(studentEntries.map(e => e.job_site))].sort();
-            sites.forEach(site => siteSel.innerHTML += `<option value="${site}">${site}</option>`);
+    const avgs = SKILLS.map(k => counts[k] ? (sums[k] / counts[k]) : 0);
 
-            runReport();
-        }
+    const overall = avgs.filter(v => v > 0).reduce((a,b)=>a+b,0) / (avgs.filter(v=>v>0).length || 1);
+    const overallEl = document.getElementById('overallScoreDisplay');
+    overallEl.innerText = overall.toFixed(2);
 
-        function runReport() {
-            const sid = document.getElementById('studentSelect').value;
-            if(!sid) return;
+    updateColors(overallEl, overall);
+    drawSkillChart(avgs);
+    drawSkillGrid(avgs, counts);
+}
 
-            const startVal = document.getElementById('startDate').value;
-            const endVal = document.getElementById('endDate').value;
-            const siteFilter = document.getElementById('siteSelect').value;
+function updateColors(el, val) {
+    el.className = "text-5xl font-black";
+    if (val >= 3.5) el.classList.add("text-green-600");
+    else if (val >= 2.5) el.classList.add("text-blue-500");
+    else if (val >= 1.5) el.classList.add("text-yellow-500");
+    else el.classList.add("text-red-600");
+}
 
-            // Logic: If blank, go way back/way forward
-            const startD = startVal ? new Date(startVal + 'T00:00:00') : new Date('2000-01-01');
-            const endD = endVal ? new Date(endVal + 'T23:59:59') : new Date('2100-01-01');
+function drawSkillChart(avgs) {
+    if (charts.skills) charts.skills.destroy();
 
-            const filtered = allEntries.filter(e => {
-                const d = parseDate(e.date);
-                const isStudent = e.student_id == sid;
-                const isDate = d.getTime() >= startD.getTime() && d.getTime() <= endD.getTime();
-                const isSite = siteFilter === "All" || e.job_site === siteFilter;
-                return isStudent && isDate && isSite;
-            });
+    charts.skills = new Chart(document.getElementById('skillsChart'), {
+        type: "bar",
+        data: {
+            labels: SKILLS.map(k => SKILL_MAP[k]),
+            datasets: [{
+                data: avgs,
+                backgroundColor: avgs.map(v =>
+                    v >= 3 ? "#16a34a" :
+                    v >= 2 ? "#ca8a04" :
+                    v > 0 ? "#dc2626" :
+                    "#e5e7eb"
+                )
+            }]
+        },
+        options: { responsive: true, scales: { y: { min: 0, max: 4 } } }
+    });
+}
 
-            let periodLabel = "All Time";
-            if(startVal && endVal) periodLabel = `${fmtDate(startVal)} to ${fmtDate(endVal)}`;
-            else if(startVal) periodLabel = `Since ${fmtDate(startVal)}`;
-            else if(endVal) periodLabel = `Until ${fmtDate(endVal)}`;
+function drawSkillGrid(avgs, counts) {
+    const grid = document.getElementById('skillGrid');
+    grid.innerHTML = "";
 
-            updateUI(filtered, students[sid], periodLabel, siteFilter);
-        }
+    SKILLS.forEach((k, i) => {
+        const avg = counts[k] ? avgs[i].toFixed(1) : "N/A";
+        const logs = counts[k];
 
-        function updateUI(data, name, periodLabel, site) {
-            document.getElementById('reportContainer').classList.remove('hidden');
-            document.getElementById('reportStudentName').innerText = name;
-            document.getElementById('reportPeriod').innerText = periodLabel;
-            document.getElementById('reportSiteFilter').innerText = site;
-            document.getElementById('reportCount').innerText = data.length;
+        let color =
+            avg >= 3 ? "bg-green-100 text-green-700" :
+            avg >= 2 ? "bg-yellow-100 text-yellow-700" :
+            avg > 0 ? "bg-red-100 text-red-700" :
+            "bg-slate-100 text-slate-500";
 
-            let skillSums={}, skillCounts={}, totalSum=0, totalCount=0;
-            let trendMap={}, distCounts={0:0,1:0,2:0,3:0,4:0}, siteSums={}, siteCounts={};
-            SKILLS.forEach(s => { skillSums[s]=0; skillCounts[s]=0; });
+        grid.innerHTML += `
+            <div class="p-4 rounded-xl border shadow-sm ${color}">
+                <p class="font-bold">${SKILL_MAP[k]}</p>
+                <p class="text-2xl font-extrabold">${avg}</p>
+                <p class="text-xs mt-1">${logs} logs</p>
+            </div>
+        `;
+    });
+}
+</script>
 
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = "";
-            if(data.length === 0) tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">No records found.</td></tr>`;
-
-            const sortedData = [...data].sort((a,b) => parseDate(b.date) - parseDate(a.date));
-
-            sortedData.forEach(e => {
-                let daySum=0, dayCount=0;
-                SKILLS.forEach(s => {
-                    const val = parseFloat(e.scores[s]);
-                    if(!isNaN(val)) {
-                        skillSums[s]+=val; skillCounts[s]++;
-                        totalSum+=val; totalCount++;
-                        daySum+=val; dayCount++;
-                        distCounts[val]++;
-                    }
-                });
-
-                const dailyAvg = dayCount ? (daySum/dayCount) : 0;
-                const dateKey = parseDate(e.date).toISOString().split('T')[0]; // YYYY-MM-DD
-                
-                if(!trendMap[dateKey]) trendMap[dateKey] = [];
-                trendMap[dateKey].push(dailyAvg);
-
-                if(!siteSums[e.job_site]) { siteSums[e.job_site]=0; siteCounts[e.job_site]=0; }
-                siteSums[e.job_site]+=dailyAvg; siteCounts[e.job_site]++;
-
-                const rowColor = dailyAvg >= 3 ? 'text-green-600' : (dailyAvg >= 2 ? 'text-blue-600' : 'text-orange-600');
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-6 py-4 font-medium">${fmtDate(e.date)}</td>
-                        <td class="px-6 py-4">${e.job_site}</td>
-                        <td class="px-6 py-4 text-xs uppercase text-slate-500">${e.evaluator}</td>
-                        <td class="px-6 py-4 font-bold ${rowColor}">${dailyAvg.toFixed(1)}</td>
-                        <td class="px-6 py-4 text-xs italic text-slate-500">${e.comments || '-'}</td>
-                    </tr>`;
-            });
-
-            const overallAvg = totalCount ? (totalSum/totalCount).toFixed(1) : "N/A";
-            const scoreEl = document.getElementById('overallScoreDisplay');
-            scoreEl.innerText = overallAvg;
-            scoreEl.className = "text-5xl font-black transition-colors";
-            if(overallAvg === "N/A") scoreEl.classList.add("text-slate-300");
-            else if(overallAvg >= 3.5) scoreEl.classList.add("text-green-600");
-            else if(overallAvg >= 2.5) scoreEl.classList.add("text-blue-600");
-            else if(overallAvg >= 1.5) scoreEl.classList.add("text-yellow-600");
-            else scoreEl.classList.add("text-red-600");
-
-            updateCharts(skillSums, skillCounts, trendMap, distCounts, siteSums, siteCounts);
-        }
-
-        function updateCharts(sSums, sCounts, trendMap, dCounts, siteSums, siteCounts) {
-            // Skills
-            const sData = SKILLS.map(s => sCounts[s]?(sSums[s]/sCounts[s]).toFixed(1):0);
-            const sColors = sData.map(v => v>=3?'#16a34a': v>=2?'#2563eb': '#ea580c');
-            if(charts.skills) charts.skills.destroy();
-            charts.skills = new Chart(document.getElementById('skillsChart'), {
-                type:'bar', data:{labels:SKILLS, datasets:[{data:sData, backgroundColor:sColors}]},
-                options:{indexAxis:'y', maintainAspectRatio:false, scales:{x:{min:0,max:4}}, plugins:{legend:{display:false}}}
-            });
-            // Trend
-            const tLabels = Object.keys(trendMap).sort();
-            const tData = tLabels.map(d => (trendMap[d].reduce((a,b)=>a+b,0)/trendMap[d].length).toFixed(1));
-            if(charts.trend) charts.trend.destroy();
-            charts.trend = new Chart(document.getElementById('trendChart'), {
-                type:'line', data:{labels:tLabels, datasets:[{data:tData, borderColor:'#4f46e5', backgroundColor:'#e0e7ff', fill:true, tension:0.3}]},
-                options:{maintainAspectRatio:false, scales:{y:{min:0,max:4}}, plugins:{legend:{display:false}}}
-            });
-            // Dist
-            if(charts.dist) charts.dist.destroy();
-            charts.dist = new Chart(document.getElementById('distributionChart'), {
-                type:'doughnut', data:{labels:['Indep','Verb','Mod','Phys','Ref'], datasets:[{data:[dCounts[4],dCounts[3],dCounts[2],dCounts[1],dCounts[0]], backgroundColor:['#16a34a','#2563eb','#ca8a04','#ea580c','#dc2626']}]},
-                options:{maintainAspectRatio:false, plugins:{legend:{position:'right'}}}
-            });
-            // Site
-            const sites = Object.keys(siteSums);
-            const siteData = sites.map(s => (siteSums[s]/siteCounts[s]).toFixed(1));
-            if(charts.site) charts.site.destroy();
-            charts.site = new Chart(document.getElementById('siteChart'), {
-                type:'bar', data:{labels:sites, datasets:[{data:siteData, backgroundColor:'#8b5cf6'}]},
-                options:{indexAxis:'y', maintainAspectRatio:false, scales:{x:{min:0,max:4}}, plugins:{legend:{display:false}}}
-            });
-        }
-    </script>
 </body>
+</html>
 </html>
