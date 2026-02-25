@@ -1,4 +1,4 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -38,7 +38,7 @@
                 <h3 class="font-bold text-slate-700 mb-2 border-b pb-1">1. Get the Backend Code</h3>
                 <div class="relative group">
 <textarea id="scriptCode" readonly class="w-full h-24 p-3 text-[10px] font-mono bg-slate-800 text-green-400 rounded-lg focus:outline-none resize-none">
-(function initialSetup() {
+function initialSetup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   let studentsSheet = ss.getSheetByName("Students");
@@ -70,7 +70,7 @@
   }
 
   return "Setup Complete";
-})();
+}
 </textarea>
 
                     <button onclick="copyCode()" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs backdrop-blur-sm transition">
@@ -81,8 +81,8 @@
 
             <div class="text-xs text-slate-600 space-y-2">
                 <p><strong>2. In Google Sheets:</strong> Extensions → Apps Script. Replace code. Save.</p>
-                <p><strong>3. Update Setup:</strong> Run <strong>initialSetup</strong> again.</p>
-                <p><strong>4. Deploy:</strong> Deploy → Manage Deployments → Edit → New Version → Deploy.</p>
+                <p><strong>3. Run Setup:</strong> Run <strong>initialSetup</strong> once.</p>
+                <p><strong>4. Deploy Web App:</strong> Deploy → Manage Deployments → New Version → Execute as Me → Anyone with link → Deploy.</p>
             </div>
 
         </div>
@@ -95,7 +95,7 @@
 
         <div class="flex gap-2 mb-4">
             <input type="text" id="dbUrl" placeholder="https://script.google.com/..." 
-                   class="flex-1 p-3 border border-slate-300 rounded-lg text-sm">
+                class="flex-1 p-3 border border-slate-300 rounded-lg text-sm">
             <button onclick="saveAndConnect()" class="bg-blue-600 text-white font-bold px-6 rounded-lg">
                 Connect
             </button>
@@ -104,12 +104,12 @@
         <div id="statusMsg" class="hidden text-xs font-bold mb-4"></div>
 
         <div id="magicSection" class="hidden bg-indigo-50 border border-indigo-100 rounded-xl p-6">
-            <h3 class="font-bold text-indigo-900 mb-2">Share Connection</h3>
+            <h3 class="text-indigo-900 font-bold mb-2">Share Connection</h3>
             <div class="flex flex-col md:flex-row gap-6 items-center">
-                <img id="qrImage" src="" alt="QR Code" class="w-24 h-24 object-contain bg-white rounded p-1">
+                <img id="qrImage" src="" alt="QR Code" class="w-24 h-24 bg-white rounded p-1">
                 <div class="flex-1 w-full space-y-2">
-                    <input id="magicLinkInput" readonly type="text"
-                           class="w-full bg-white border border-indigo-200 text-xs p-2 rounded text-indigo-500 font-mono">
+                    <input id="magicLinkInput" readonly 
+                        class="w-full bg-white border border-indigo-200 text-xs p-2 rounded text-indigo-500 font-mono">
                     <button onclick="copyMagicLink()" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold">
                         Copy Link
                     </button>
@@ -121,29 +121,29 @@
 </div>
 
 <script>
-/* Load saved URL */
-const existingUrl = localStorage.getItem('vocational_backend_url');
+/* Load existing saved backend URL */
+const existingUrl = localStorage.getItem("vocational_backend_url");
 if (existingUrl) {
-    document.getElementById('dbUrl').value = existingUrl;
+    document.getElementById("dbUrl").value = existingUrl;
     showMagicSection(existingUrl);
 }
 
-/* Copy backend script code */
+/* Copy backend code */
 function copyCode() {
-    document.getElementById('scriptCode').select();
-    document.execCommand('copy');
+    document.getElementById("scriptCode").select();
+    document.execCommand("copy");
     alert("Copied!");
 }
 
-/* Fix and verify script URL */
+/* MAIN FIXED CONNECT FUNCTION */
 async function saveAndConnect() {
-    const msg = document.getElementById('statusMsg');
-    let url = document.getElementById('dbUrl').value.trim();
+    const msg = document.getElementById("statusMsg");
+    let url = document.getElementById("dbUrl").value.trim();
 
     msg.innerText = "Verifying...";
     msg.className = "text-blue-600 block";
 
-    // Auto-correct user mistakes
+    // Auto-correct common errors
     if (url.includes("/dev")) url = url.replace("/dev", "/exec");
     if (!url.endsWith("/exec")) {
         if (!url.endsWith("/")) url += "/";
@@ -151,44 +151,55 @@ async function saveAndConnect() {
     }
 
     try {
-        const response = await fetch(`${url}?action=getStudents`);
-        if (response.redirected) throw new Error("Redirect error");
+        const response = await fetch(`${url}?action=getStudents`, {
+            method: "GET",
+            redirect: "follow"
+        });
 
-        const result = await response.json();
-        if (result.status === 'success') {
-            localStorage.setItem('vocational_backend_url', url);
+        const text = await response.text();
 
+        let json;
+        try {
+            json = JSON.parse(text);
+        } catch {
+            throw new Error("Invalid JSON");
+        }
+
+        if (json.status === "success") {
+            localStorage.setItem("vocational_backend_url", url);
             msg.className = "text-green-600 block";
             msg.innerText = "Connected!";
             showMagicSection(url);
         } else {
-            throw new Error("Script returned error");
+            throw new Error("Backend returned failure");
         }
+
     } catch (err) {
+        console.error(err);
         msg.className = "text-red-600 block";
         msg.innerText = "Connection Failed.";
     }
 }
 
-/* Show sharing link & QR */
+/* Show sharing section */
 function showMagicSection(url) {
-    const magicDiv = document.getElementById('magicSection');
-    const magicInput = document.getElementById('magicLinkInput');
-    const qrImg = document.getElementById('qrImage');
+    const magicDiv = document.getElementById("magicSection");
+    const magicInput = document.getElementById("magicLinkInput");
+    const qrImg = document.getElementById("qrImage");
 
-    const baseUrl = window.location.href.split('?')[0];
+    const baseUrl = window.location.href.split("?")[0];
     const link = `${baseUrl}?connect=${btoa(url)}`;
 
     magicInput.value = link;
     qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(link)}`;
 
-    magicDiv.classList.remove('hidden');
+    magicDiv.classList.remove("hidden");
 }
 
-/* Copy link */
+/* Copy connection link */
 function copyMagicLink() {
-    document.getElementById('magicLinkInput').select();
-    document.execCommand('copy');
+    document.getElementById("magicLinkInput").select();
+    document.execCommand("copy");
     alert("Copied!");
 }
 </script>
