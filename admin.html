@@ -10,7 +10,7 @@
 
 <body class="bg-slate-100 font-sans">
 
-<!-- NAV -->
+<!-- NAVBAR -->
 <nav class="bg-slate-900 text-white shadow-lg">
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between h-16 items-center">
@@ -25,7 +25,7 @@
                     <span class="material-icons text-sm">assignment</span> Entry
                 </a>
 
-                <!-- FIXED LINK: reports.html → report.html -->
+                <!-- FIXED: reports → report -->
                 <a href="report.html" class="hover:bg-slate-800 px-3 py-2 rounded text-sm flex items-center gap-1">
                     <span class="material-icons text-sm">analytics</span> Reports
                 </a>
@@ -40,6 +40,7 @@
      class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center backdrop-blur-sm">
 
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full text-center">
+        
         <div class="bg-red-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
             <span class="material-icons text-red-600 text-3xl">lock</span>
         </div>
@@ -67,7 +68,6 @@
             <span class="material-icons text-green-500">check_circle</span>
             <span class="text-sm font-bold text-slate-700">Database Connected</span>
         </div>
-
         <a href="setup.html" class="text-xs text-blue-600 hover:underline">Reconfigure</a>
     </div>
 
@@ -118,17 +118,15 @@
 
                 <div class="p-6 flex-1 flex flex-col">
 
+                    <!-- ADD SITE -->
                     <div class="flex gap-2 mb-4">
-                        <input type="text" id="newSiteInput"
-                               placeholder="New Site Name"
+                        <input type="text" id="newSiteInput" placeholder="New Site Name"
                                class="flex-1 p-2 border rounded text-sm">
-
                         <button onclick="addSite()"
-                                class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700 font-bold text-xs">
-                            ADD
-                        </button>
+                                class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700 font-bold text-xs">ADD</button>
                     </div>
 
+                    <!-- SITE LIST -->
                     <div class="flex-1 overflow-y-auto border rounded bg-slate-50 p-2">
                         <ul id="sitesList" class="space-y-1">
                             <li class="text-xs text-slate-400 text-center py-4">Loading sites...</li>
@@ -148,16 +146,13 @@
 /* GET BACKEND URL */
 const url = localStorage.getItem("vocational_backend_url");
 
-/* Redirect if not configured */
+/* Redirect if no backend configured */
 window.onload = () => {
-    if (!url) {
-        window.location.href = "setup.html";
-        return;
-    }
+    if (!url) window.location.href = "setup.html";
 };
 
 /* ============================================================
-   PASSWORD VERIFICATION
+   CORRECTED PASSWORD VERIFY (NO-CORS REMOVED)
    ============================================================ */
 async function verifyPassword() {
     const pass = document.getElementById("adminPassInput").value;
@@ -166,7 +161,6 @@ async function verifyPassword() {
     try {
         const response = await fetch(url, {
             method: "POST",
-            mode: "no-cors",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: "verifyAdmin", password: pass })
         });
@@ -207,7 +201,7 @@ async function loadStudents() {
                     <td class="px-4 py-3 font-medium">${s.name}</td>
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 text-[10px] font-bold rounded-full
-                              ${s.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}">
+                                  ${s.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}">
                             ${s.active ? "Active" : "Inactive"}
                         </span>
                     </td>
@@ -220,7 +214,7 @@ async function loadStudents() {
 }
 
 /* ============================================================
-   LOAD JOB SITES (FIXED)
+   LOAD JOB SITES
    ============================================================ */
 async function loadSites() {
     try {
@@ -239,7 +233,8 @@ async function loadSites() {
             list.innerHTML += `
                 <li class="flex justify-between items-center bg-white p-2 rounded shadow-sm border">
                     <span class="text-sm font-medium text-slate-700">${site}</span>
-                    <button onclick="deleteSite('${site}')" class="text-slate-400 hover:text-red-500">
+                    <button onclick="deleteSite('${site}')"
+                            class="text-slate-400 hover:text-red-500">
                         <span class="material-icons text-sm">delete</span>
                     </button>
                 </li>`;
@@ -251,7 +246,7 @@ async function loadSites() {
 }
 
 /* ============================================================
-   ADD SITE (FIXED POST FORMAT)
+   ADD SITE  (POST MUST USE no-cors)
    ============================================================ */
 async function addSite() {
     const input = document.getElementById("newSiteInput");
@@ -275,7 +270,7 @@ async function addSite() {
 }
 
 /* ============================================================
-   DELETE SITE (FIXED POST FORMAT)
+   DELETE SITE  (POST MUST USE no-cors)
    ============================================================ */
 async function deleteSite(name) {
     if (!confirm(`Delete "${name}"?`)) return;
