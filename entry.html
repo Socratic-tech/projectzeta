@@ -25,11 +25,12 @@
             </div>
 
             <div class="flex gap-3">
-                <button onclick="toggleSettings()" class="text-blue-200 hover:text-white">
+                <a href="setup.html" class="text-blue-200 hover:text-white">
                     <span class="material-icons">settings</span>
-                </button>
+                </a>
 
-                <a href="admin.html" class="bg-blue-800 hover:bg-blue-700 px-3 py-1 rounded text-xs font-bold uppercase">
+                <a href="admin.html"
+                   class="bg-blue-800 hover:bg-blue-700 px-3 py-1 rounded text-xs font-bold uppercase tracking-wide">
                     Admin
                 </a>
             </div>
@@ -38,51 +39,32 @@
     </div>
 </nav>
 
-<!-- SETTINGS PANEL -->
-<div id="settingsPanel" class="hidden bg-slate-800 text-white p-4">
-    <div class="max-w-3xl mx-auto">
-
-        <label class="text-xs uppercase font-bold text-gray-400">Database Connection URL</label>
-
-        <div class="flex gap-2 mt-1">
-            <input type="text" id="apiUrlInput"
-                   placeholder="Paste Google Script URL…"
-                   class="flex-1 bg-black/30 text-sm p-2 rounded border border-slate-600 focus:border-blue-500 
-                          outline-none font-mono text-green-400">
-
-            <button onclick="saveUrl()" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded text-xs font-bold uppercase">
-                Save
-            </button>
-        </div>
-
-    </div>
-</div>
-
 <!-- MAIN FORM -->
 <div class="max-w-3xl mx-auto px-4 py-6">
 
     <form id="entryForm" onsubmit="submitEntry(event)" class="space-y-6">
 
-        <!-- STUDENT SECTION -->
+        <!-- STUDENT / SITE / DATE -->
         <div class="bg-white p-5 rounded-xl shadow-sm border">
 
-            <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
-                <span class="material-icons text-blue-600">person</span> Student Details
+            <h2 class="text-lg font-bold mb-4 border-b pb-2 flex items-center gap-2">
+                <span class="material-icons text-blue-600">person</span>
+                Student Details
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Student Name</label>
+                    <label class="text-xs font-bold uppercase mb-1 block text-slate-500">Student</label>
                     <select id="studentSelect" required class="w-full p-3 border rounded-lg bg-slate-50">
-                        <option>Loading...</option>
+                        <option>Loading…</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Job Site</label>
+                    <label class="text-xs font-bold uppercase mb-1 block text-slate-500">Job Site</label>
                     <select id="siteSelect" required class="w-full p-3 border rounded-lg bg-slate-50">
-                        <option>Loading...</option>
+                        <option>Loading…</option>
                     </select>
                 </div>
 
@@ -91,37 +73,39 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 
                 <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Date</label>
+                    <label class="text-xs font-bold uppercase mb-1 block text-slate-500">Date</label>
                     <input type="date" id="dateInput" required class="w-full p-3 border rounded-lg bg-slate-50">
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Evaluator</label>
-                    <input type="text" id="evaluatorInput" placeholder="Your Name" required 
-                           class="w-full p-3 border rounded-lg bg-slate-50">
+                    <label class="text-xs font-bold uppercase mb-1 block text-slate-500">Evaluator</label>
+                    <input type="text" id="evaluatorInput" placeholder="Your Name"
+                           required class="w-full p-3 border rounded-lg bg-slate-50">
                 </div>
 
             </div>
+
         </div>
 
-        <!-- SCORING REFERENCE -->
+        <!-- SCORING KEY -->
         <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
             <h3 class="text-xs font-bold uppercase text-blue-800 mb-3 text-center">Scoring Key</h3>
 
-            <div class="grid grid-cols-5 gap-1 text-center">
-                <div><span class="text-xs font-bold text-red-500">0</span><div class="text-[10px]">Refusal</div></div>
-                <div><span class="text-xs font-bold text-orange-500">1</span><div class="text-[10px]">Physical</div></div>
-                <div><span class="text-xs font-bold text-yellow-600">2</span><div class="text-[10px]">Model</div></div>
-                <div><span class="text-xs font-bold text-blue-500">3</span><div class="text-[10px]">Verbal</div></div>
-                <div><span class="text-xs font-bold text-green-600">4</span><div class="text-[10px]">Indep.</div></div>
+            <div class="grid grid-cols-5 gap-1 text-center text-[10px]">
+                <div><span class="font-bold text-red-500">0</span><div>Refusal</div></div>
+                <div><span class="font-bold text-orange-500">1</span><div>Physical</div></div>
+                <div><span class="font-bold text-yellow-600">2</span><div>Model</div></div>
+                <div><span class="font-bold text-blue-500">3</span><div>Verbal</div></div>
+                <div><span class="font-bold text-green-600">4</span><div>Indep.</div></div>
             </div>
         </div>
 
         <!-- SKILLS -->
         <div class="bg-white p-5 rounded-xl shadow-sm border">
 
-            <h2 class="text-lg font-bold text-slate-800 mb-6 border-b pb-2 flex items-center gap-2">
-                <span class="material-icons text-purple-600">psychology</span> Skills Assessment
+            <h2 class="text-lg font-bold mb-6 border-b pb-2 flex items-center gap-2">
+                <span class="material-icons text-purple-600">psychology</span>
+                Skills Assessment
             </h2>
 
             <div id="skillsContainer" class="space-y-6"></div>
@@ -131,8 +115,9 @@
         <!-- NOTES -->
         <div class="bg-white p-5 rounded-xl shadow-sm border">
 
-            <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
-                <span class="material-icons text-slate-600">note</span> Notes
+            <h2 class="text-lg font-bold mb-4 border-b pb-2 flex items-center gap-2">
+                <span class="material-icons text-slate-600">note</span>
+                Notes
             </h2>
 
             <textarea id="commentsInput" rows="3"
@@ -141,8 +126,8 @@
         </div>
 
         <button type="submit" id="submitBtn"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg 
-                       transition flex justify-center items-center gap-2 text-lg">
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl 
+                       shadow-lg transition flex justify-center items-center gap-2 text-lg">
             <span class="material-icons">send</span>
             SUBMIT ENTRY
         </button>
@@ -151,7 +136,10 @@
 </div>
 
 <script>
-/* ========== CONSTANTS ========== */
+/************************************************************
+ * CONSTANTS + STATE
+ ************************************************************/
+
 const SKILLS_LIST = [
     "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
     "Initiates familiar tasks", "Maintains a productive work rate", "Complete tasks in a logical order",
@@ -162,138 +150,123 @@ const SKILLS_LIST = [
     "Asks for help appropriately", "Demonstrates self-reflection"
 ];
 
-/* VISUAL BUTTON STYLES */
-const SCORE_CONFIG = {
-    0: { class: "bg-red-500 text-white border-red-600" },
-    1: { class: "bg-orange-500 text-white border-orange-600" },
-    2: { class: "bg-yellow-500 text-white border-yellow-600" },
-    3: { class: "bg-blue-500 text-white border-blue-600" },
-    4: { class: "bg-green-600 text-white border-green-700" }
+const SCORE_STYLES = {
+    0: "bg-red-500 text-white border-red-600",
+    1: "bg-orange-500 text-white border-orange-600",
+    2: "bg-yellow-500 text-white border-yellow-600",
+    3: "bg-blue-500 text-white border-blue-600",
+    4: "bg-green-600 text-white border-green-700"
 };
 
 const INACTIVE = "bg-slate-50 text-slate-400 border-slate-200";
-
 let skillScores = {};
-let API_URL = localStorage.getItem("vocational_backend_url") || "";
 
-/* ========== INIT ========== */
+const API_URL = localStorage.getItem("vocational_backend_url");
+
+/************************************************************
+ * INIT PAGE
+ ************************************************************/
 window.onload = () => {
     document.getElementById("dateInput").valueAsDate = new Date();
     renderSkills();
-
-    if (API_URL) {
-        document.getElementById("apiUrlInput").value = API_URL;
-        loadDropdowns();
-    } else {
-        toggleSettings();
-    }
+    loadDropdowns();
 };
 
-/* Toggle settings panel */
-function toggleSettings() {
-    document.getElementById("settingsPanel").classList.toggle("hidden");
-}
-
-/* Save backend URL */
-function saveUrl() {
-    const url = document.getElementById("apiUrlInput").value.trim();
-    if (!url) return;
-
-    localStorage.setItem("vocational_backend_url", url);
-    API_URL = url;
-
-    alert("Saved!");
-    toggleSettings();
-    loadDropdowns();
-}
-
-/* ========== SKILL BUTTONS UI ========== */
+/************************************************************
+ * BUILD SKILL BUTTONS
+ ************************************************************/
 function renderSkills() {
     const container = document.getElementById("skillsContainer");
     container.innerHTML = "";
 
     SKILLS_LIST.forEach((skill, idx) => {
-        skillScores[idx] = 4; // default highest score
+        skillScores[idx] = 4; // default
 
-        let row = `
+        let html = `
             <div>
-                <label class="block text-sm font-bold text-slate-800 mb-2">${skill}</label>
+                <label class="block text-sm font-bold mb-2">${skill}</label>
                 <div class="grid grid-cols-5 gap-2">
         `;
 
         for (let i = 0; i <= 4; i++) {
-            row += `
+            html += `
                 <button type="button"
-                    id="btn_${idx}_${i}"
-                    onclick="setScore(${idx}, ${i})"
-                    class="score-btn py-3 rounded-lg border font-bold text-lg shadow-sm">
+                        id="btn_${idx}_${i}"
+                        onclick="setScore(${idx}, ${i})"
+                        class="score-btn py-3 rounded-lg border font-bold text-lg shadow-sm">
                     ${i}
                 </button>
             `;
         }
 
-        row += "</div></div>";
-        container.innerHTML += row;
+        html += "</div></div>";
+        container.innerHTML += html;
     });
 
     updateAllButtons();
 }
 
-function setScore(skillIndex, value) {
-    skillScores[skillIndex] = value;
-    updateRowButtons(skillIndex);
-}
-
 function updateAllButtons() {
-    SKILLS_LIST.forEach((_, idx) => updateRowButtons(idx));
+    SKILLS_LIST.forEach((_, idx) => updateButtons(idx));
 }
 
-function updateRowButtons(idx) {
+function setScore(idx, score) {
+    skillScores[idx] = score;
+    updateButtons(idx);
+}
+
+function updateButtons(idx) {
     const selected = skillScores[idx];
 
     for (let i = 0; i <= 4; i++) {
         const btn = document.getElementById(`btn_${idx}_${i}`);
 
-        if (i === selected) {
-            btn.className = `score-btn py-3 rounded-lg border font-bold text-lg shadow-md ${SCORE_CONFIG[i].class}`;
-        } else {
-            btn.className = `score-btn py-3 rounded-lg border font-bold text-lg shadow-sm ${INACTIVE}`;
-        }
+        btn.className =
+            (i === selected)
+                ? `score-btn py-3 rounded-lg border font-bold text-lg shadow-md ${SCORE_STYLES[i]}`
+                : `score-btn py-3 rounded-lg border font-bold text-lg shadow-sm ${INACTIVE}`;
     }
 }
 
-/* ========== LOAD STUDENTS + JOB SITES ========== */
+/************************************************************
+ * LOAD STUDENTS + SITES
+ ************************************************************/
 async function loadDropdowns() {
-    if (!API_URL) return;
+    if (!API_URL) {
+        alert("Database not configured");
+        return;
+    }
 
     try {
-        // Students
         const sRes = await fetch(API_URL + "?action=getStudents");
-        const sData = await sRes.json();
+        const sJson = await sRes.json();
 
-        const sSelect = document.getElementById("studentSelect");
-        sSelect.innerHTML = `<option value="">Select Student...</option>`;        
-        sData.data.forEach(s => {
-            sSelect.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
+        const studentSel = document.getElementById("studentSelect");
+        studentSel.innerHTML = `<option value="">Select Student…</option>`;
+
+        sJson.data.forEach(s => {
+            studentSel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
         });
 
-        // FIXED: Job Sites
         const jRes = await fetch(API_URL + "?action=getSites");
-        const jData = await jRes.json();
+        const jJson = await jRes.json();
 
-        const jSelect = document.getElementById("siteSelect");
-        jSelect.innerHTML = `<option value="">Select Site...</option>`;
-        jData.data.forEach(site =>
-            jSelect.innerHTML += `<option value="${site}">${site}</option>`
-        );
+        const siteSel = document.getElementById("siteSelect");
+        siteSel.innerHTML = `<option value="">Select Site…</option>`;
+
+        jJson.data.forEach(site => {
+            siteSel.innerHTML += `<option value="${site}">${site}</option>`;
+        });
 
     } catch (err) {
-        console.error(err);
+        console.error("Dropdown load error:", err);
         alert("Failed to load students or sites.");
     }
 }
 
-/* ========== SUBMIT ENTRY ========== */
+/************************************************************
+ * SUBMIT ENTRY
+ ************************************************************/
 async function submitEntry(e) {
     e.preventDefault();
 
@@ -301,7 +274,7 @@ async function submitEntry(e) {
     const original = btn.innerHTML;
 
     btn.disabled = true;
-    btn.innerHTML = `<span class="material-icons animate-spin">refresh</span> Saving...`;
+    btn.innerHTML = `<span class="material-icons animate-spin">refresh</span> Saving…`;
 
     const payload = {
         action: "addEntry",
@@ -321,24 +294,22 @@ async function submitEntry(e) {
         await fetch(API_URL, {
             method: "POST",
             mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "text/plain" }, // GAS-friendly
             body: JSON.stringify(payload)
         });
 
-        btn.innerHTML = `<span class="material-icons">check_circle</span> SAVED!`;
-        btn.classList.remove("bg-blue-600");
-        btn.classList.add("bg-green-600");
+        btn.innerHTML = `<span class="material-icons">check_circle</span> Saved!`;
+        btn.classList.replace("bg-blue-600", "bg-green-600");
 
-        setTimeout(() => {
-            location.reload();
-        }, 1200);
+        setTimeout(() => location.reload(), 1000);
 
     } catch (err) {
-        alert("Error saving entry: " + err);
+        alert("Save failed: " + err);
         btn.disabled = false;
         btn.innerHTML = original;
     }
 }
 </script>
+
 </body>
 </html>
