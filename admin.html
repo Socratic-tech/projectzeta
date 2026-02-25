@@ -20,7 +20,9 @@
                     <a href="index.html" class="hover:bg-slate-800 px-3 py-2 rounded transition flex items-center gap-1 text-sm font-medium">
                         <span class="material-icons text-sm">assignment</span> Entry
                     </a>
-                    <a href="reports.html" class="hover:bg-slate-800 px-3 py-2 rounded transition flex items-center gap-1 text-sm font-medium">
+
+                    <!-- FIXED LINK: reports.html → report.html -->
+                    <a href="report.html" class="hover:bg-slate-800 px-3 py-2 rounded transition flex items-center gap-1 text-sm font-medium">
                         <span class="material-icons text-sm">analytics</span> Reports
                     </a>
                 </div>
@@ -52,6 +54,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
+            <!-- Students -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col">
                     <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
@@ -78,6 +81,7 @@
                 </div>
             </div>
 
+            <!-- Job Sites -->
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col">
                     <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
@@ -105,119 +109,113 @@
         </div>
     </main>
 
-    <script>
-        const url = localStorage.getItem('vocational_backend_url');
+<script>
+const url = localStorage.getItem('vocational_backend_url');
 
-        window.onload = () => {
-            if(!url) {
-                window.location.href = "setup.html";
-                return;
-            }
-        };
+window.onload = () => {
+    if(!url) {
+        window.location.href = "setup.html";
+        return;
+    }
+};
 
-        async function verifyPassword() {
-            const pass = document.getElementById('adminPassInput').value;
-            const btn = document.querySelector('button');
-            const err = document.getElementById('authError');
+async function verifyPassword() {
+    const pass = document.getElementById('adminPassInput').value;
+    const btn = document.querySelector('button');
+    const err = document.getElementById('authError');
 
-            btn.innerText = "Verifying...";
-            btn.disabled = true;
-            
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'verifyAdmin', password: pass })
-                });
-                const result = await response.json();
+    btn.innerText = "Verifying...";
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'verifyAdmin', password: pass })
+        });
+        const result = await response.json();
 
-                if(result.status === 'success') {
-                    document.getElementById('authModal').classList.add('hidden');
-                    document.getElementById('adminContent').classList.remove('hidden');
-                    loadStudents();
-                    loadSites();
-                } else {
-                    throw new Error("Invalid Password");
-                }
-            } catch (e) {
-                err.classList.remove('hidden');
-                err.innerText = "Incorrect Password";
-            } finally {
-                btn.innerText = "Unlock Dashboard";
-                btn.disabled = false;
-            }
-        }
-
-        async function loadStudents() {
-            try {
-                const response = await fetch(`${url}?action=getStudents`);
-                const json = await response.json();
-                const tbody = document.getElementById('studentTableBody');
-                tbody.innerHTML = '';
-                json.data.forEach(s => {
-                    tbody.innerHTML += `
-                        <tr class="border-b hover:bg-slate-50">
-                            <td class="px-4 py-3 font-mono text-xs">${s.student_id}</td>
-                            <td class="px-4 py-3 font-medium">${s.name}</td>
-                            <td class="px-4 py-3"><span class="px-2 py-1 text-[10px] font-bold rounded-full ${s.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${s.active ? 'Active' : 'Inactive'}</span></td>
-                        </tr>`;
-                });
-            } catch(e) { console.error(e); }
-        }
-
-        async function loadSites() {
-            try {
-                const response = await fetch(`${url}?action=getSites`);
-                const json = await response.json();
-                const list = document.getElementById('sitesList');
-                list.innerHTML = '';
-                
-                if(json.data.length === 0) {
-                    list.innerHTML = '<li class="text-xs text-slate-400 text-center py-4">No sites found.</li>';
-                    return;
-                }
-
-                json.data.forEach(site => {
-                    list.innerHTML += `
-                        <li class="flex justify-between items-center bg-white p-2 rounded shadow-sm border border-slate-200">
-                            <span class="text-sm font-medium text-slate-700">${site}</span>
-                            <button onclick="deleteSite('${site}')" class="text-slate-400 hover:text-red-500">
-                                <span class="material-icons text-sm">delete</span>
-                            </button>
-                        </li>`;
-                });
-            } catch(e) { console.error(e); }
-        }
-
-        async function addSite() {
-            const input = document.getElementById('newSiteInput');
-            const name = input.value.trim();
-            if(!name) return;
-
-            input.value = "Adding...";
-            input.disabled = true;
-
-            await fetch(url, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'addSite', site_name: name })
-            });
-
-            input.value = "";
-            input.disabled = false;
+        if(result.status === 'success') {
+            document.getElementById('authModal').classList.add('hidden');
+            document.getElementById('adminContent').classList.remove('hidden');
+            loadStudents();
             loadSites();
+        } else {
+            throw new Error("Invalid Password");
         }
+    } catch (e) {
+        err.classList.remove('hidden');
+        err.innerText = "Incorrect Password";
+    } finally {
+        btn.innerText = "Unlock Dashboard";
+        btn.disabled = false;
+    }
+}
 
-        async function deleteSite(name) {
-            if(!confirm(`Delete "${name}"?`)) return;
-            
-            // Optimistic UI update (remove immediately)
-            loadSites(); // Refreshing actually handles the UI, but let's just trigger the fetch
-            
-            await fetch(url, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'deleteSite', site_name: name })
-            });
-            loadSites();
-        }
-    </script>
+async function loadStudents() {
+    const response = await fetch(`${url}?action=getStudents`);
+    const json = await response.json();
+    const tbody = document.getElementById('studentTableBody');
+    tbody.innerHTML = '';
+    json.data.forEach(s => {
+        tbody.innerHTML += `
+            <tr class="border-b hover:bg-slate-50">
+                <td class="px-4 py-3 font-mono text-xs">${s.student_id}</td>
+                <td class="px-4 py-3 font-medium">${s.name}</td>
+                <td class="px-4 py-3"><span class="px-2 py-1 text-[10px] font-bold rounded-full ${s.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${s.active ? 'Active' : 'Inactive'}</span></td>
+            </tr>`;
+    });
+}
+
+async function loadSites() {
+    const response = await fetch(`${url}?action=getSites`);
+    const json = await response.json();
+    const list = document.getElementById('sitesList');
+    list.innerHTML = '';
+    
+    if(json.data.length === 0) {
+        list.innerHTML = '<li class="text-xs text-slate-400 text-center py-4">No sites found.</li>';
+        return;
+    }
+
+    json.data.forEach(site => {
+        list.innerHTML += `
+            <li class="flex justify-between items-center bg-white p-2 rounded shadow-sm border border-slate-200">
+                <span class="text-sm font-medium text-slate-700">${site}</span>
+                <button onclick="deleteSite('${site}')" class="text-slate-400 hover:text-red-500">
+                    <span class="material-icons text-sm">delete</span>
+                </button>
+            </li>`;
+    });
+}
+
+async function addSite() {
+    const input = document.getElementById('newSiteInput');
+    const name = input.value.trim();
+    if(!name) return;
+
+    input.value = "Adding...";
+    input.disabled = true;
+
+    await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'addSite', site_name: name })
+    });
+
+    input.value = "";
+    input.disabled = false;
+    loadSites();
+}
+
+async function deleteSite(name) {
+    if(!confirm(`Delete "${name}"?`)) return;
+    
+    await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteSite', site_name: name })
+    });
+    loadSites();
+}
+</script>
+
 </body>
 </html>
