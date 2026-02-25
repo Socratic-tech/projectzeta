@@ -7,23 +7,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
+
     <style>
-        body { background-color: #f8fafc; font-family: ui-sans-serif, system-ui, sans-serif; }
-        
+        body { background-color: #f8fafc; font-family: ui-sans-serif, system-ui; }
+
         @media print {
             @page { size: landscape; margin: 0.5cm; }
             nav, .no-print, #filterBar { display: none !important; }
-            #reportContainer { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
-            .chart-card { page-break-inside: avoid; border: 1px solid #ddd; }
+            body { background: white !important; }
+            #reportContainer { max-width: 100%; padding: 0; }
         }
     </style>
 </head>
-
 <body class="flex flex-col min-h-screen">
 
-<nav class="bg-blue-900 text-white shadow-lg z-50 no-print">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<!-- NAV -->
+<nav class="bg-blue-900 text-white shadow-lg no-print">
+    <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between h-16 items-center">
             <div class="flex items-center gap-2">
                 <span class="material-icons text-yellow-400">analytics</span>
@@ -37,51 +37,54 @@
     </div>
 </nav>
 
+<!-- LOADING -->
 <div id="loadingIndicator" class="fixed inset-0 bg-white z-50 flex flex-col justify-center items-center">
     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
     <p class="text-slate-500 font-medium">Loading Database...</p>
 </div>
 
-<main id="mainContent" class="hidden flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+<!-- MAIN -->
+<main id="mainContent" class="hidden flex-1 py-8 px-4 max-w-7xl mx-auto w-full">
 
     <!-- FILTER BAR -->
-    <div id="filterBar" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+    <div id="filterBar" class="bg-white p-6 rounded-xl shadow-sm border mb-8">
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-            
+
             <div class="md:col-span-3">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Student</label>
-                <select id="studentSelect" onchange="handleStudentChange()" class="w-full p-2.5 bg-white border rounded-lg">
+                <label class="text-xs font-bold text-slate-500 uppercase">Student</label>
+                <select id="studentSelect" onchange="handleStudentChange()" class="w-full p-2.5 border rounded-lg">
                     <option value="">-- Select Student --</option>
                 </select>
             </div>
 
             <div class="md:col-span-2">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Start Date</label>
+                <label class="text-xs font-bold text-slate-500 uppercase">Start Date</label>
                 <input type="date" id="startDate" onchange="runReport()" class="w-full p-2.5 border rounded-lg">
             </div>
 
             <div class="md:col-span-2">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">End Date</label>
+                <label class="text-xs font-bold text-slate-500 uppercase">End Date</label>
                 <input type="date" id="endDate" onchange="runReport()" class="w-full p-2.5 border rounded-lg">
             </div>
 
             <div class="md:col-span-3">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Job Site</label>
+                <label class="text-xs font-bold text-slate-500 uppercase">Job Site</label>
                 <select id="siteSelect" onchange="runReport()" class="w-full p-2.5 border rounded-lg" disabled>
                     <option value="All">All Sites</option>
                 </select>
             </div>
 
-            <div class="md:col-span-2 text-right">
-                <button onclick="window.print()" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg">Print</button>
+            <div class="md:col-span-2">
+                <button onclick="window.print()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg">Print</button>
             </div>
         </div>
     </div>
 
-    <!-- REPORT BODY -->
-    <div id="reportContainer" class="space-y-6 hidden">
+    <!-- REPORT -->
+    <div id="reportContainer" class="hidden space-y-6">
 
-        <div class="bg-white rounded-xl shadow-sm border p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+        <!-- HEADER CARD -->
+        <div class="bg-white rounded-xl shadow-sm border p-6 flex flex-col md:flex-row justify-between gap-6">
             <div>
                 <h1 id="reportStudentName" class="text-4xl font-extrabold text-slate-900 mb-2"></h1>
                 <p><strong>Report Period:</strong> <span id="reportPeriod"></span></p>
@@ -92,23 +95,26 @@
             <div class="bg-slate-50 border rounded-xl p-6 text-center w-full md:w-64">
                 <p class="text-xs uppercase tracking-wider mb-2">Overall Average</p>
                 <div id="overallScoreDisplay" class="text-5xl font-black text-slate-300">N/A</div>
-                <p class="text-xs mt-2">Scale: 0.0 - 4.0</p>
+                <p class="text-xs text-slate-500 mt-1">Scale: 0–4</p>
             </div>
         </div>
 
+        <!-- BAR CHART -->
         <div class="bg-white rounded-xl shadow-sm border p-5">
-            <h3 class="text-sm font-bold mb-3">Skill Performance</h3>
-            <div class="h-80"><canvas id="skillsChart"></canvas></div>
+            <h3 class="text-sm font-bold mb-4">Skill Performance</h3>
+            <div class="h-80">
+                <canvas id="skillsChart"></canvas>
+            </div>
         </div>
 
-        <!-- DETAILED GRID -->
+        <!-- SKILL GRID -->
         <div id="skillGrid" class="grid grid-cols-1 md:grid-cols-4 gap-4"></div>
 
     </div>
 </main>
 
 <script>
-/* SKILL MAP (long → short) */
+/* ========== SKILL MAP (long → short labels) ========== */
 const SKILL_MAP = {
     "Punctual": "Punctual",
     "Prepared with Necessary Materials": "Prepared",
@@ -130,20 +136,38 @@ const SKILL_MAP = {
 
 const SKILLS = Object.keys(SKILL_MAP);
 
-let allEntries = [];
 let students = {};
+let allEntries = [];
 let charts = { skills: null };
 
+/* ========== CORRECT DATE PARSER FOR GOOGLE SHEETS (M/D/YYYY) ========== */
 function safeDate(str) {
-    if (!str) return new Date();
-    if (str.includes("-")) return new Date(str);
-    return new Date(Date.parse(str));
+    if (!str) return null;
+
+    // ISO format (YYYY-MM-DD)
+    if (str.includes("-")) {
+        const d = new Date(str);
+        return isNaN(d) ? null : d;
+    }
+
+    // US format (M/D/YYYY)
+    const parts = str.split("/");
+    if (parts.length === 3) {
+        const m = parseInt(parts[0]) - 1;
+        const d = parseInt(parts[1]);
+        const y = parseInt(parts[2]);
+        const date = new Date(y, m, d);
+        return isNaN(date) ? null : date;
+    }
+
+    return null;
 }
 
 const fmt = d => d.toLocaleDateString("en-US");
 
+/* ========== INITIAL LOAD ========== */
 window.onload = async () => {
-    const url = localStorage.getItem('vocational_backend_url');
+    const url = localStorage.getItem("vocational_backend_url");
     if (!url) return alert("Database not connected.");
 
     try {
@@ -155,30 +179,33 @@ window.onload = async () => {
         const sData = await sRes.json();
         const eData = await eRes.json();
 
-        const sel = document.getElementById('studentSelect');
+        const studentSel = document.getElementById("studentSelect");
         sData.data.forEach(s => {
             students[s.student_id] = s.name;
-            sel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
+            studentSel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
         });
 
         allEntries = eData.data;
-        document.getElementById('loadingIndicator').classList.add('hidden');
-        document.getElementById('mainContent').classList.remove('hidden');
 
-    } catch (e) {
-        console.error(e);
-        alert("Failed to load data.");
+        document.getElementById("loadingIndicator").classList.add("hidden");
+        document.getElementById("mainContent").classList.remove("hidden");
+
+    } catch (err) {
+        console.error(err);
+        alert("Error loading data from spreadsheet.");
     }
 };
 
+/* ========== STUDENT CHANGE ========== */
 function handleStudentChange() {
-    const sid = document.getElementById('studentSelect').value;
-    const siteSel = document.getElementById('siteSelect');
-    siteSel.innerHTML = '<option value="All">All Sites</option>';
-    siteSel.disabled = !sid;
+    const sid = document.getElementById("studentSelect").value;
+    const siteSelect = document.getElementById("siteSelect");
+
+    siteSelect.innerHTML = `<option value="All">All Sites</option>`;
+    siteSelect.disabled = !sid;
 
     if (!sid) {
-        document.getElementById('reportContainer').classList.add('hidden');
+        document.getElementById("reportContainer").classList.add("hidden");
         return;
     }
 
@@ -186,29 +213,33 @@ function handleStudentChange() {
 
     [...new Set(studentEntries.map(e => e.job_site))]
         .sort()
-        .forEach(site => siteSel.innerHTML += `<option value="${site}">${site}</option>`);
+        .forEach(s => siteSelect.innerHTML += `<option value="${s}">${s}</option>`);
 
     runReport();
 }
 
+/* ========== RUN REPORT ========== */
 function runReport() {
-    const sid = document.getElementById('studentSelect').value;
+    const sid = document.getElementById("studentSelect").value;
     if (!sid) return;
 
-    const siteFilter = document.getElementById('siteSelect').value;
-    const startVal = document.getElementById('startDate').value;
-    const endVal = document.getElementById('endDate').value;
+    const startVal = document.getElementById("startDate").value;
+    const endVal = document.getElementById("endDate").value;
+    const siteFilter = document.getElementById("siteSelect").value;
 
     const startD = startVal ? new Date(startVal) : new Date("2000-01-01");
     const endD = endVal ? new Date(endVal) : new Date("2100-01-01");
 
     const filtered = allEntries.filter(e => {
+        if (e.student_id != sid) return false;
+
         const d = safeDate(e.date);
-        return (
-            e.student_id == sid &&
-            d >= startD && d <= endD &&
-            (siteFilter === "All" || e.job_site === siteFilter)
-        );
+        if (!d) return false;
+
+        if (d < startD || d > endD) return false;
+        if (siteFilter !== "All" && e.job_site !== siteFilter) return false;
+
+        return true;
     });
 
     let period = "All Time";
@@ -219,12 +250,14 @@ function runReport() {
     updateUI(filtered, students[sid], period, siteFilter);
 }
 
+/* ========== UPDATE UI ========== */
 function updateUI(entries, name, period, site) {
-    document.getElementById('reportContainer').classList.remove('hidden');
-    document.getElementById('reportStudentName').innerText = name;
-    document.getElementById('reportPeriod').innerText = period;
-    document.getElementById('reportSiteFilter').innerText = site;
-    document.getElementById('reportCount').innerText = entries.length;
+
+    document.getElementById("reportContainer").classList.remove("hidden");
+    document.getElementById("reportStudentName").innerText = name;
+    document.getElementById("reportPeriod").innerText = period;
+    document.getElementById("reportSiteFilter").innerText = site;
+    document.getElementById("reportCount").innerText = entries.length;
 
     let sums = {}, counts = {};
     SKILLS.forEach(k => { sums[k] = 0; counts[k] = 0; });
@@ -239,35 +272,39 @@ function updateUI(entries, name, period, site) {
         });
     });
 
-    const avgs = SKILLS.map(k => counts[k] ? (sums[k] / counts[k]) : 0);
+    const avgs = SKILLS.map(k => counts[k] ? sums[k] / counts[k] : 0);
 
-    const overall = avgs.filter(v => v > 0).reduce((a,b)=>a+b,0) / (avgs.filter(v=>v>0).length || 1);
-    const overallEl = document.getElementById('overallScoreDisplay');
-    overallEl.innerText = overall.toFixed(2);
+    const valid = avgs.filter(v => v > 0);
+    const overall = valid.length ? valid.reduce((a,b)=>a+b) / valid.length : 0;
 
-    updateColors(overallEl, overall);
+    const overallEl = document.getElementById("overallScoreDisplay");
+    overallEl.innerText = overall ? overall.toFixed(2) : "N/A";
+    colorize(overallEl, overall);
+
     drawSkillChart(avgs);
     drawSkillGrid(avgs, counts);
 }
 
-function updateColors(el, val) {
+/* ========== COLOR LOGIC ========== */
+function colorize(el, val) {
     el.className = "text-5xl font-black";
     if (val >= 3.5) el.classList.add("text-green-600");
-    else if (val >= 2.5) el.classList.add("text-blue-500");
-    else if (val >= 1.5) el.classList.add("text-yellow-500");
+    else if (val >= 2.5) el.classList.add("text-blue-600");
+    else if (val >= 1.5) el.classList.add("text-yellow-600");
     else el.classList.add("text-red-600");
 }
 
+/* ========== CHART ========== */
 function drawSkillChart(avgs) {
     if (charts.skills) charts.skills.destroy();
 
-    charts.skills = new Chart(document.getElementById('skillsChart'), {
+    charts.skills = new Chart(document.getElementById("skillsChart"), {
         type: "bar",
         data: {
             labels: SKILLS.map(k => SKILL_MAP[k]),
             datasets: [{
                 data: avgs,
-                backgroundColor: avgs.map(v =>
+                backgroundColor: avgs.map(v => 
                     v >= 3 ? "#16a34a" :
                     v >= 2 ? "#ca8a04" :
                     v > 0 ? "#dc2626" :
@@ -275,29 +312,32 @@ function drawSkillChart(avgs) {
                 )
             }]
         },
-        options: { responsive: true, scales: { y: { min: 0, max: 4 } } }
+        options: {
+            responsive: true,
+            scales: { y: { min: 0, max: 4 } }
+        }
     });
 }
 
+/* ========== GRID ========== */
 function drawSkillGrid(avgs, counts) {
-    const grid = document.getElementById('skillGrid');
+    const grid = document.getElementById("skillGrid");
     grid.innerHTML = "";
 
     SKILLS.forEach((k, i) => {
         const avg = counts[k] ? avgs[i].toFixed(1) : "N/A";
-        const logs = counts[k];
 
-        let color =
+        const color =
             avg >= 3 ? "bg-green-100 text-green-700" :
             avg >= 2 ? "bg-yellow-100 text-yellow-700" :
-            avg > 0 ? "bg-red-100 text-red-700" :
+            avg >  0 ? "bg-red-100 text-red-700" :
             "bg-slate-100 text-slate-500";
 
         grid.innerHTML += `
             <div class="p-4 rounded-xl border shadow-sm ${color}">
                 <p class="font-bold">${SKILL_MAP[k]}</p>
                 <p class="text-2xl font-extrabold">${avg}</p>
-                <p class="text-xs mt-1">${logs} logs</p>
+                <p class="text-xs mt-1">${counts[k]} logs</p>
             </div>
         `;
     });
@@ -305,5 +345,4 @@ function drawSkillGrid(avgs, counts) {
 </script>
 
 </body>
-</html>
 </html>
