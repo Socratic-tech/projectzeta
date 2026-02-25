@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,255 +9,189 @@
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex items-center justify-center p-4">
 
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const magicUrl = params.get('connect');
-        if(magicUrl) {
-            try {
-                const decoded = atob(magicUrl);
-                if(decoded.includes('script.google.com')) {
-                    localStorage.setItem('vocational_backend_url', decoded);
-                    window.location.href = "index.html";
-                }
-            } catch(e) {}
-        }
-    </script>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const magicUrl = params.get('connect');
 
-    <div class="bg-white max-w-6xl w-full rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
-        
-        <div class="w-full md:w-5/12 p-8 bg-slate-50 border-r border-slate-200 overflow-y-auto max-h-[80vh]">
-            <h1 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <span class="material-icons text-blue-600">build</span> Setup Guide
-            </h1>
+    if (magicUrl) {
+        try {
+            const decoded = atob(magicUrl);
+            if (decoded.includes("script.google.com")) {
+                localStorage.setItem('vocational_backend_url', decoded);
+                window.location.href = "index.html";
+            }
+        } catch (e) {}
+    }
+</script>
 
-            <div class="space-y-6">
-                
-                <div>
-                    <h3 class="font-bold text-slate-700 mb-2 border-b pb-1">1. Get the Backend Code</h3>
-                    <div class="relative group">
+<div class="bg-white max-w-6xl w-full rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+
+    <!-- LEFT SIDE -->
+    <div class="w-full md:w-5/12 p-8 bg-slate-50 border-r border-slate-200 overflow-y-auto max-h-[80vh]">
+        <h1 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <span class="material-icons text-blue-600">build</span> Setup Guide
+        </h1>
+
+        <div class="space-y-6">
+
+            <div>
+                <h3 class="font-bold text-slate-700 mb-2 border-b pb-1">1. Get the Backend Code</h3>
+                <div class="relative group">
 <textarea id="scriptCode" readonly class="w-full h-24 p-3 text-[10px] font-mono bg-slate-800 text-green-400 rounded-lg focus:outline-none resize-none">
-function initialSetup() {
+(function initialSetup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  
-  // 1. Students
+
   let studentsSheet = ss.getSheetByName("Students");
   if (!studentsSheet) {
     studentsSheet = ss.insertSheet("Students");
     studentsSheet.appendRow(["student_id", "name", "grade", "active"]);
   }
 
-  // 2. Entries
   let entriesSheet = ss.getSheetByName("Entries");
   if (!entriesSheet) {
     entriesSheet = ss.insertSheet("Entries");
     entriesSheet.appendRow(["entry_id", "date", "student_id", "job_site", "evaluator", "comments", "scores_json"]);
   }
 
-  // 3. Settings
   let settingsSheet = ss.getSheetByName("Settings");
   if (!settingsSheet) {
     settingsSheet = ss.insertSheet("Settings");
     settingsSheet.appendRow(["key", "value"]);
-    settingsSheet.appendRow(["password", "voc123"]); 
+    settingsSheet.appendRow(["password", "voc123"]);
   }
 
-  // 4. Sites (Job Locations)
   let sitesSheet = ss.getSheetByName("Sites");
   if (!sitesSheet) {
     sitesSheet = ss.insertSheet("Sites");
     sitesSheet.appendRow(["site_name"]);
-    // Add default examples
     sitesSheet.appendRow(["Cafeteria"]);
     sitesSheet.appendRow(["Library"]);
     sitesSheet.appendRow(["Front Office"]);
   }
 
   return "Setup Complete";
-}
-
-function doGet(e) {
-  const action = e.parameter.action;
-  if (action == "getStudents") return getStudents();
-  if (action == "getEntries") return getEntries();
-  if (action == "getSites") return getSites(); // New
-  return ContentService.createTextOutput("Backend Online");
-}
-
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-    if (data.action == "addEntry") return addEntry(data);
-    if (data.action == "verifyAdmin") return verifyAdmin(data);
-    if (data.action == "addSite") return addSite(data); // New
-    if (data.action == "deleteSite") return deleteSite(data); // New
-    return responseJSON({ status: "error", message: "Unknown action" });
-  } catch (err) {
-    return responseJSON({ status: "error", message: err.toString() });
-  }
-}
-
-// --- DATA FUNCTIONS ---
-
-function getStudents() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("Students");
-  const data = sheet.getDataRange().getValues();
-  data.shift();
-  const students = data.map(row => ({ student_id: row[0], name: row[1], grade: row[2], active: row[3] }));
-  return responseJSON({ status: "success", data: students });
-}
-
-function getEntries() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("Entries");
-  if (sheet.getLastRow() < 2) return responseJSON({ status: "success", data: [] });
-  const data = sheet.getDataRange().getValues();
-  data.shift(); 
-  const entries = data.map(row => ({
-    entry_id: row[0], date: row[1], student_id: row[2], job_site: row[3],
-    evaluator: row[4], comments: row[5], scores: row[6] ? JSON.parse(row[6]) : {}
-  }));
-  return responseJSON({ status: "success", data: entries });
-}
-
-function getSites() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("Sites");
-  if (sheet.getLastRow() < 2) return responseJSON({ status: "success", data: [] });
-  const data = sheet.getDataRange().getValues();
-  data.shift(); // Remove header
-  // Sort alphabetically
-  const sites = data.map(row => row[0]).filter(Boolean).sort();
-  return responseJSON({ status: "success", data: sites });
-}
-
-function addEntry(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("Entries");
-  const id = new Date().getTime().toString();
-  sheet.appendRow([id, data.date, data.student_id, data.job_site, data.evaluator, data.comments, JSON.stringify(data.scores)]);
-  return responseJSON({ status: "success", id: id });
-}
-
-function addSite(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("Sites");
-  sheet.appendRow([data.site_name]);
-  return responseJSON({ status: "success" });
-}
-
-function deleteSite(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("Sites");
-  const values = sheet.getDataRange().getValues();
-  for (let i = 1; i < values.length; i++) {
-    if (values[i][0] == data.site_name) {
-      sheet.deleteRow(i + 1); // +1 because rows are 1-indexed
-      return responseJSON({ status: "success" });
-    }
-  }
-  return responseJSON({ status: "error", message: "Site not found" });
-}
-
-function verifyAdmin(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("Settings");
-  const values = sheet.getDataRange().getValues();
-  let storedPass = "voc123"; 
-  for(let i=1; i<values.length; i++) {
-    if(values[i][0] == "password") { storedPass = values[i][1]; break; }
-  }
-  if (String(data.password).trim() === String(storedPass).trim()) {
-    return responseJSON({ status: "success" });
-  } else {
-    return responseJSON({ status: "error", message: "Invalid Password" });
-  }
-}
-
-function responseJSON(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
-}
+})();
 </textarea>
-                        <button onclick="copyCode()" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs backdrop-blur-sm transition">Copy</button>
-                    </div>
-                </div>
 
-                <div class="text-xs text-slate-600 space-y-2">
-                    <p><strong>2. In Google Sheets:</strong> Extensions > Apps Script. Replace code. Save.</p>
-                    <p><strong>3. Update Setup:</strong> Run <strong>initialSetup</strong> again to create the "Sites" tab.</p>
-                    <p><strong>4. Deploy:</strong> Deploy > Manage Deployments > Edit (Pencil) > Version: New Version > Deploy.</p>
-                </div>
-
-            </div>
-        </div>
-
-        <div class="w-full md:w-7/12 p-8 flex flex-col bg-white relative">
-            <h2 class="text-xl font-bold text-slate-800 mb-1">Connect Database</h2>
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="dbUrl" placeholder="https://script.google.com/..." class="flex-1 p-3 border border-slate-300 rounded-lg text-sm">
-                <button onclick="saveAndConnect()" class="bg-blue-600 text-white font-bold px-6 rounded-lg">Connect</button>
-            </div>
-            <div id="statusMsg" class="hidden text-xs font-bold mb-4"></div>
-
-            <div id="magicSection" class="hidden bg-indigo-50 border border-indigo-100 rounded-xl p-6">
-                <h3 class="font-bold text-indigo-900 mb-2">Share Connection</h3>
-                <div class="flex flex-col md:flex-row gap-6 items-center">
-                    <img id="qrImage" src="" alt="QR Code" class="w-24 h-24 object-contain bg-white rounded p-1">
-                    <div class="flex-1 w-full space-y-2">
-                        <input id="magicLinkInput" readonly type="text" class="w-full bg-white border border-indigo-200 text-xs p-2 rounded text-indigo-500 font-mono">
-                        <button onclick="copyMagicLink()" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold">Copy Link</button>
-                    </div>
+                    <button onclick="copyCode()" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs backdrop-blur-sm transition">
+                        Copy
+                    </button>
                 </div>
             </div>
+
+            <div class="text-xs text-slate-600 space-y-2">
+                <p><strong>2. In Google Sheets:</strong> Extensions → Apps Script. Replace code. Save.</p>
+                <p><strong>3. Update Setup:</strong> Run <strong>initialSetup</strong> again.</p>
+                <p><strong>4. Deploy:</strong> Deploy → Manage Deployments → Edit → New Version → Deploy.</p>
+            </div>
+
         </div>
     </div>
 
-    <script>
-        const existingUrl = localStorage.getItem('vocational_backend_url');
-        if(existingUrl) {
-            document.getElementById('dbUrl').value = existingUrl;
-            showMagicSection(existingUrl);
+    <!-- RIGHT SIDE -->
+    <div class="w-full md:w-7/12 p-8 flex flex-col bg-white relative">
+
+        <h2 class="text-xl font-bold text-slate-800 mb-1">Connect Database</h2>
+
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="dbUrl" placeholder="https://script.google.com/..." 
+                   class="flex-1 p-3 border border-slate-300 rounded-lg text-sm">
+            <button onclick="saveAndConnect()" class="bg-blue-600 text-white font-bold px-6 rounded-lg">
+                Connect
+            </button>
+        </div>
+
+        <div id="statusMsg" class="hidden text-xs font-bold mb-4"></div>
+
+        <div id="magicSection" class="hidden bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+            <h3 class="font-bold text-indigo-900 mb-2">Share Connection</h3>
+            <div class="flex flex-col md:flex-row gap-6 items-center">
+                <img id="qrImage" src="" alt="QR Code" class="w-24 h-24 object-contain bg-white rounded p-1">
+                <div class="flex-1 w-full space-y-2">
+                    <input id="magicLinkInput" readonly type="text"
+                           class="w-full bg-white border border-indigo-200 text-xs p-2 rounded text-indigo-500 font-mono">
+                    <button onclick="copyMagicLink()" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold">
+                        Copy Link
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+/* Load saved URL */
+const existingUrl = localStorage.getItem('vocational_backend_url');
+if (existingUrl) {
+    document.getElementById('dbUrl').value = existingUrl;
+    showMagicSection(existingUrl);
+}
+
+/* Copy backend script code */
+function copyCode() {
+    document.getElementById('scriptCode').select();
+    document.execCommand('copy');
+    alert("Copied!");
+}
+
+/* Fix and verify script URL */
+async function saveAndConnect() {
+    const msg = document.getElementById('statusMsg');
+    let url = document.getElementById('dbUrl').value.trim();
+
+    msg.innerText = "Verifying...";
+    msg.className = "text-blue-600 block";
+
+    // Auto-correct user mistakes
+    if (url.includes("/dev")) url = url.replace("/dev", "/exec");
+    if (!url.endsWith("/exec")) {
+        if (!url.endsWith("/")) url += "/";
+        url += "exec";
+    }
+
+    try {
+        const response = await fetch(`${url}?action=getStudents`);
+        if (response.redirected) throw new Error("Redirect error");
+
+        const result = await response.json();
+        if (result.status === 'success') {
+            localStorage.setItem('vocational_backend_url', url);
+
+            msg.className = "text-green-600 block";
+            msg.innerText = "Connected!";
+            showMagicSection(url);
+        } else {
+            throw new Error("Script returned error");
         }
-        function copyCode() {
-            document.getElementById('scriptCode').select();
-            document.execCommand('copy');
-            alert("Copied!");
-        }
-        async function saveAndConnect() {
-            const url = document.getElementById('dbUrl').value.trim();
-            const msg = document.getElementById('statusMsg');
-            msg.innerText = "Verifying...";
-            msg.className = "text-blue-600 block";
-            try {
-                const response = await fetch(`${url}?action=getStudents`);
-                if(response.redirected) throw new Error("Redirected");
-                const result = await response.json();
-                if(result.status === 'success') {
-                    localStorage.setItem('vocational_backend_url', url);
-                    msg.className = "text-green-600 block";
-                    msg.innerText = "Connected!";
-                    showMagicSection(url);
-                } else { throw new Error("Error"); }
-            } catch (e) {
-                msg.className = "text-red-600 block";
-                msg.innerText = "Connection Failed.";
-            }
-        }
-        function showMagicSection(url) {
-            const magicDiv = document.getElementById('magicSection');
-            const magicInput = document.getElementById('magicLinkInput');
-            const qrImg = document.getElementById('qrImage');
-            const baseUrl = window.location.href.split('?')[0]; 
-            const link = `${baseUrl}?connect=${btoa(url)}`;
-            magicInput.value = link;
-            magicDiv.classList.remove('hidden');
-            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(link)}`;
-        }
-        function copyMagicLink() {
-            document.getElementById('magicLinkInput').select();
-            document.execCommand('copy');
-            alert("Copied!");
-        }
-    </script>
+    } catch (err) {
+        msg.className = "text-red-600 block";
+        msg.innerText = "Connection Failed.";
+    }
+}
+
+/* Show sharing link & QR */
+function showMagicSection(url) {
+    const magicDiv = document.getElementById('magicSection');
+    const magicInput = document.getElementById('magicLinkInput');
+    const qrImg = document.getElementById('qrImage');
+
+    const baseUrl = window.location.href.split('?')[0];
+    const link = `${baseUrl}?connect=${btoa(url)}`;
+
+    magicInput.value = link;
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(link)}`;
+
+    magicDiv.classList.remove('hidden');
+}
+
+/* Copy link */
+function copyMagicLink() {
+    document.getElementById('magicLinkInput').select();
+    document.execCommand('copy');
+    alert("Copied!");
+}
+</script>
+
 </body>
 </html>
