@@ -5,27 +5,25 @@
     <title>Vocational Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
     <style>
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in-up {
-            animation: fadeInUp 0.5s ease-out forwards;
-        }
-        .status-dot {
-            height: 10px;
-            width: 10px;
-            border-radius: 50%;
-            display: inline-block;
-        }
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+
+        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; }
     </style>
 </head>
+
 <body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
 
+    <!-- NAV -->
     <nav class="bg-white shadow border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16 items-center">
+
                 <div class="flex items-center">
                     <h1 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
                         <span class="material-icons">school</span>
@@ -34,57 +32,81 @@
                 </div>
 
                 <div class="flex items-center gap-4">
-                    <div id="statusContainer" class="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 border border-gray-200 text-xs font-medium text-gray-500 transition-colors">
+                    <div id="statusContainer" 
+                         class="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 border border-gray-200 
+                                text-xs font-medium text-gray-500 transition-colors">
                         <span id="statusDot" class="status-dot bg-gray-400"></span>
                         <span id="statusText">Checking...</span>
                     </div>
+
                     <a href="setup.html" class="text-gray-400 hover:text-indigo-600 transition-colors">
                         <span class="material-icons">help_outline</span>
                     </a>
                 </div>
+
             </div>
         </div>
     </nav>
 
+    <!-- MAIN -->
     <div class="flex-grow flex flex-col items-center justify-center p-6">
-        
         <div class="w-full max-w-5xl animate-fade-in-up">
-            
+
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-extrabold text-gray-900 mb-4">Dashboard</h2>
                 <p class="text-xl text-gray-500">Select an option below to access the system.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                
-                <a href="entry.html" class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 hover:border-indigo-500 transition-all duration-300 flex flex-col items-center text-center cursor-pointer transform hover:-translate-y-1">
-                    <div class="bg-blue-50 text-blue-600 w-20 h-20 rounded-full flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+
+                <!-- ENTRY -->
+                <a href="entry.html" 
+                   class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200
+                          hover:border-indigo-500 transition-all duration-300 flex flex-col items-center 
+                          text-center cursor-pointer transform hover:-translate-y-1">
+
+                    <div class="bg-blue-50 text-blue-600 w-20 h-20 rounded-full flex items-center justify-center 
+                                mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                         <span class="material-icons text-4xl">edit_note</span>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 group-hover:text-blue-600 mb-2 transition-colors">New Entry</h3>
-                    <p class="text-gray-500">Log daily performance scores and evaluator comments for a student.</p>
+
+                    <h3 class="text-2xl font-bold text-gray-900 group-hover:text-blue-600 mb-2">New Entry</h3>
+                    <p class="text-gray-500">Log daily performance scores and evaluator comments.</p>
                 </a>
 
-                <a href="report.html" class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 hover:border-indigo-500 transition-all duration-300 flex flex-col items-center text-center cursor-pointer transform hover:-translate-y-1">
-                    <div class="bg-purple-50 text-purple-600 w-20 h-20 rounded-full flex items-center justify-center mb-6 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                <!-- REPORTS -->
+                <a href="report.html" 
+                   class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 
+                          hover:border-indigo-500 transition-all duration-300 flex flex-col items-center 
+                          text-center cursor-pointer transform hover:-translate-y-1">
+
+                    <div class="bg-purple-50 text-purple-600 w-20 h-20 rounded-full flex items-center justify-center 
+                                mb-6 group-hover:bg-purple-600 group-hover:text-white transition-colors">
                         <span class="material-icons text-4xl">assessment</span>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 group-hover:text-purple-600 mb-2 transition-colors">Reports</h3>
-                    <p class="text-gray-500">View progress charts, skill breakdowns, and print report cards.</p>
+
+                    <h3 class="text-2xl font-bold text-gray-900 group-hover:text-purple-600 mb-2">Reports</h3>
+                    <p class="text-gray-500">View charts, skill breakdowns, and printable reports.</p>
                 </a>
 
-                <a href="admin.html" class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 hover:border-indigo-500 transition-all duration-300 flex flex-col items-center text-center cursor-pointer transform hover:-translate-y-1">
-                    <div class="bg-gray-50 text-gray-600 w-20 h-20 rounded-full flex items-center justify-center mb-6 group-hover:bg-gray-600 group-hover:text-white transition-colors duration-300">
+                <!-- ADMIN -->
+                <a href="admin.html" 
+                   class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 
+                          hover:border-indigo-500 transition-all duration-300 flex flex-col items-center 
+                          text-center cursor-pointer transform hover:-translate-y-1">
+
+                    <div class="bg-gray-50 text-gray-600 w-20 h-20 rounded-full flex items-center justify-center 
+                                mb-6 group-hover:bg-gray-600 group-hover:text-white transition-colors">
                         <span class="material-icons text-4xl">settings</span>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 group-hover:text-gray-700 mb-2 transition-colors">Admin</h3>
-                    <p class="text-gray-500">Manage student rosters, job site locations, and API connections.</p>
+
+                    <h3 class="text-2xl font-bold text-gray-900 group-hover:text-gray-700 mb-2">Admin</h3>
+                    <p class="text-gray-500">Manage students, job sites, and backend settings.</p>
                 </a>
 
             </div>
 
         </div>
-
     </div>
 
     <footer class="bg-white border-t border-gray-200 py-6 mt-8">
@@ -93,68 +115,73 @@
         </div>
     </footer>
 
-    <script>
-        const API_URL = localStorage.getItem('bresa_api_url');
-        const statusDot = document.getElementById('statusDot');
-        const statusText = document.getElementById('statusText');
-        const statusContainer = document.getElementById('statusContainer');
+<script>
+/* Correct key (NOT bresa_api_url) */
+const API_URL = localStorage.getItem('vocational_backend_url');
 
-        async function checkConnection() {
-            // 1. Check if URL is saved locally
-            if (!API_URL) {
-                setStatus("offline", "Not Configured");
-                return;
-            }
+/* Status elements */
+const statusDot = document.getElementById("statusDot");
+const statusText = document.getElementById("statusText");
+const statusContainer = document.getElementById("statusContainer");
 
-            try {
-                // 2. Try to fetch a simple data point (Job Sites) to test connection
-                // We use a timeout so it doesn't hang forever if internet is down
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+/* Connection Checker */
+async function checkConnection() {
 
-                const response = await fetch(API_URL + "?action=getJobSites", { 
-                    signal: controller.signal 
-                });
-                
-                clearTimeout(timeoutId);
+    if (!API_URL) {
+        setStatus("offline", "Not Configured");
+        return;
+    }
 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.status && data.status === "error") {
-                        setStatus("error", "Script Error");
-                    } else {
-                        setStatus("online", "System Online");
-                    }
-                } else {
-                    setStatus("offline", "Server Error");
-                }
-            } catch (error) {
-                console.error("Connection failed:", error);
-                setStatus("offline", "Offline");
-            }
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        /* CORRECT ACTION: getSites */
+        const response = await fetch(API_URL + "?action=getSites", {
+            method: "GET",
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        const text = await response.text();
+        const json = JSON.parse(text);
+
+        if (json.status === "success") {
+            setStatus("online", "System Online");
+        } else {
+            setStatus("error", "Script Error");
         }
 
-        function setStatus(type, message) {
-            statusText.innerText = message;
-            
-            // Reset classes
-            statusDot.className = "status-dot";
-            statusContainer.className = "flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium transition-colors";
+    } catch (err) {
+        console.error("Connection failed:", err);
+        setStatus("offline", "Offline");
+    }
+}
 
-            if (type === "online") {
-                statusDot.classList.add("bg-green-500", "animate-pulse");
-                statusContainer.classList.add("bg-green-50", "border-green-200", "text-green-700");
-            } else if (type === "offline") {
-                statusDot.classList.add("bg-red-500");
-                statusContainer.classList.add("bg-red-50", "border-red-200", "text-red-700");
-            } else {
-                statusDot.classList.add("bg-yellow-500");
-                statusContainer.classList.add("bg-yellow-50", "border-yellow-200", "text-yellow-700");
-            }
-        }
+/* Update Status Display */
+function setStatus(type, message) {
+    statusText.innerText = message;
 
-        // Run check on load
-        checkConnection();
-    </script>
+    statusDot.className = "status-dot";
+    statusContainer.className =
+        "flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium transition-colors";
+
+    if (type === "online") {
+        statusDot.classList.add("bg-green-500", "animate-pulse");
+        statusContainer.classList.add("bg-green-50", "border-green-200", "text-green-700");
+
+    } else if (type === "offline") {
+        statusDot.classList.add("bg-red-500");
+        statusContainer.classList.add("bg-red-50", "border-red-200", "text-red-700");
+
+    } else {
+        statusDot.classList.add("bg-yellow-500");
+        statusContainer.classList.add("bg-yellow-50", "border-yellow-200", "text-yellow-700");
+    }
+}
+
+checkConnection();
+</script>
 </body>
 </html>
