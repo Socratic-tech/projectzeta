@@ -7,26 +7,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
+
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex items-center justify-center p-4">
 
 <script>
-    const params = new URLSearchParams(window.location.search);
-    const magicUrl = params.get('connect');
+/* Handle magic link auto-connect */
+const params = new URLSearchParams(window.location.search);
+const magicUrl = params.get("connect");
 
-    if (magicUrl) {
-        try {
-            const decoded = atob(magicUrl);
-            if (decoded.includes("script.google.com")) {
-                localStorage.setItem('vocational_backend_url', decoded);
-                window.location.href = "index.html";
-            }
-        } catch (e) {}
-    }
+if (magicUrl) {
+    try {
+        const decoded = atob(magicUrl);
+        if (decoded.includes("script.google.com")) {
+            localStorage.setItem("vocational_backend_url", decoded);
+            window.location.href = "index.html";
+        }
+    } catch (e) {}
+}
 </script>
 
 <div class="bg-white max-w-6xl w-full rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
 
-    <!-- LEFT SIDE -->
+    <!-- LEFT PANEL -->
     <div class="w-full md:w-5/12 p-8 bg-slate-50 border-r border-slate-200 overflow-y-auto max-h-[80vh]">
         <h1 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
             <span class="material-icons text-blue-600">build</span> Setup Guide
@@ -35,8 +37,9 @@
         <div class="space-y-6">
 
             <div>
-                <h3 class="font-bold text-slate-700 mb-2 border-b pb-1">1. Get the Backend Code</h3>
+                <h3 class="font-bold text-slate-700 mb-2 border-b pb-1">1. Install Backend Code</h3>
                 <div class="relative group">
+
 <textarea id="scriptCode" readonly class="w-full h-24 p-3 text-[10px] font-mono bg-slate-800 text-green-400 rounded-lg focus:outline-none resize-none">
 function initialSetup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -73,29 +76,30 @@ function initialSetup() {
 }
 </textarea>
 
-                    <button onclick="copyCode()" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs backdrop-blur-sm transition">
+                    <button onclick="copyCode()" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs">
                         Copy
                     </button>
                 </div>
             </div>
 
             <div class="text-xs text-slate-600 space-y-2">
-                <p><strong>2. In Google Sheets:</strong> Extensions → Apps Script. Replace code. Save.</p>
-                <p><strong>3. Run Setup:</strong> Run <strong>initialSetup</strong> once.</p>
-                <p><strong>4. Deploy Web App:</strong> Deploy → Manage Deployments → New Version → Execute as Me → Anyone with link → Deploy.</p>
+                <p><strong>2.</strong> Open Google Sheets → Extensions → Apps Script.</p>
+                <p><strong>3.</strong> Replace default script with this one → Save.</p>
+                <p><strong>4.</strong> Run <strong>initialSetup()</strong>.</p>
+                <p><strong>5.</strong> Deploy Web App → "Anyone with link" → Copy URL.</p>
             </div>
 
         </div>
     </div>
 
-    <!-- RIGHT SIDE -->
-    <div class="w-full md:w-7/12 p-8 flex flex-col bg-white relative">
+    <!-- RIGHT PANEL -->
+    <div class="w-full md:w-7/12 p-8 bg-white flex flex-col">
 
-        <h2 class="text-xl font-bold text-slate-800 mb-1">Connect Database</h2>
+        <h2 class="text-xl font-bold text-slate-800 mb-2">Connect Database</h2>
 
         <div class="flex gap-2 mb-4">
-            <input type="text" id="dbUrl" placeholder="https://script.google.com/..." 
-                class="flex-1 p-3 border border-slate-300 rounded-lg text-sm">
+            <input type="text" id="dbUrl" placeholder="https://script.google.com/…"
+                   class="flex-1 p-3 border rounded-lg text-sm">
             <button onclick="saveAndConnect()" class="bg-blue-600 text-white font-bold px-6 rounded-lg">
                 Connect
             </button>
@@ -103,14 +107,14 @@ function initialSetup() {
 
         <div id="statusMsg" class="hidden text-xs font-bold mb-4"></div>
 
-        <div id="magicSection" class="hidden bg-indigo-50 border border-indigo-100 rounded-xl p-6">
-            <h3 class="text-indigo-900 font-bold mb-2">Share Connection</h3>
-            <div class="flex flex-col md:flex-row gap-6 items-center">
-                <img id="qrImage" src="" alt="QR Code" class="w-24 h-24 bg-white rounded p-1">
-                <div class="flex-1 w-full space-y-2">
-                    <input id="magicLinkInput" readonly 
-                        class="w-full bg-white border border-indigo-200 text-xs p-2 rounded text-indigo-500 font-mono">
-                    <button onclick="copyMagicLink()" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold">
+        <!-- MAGIC SECTION -->
+        <div id="magicSection" class="hidden bg-indigo-50 border rounded-xl p-6">
+            <h3 class="font-bold text-indigo-900 mb-2">Share Connection</h3>
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <img id="qrImage" src="" class="w-24 h-24 bg-white p-1 rounded" />
+                <div class="flex-1">
+                    <input id="magicLinkInput" readonly class="w-full bg-white border text-xs p-2 rounded font-mono">
+                    <button onclick="copyMagicLink()" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs mt-2">
                         Copy Link
                     </button>
                 </div>
@@ -121,84 +125,71 @@ function initialSetup() {
 </div>
 
 <script>
-/* Load existing saved backend URL */
+/* Load previous saved connection */
 const existingUrl = localStorage.getItem("vocational_backend_url");
 if (existingUrl) {
     document.getElementById("dbUrl").value = existingUrl;
     showMagicSection(existingUrl);
 }
 
-/* Copy backend code */
+/* Copy Script Code */
 function copyCode() {
-    document.getElementById("scriptCode").select();
+    const el = document.getElementById("scriptCode");
+    el.select();
     document.execCommand("copy");
     alert("Copied!");
 }
 
-/* MAIN FIXED CONNECT FUNCTION */
+/* FIXED & IMPROVED CONNECTION CHECKER */
 async function saveAndConnect() {
     const msg = document.getElementById("statusMsg");
     let url = document.getElementById("dbUrl").value.trim();
 
-    msg.innerText = "Verifying...";
+    msg.textContent = "Verifying...";
     msg.className = "text-blue-600 block";
 
-    // Auto-correct common errors
+    // Auto-correct /dev → /exec
     if (url.includes("/dev")) url = url.replace("/dev", "/exec");
-    if (!url.endsWith("/exec")) {
-        if (!url.endsWith("/")) url += "/";
-        url += "exec";
-    }
+    if (!url.endsWith("/exec")) url = url.replace(/\/+$/, "") + "/exec";
 
     try {
-        const response = await fetch(`${url}?action=getStudents`, {
-            method: "GET",
-            redirect: "follow"
-        });
-
+        const response = await fetch(url + "?action=getStudents", { method: "GET" });
         const text = await response.text();
-
-        let json;
-        try {
-            json = JSON.parse(text);
-        } catch {
-            throw new Error("Invalid JSON");
-        }
+        const json = JSON.parse(text);
 
         if (json.status === "success") {
             localStorage.setItem("vocational_backend_url", url);
+            msg.textContent = "Connected!";
             msg.className = "text-green-600 block";
-            msg.innerText = "Connected!";
             showMagicSection(url);
         } else {
-            throw new Error("Backend returned failure");
+            throw new Error();
         }
-
     } catch (err) {
         console.error(err);
+        msg.textContent = "Connection Failed.";
         msg.className = "text-red-600 block";
-        msg.innerText = "Connection Failed.";
     }
 }
 
-/* Show sharing section */
+/* Display sharable magic link */
 function showMagicSection(url) {
-    const magicDiv = document.getElementById("magicSection");
-    const magicInput = document.getElementById("magicLinkInput");
-    const qrImg = document.getElementById("qrImage");
+    const magic = document.getElementById("magicSection");
+    const input = document.getElementById("magicLinkInput");
+    const qr = document.getElementById("qrImage");
 
-    const baseUrl = window.location.href.split("?")[0];
-    const link = `${baseUrl}?connect=${btoa(url)}`;
+    const base = window.location.href.split("?")[0];
+    const link = base + "?connect=" + btoa(url);
 
-    magicInput.value = link;
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(link)}`;
+    input.value = link;
+    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(link);
 
-    magicDiv.classList.remove("hidden");
+    magic.classList.remove("hidden");
 }
 
-/* Copy connection link */
 function copyMagicLink() {
-    document.getElementById("magicLinkInput").select();
+    const el = document.getElementById("magicLinkInput");
+    el.select();
     document.execCommand("copy");
     alert("Copied!");
 }
