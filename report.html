@@ -14,77 +14,89 @@
         @media print {
             @page { size: landscape; margin: 0.5cm; }
             nav, .no-print, #filterBar { display: none !important; }
-            body { background: white !important; }
             #reportContainer { max-width: 100%; padding: 0; }
+            body { background: white !important; }
         }
     </style>
 </head>
+
 <body class="flex flex-col min-h-screen">
 
 <!-- NAV -->
 <nav class="bg-blue-900 text-white shadow-lg no-print">
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between h-16 items-center">
+
             <div class="flex items-center gap-2">
                 <span class="material-icons text-yellow-400">analytics</span>
                 <span class="font-bold text-xl">Vocational Reports</span>
             </div>
+
             <div class="flex gap-4">
                 <a href="index.html" class="hover:bg-blue-800 px-3 py-2 rounded">Entry</a>
                 <a href="admin.html" class="hover:bg-blue-800 px-3 py-2 rounded">Admin</a>
             </div>
+
         </div>
     </div>
 </nav>
 
 <!-- LOADING -->
-<div id="loadingIndicator" class="fixed inset-0 bg-white z-50 flex flex-col justify-center items-center">
+<div id="loadingIndicator"
+     class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-    <p class="text-slate-500 font-medium">Loading Database...</p>
+    <p class="text-slate-500">Loading Database…</p>
 </div>
 
 <!-- MAIN -->
-<main id="mainContent" class="hidden flex-1 py-8 px-4 max-w-7xl mx-auto w-full">
+<main id="mainContent" class="hidden max-w-7xl mx-auto w-full py-8 px-4">
 
     <!-- FILTER BAR -->
     <div id="filterBar" class="bg-white p-6 rounded-xl shadow-sm border mb-8">
+
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
 
             <div class="md:col-span-3">
-                <label class="text-xs font-bold text-slate-500 uppercase">Student</label>
+                <label class="text-xs font-bold uppercase text-slate-500 block mb-1">Student</label>
                 <select id="studentSelect" onchange="handleStudentChange()" class="w-full p-2.5 border rounded-lg">
                     <option value="">-- Select Student --</option>
                 </select>
             </div>
 
             <div class="md:col-span-2">
-                <label class="text-xs font-bold text-slate-500 uppercase">Start Date</label>
+                <label class="text-xs font-bold uppercase text-slate-500 block mb-1">Start Date</label>
                 <input type="date" id="startDate" onchange="runReport()" class="w-full p-2.5 border rounded-lg">
             </div>
 
             <div class="md:col-span-2">
-                <label class="text-xs font-bold text-slate-500 uppercase">End Date</label>
+                <label class="text-xs font-bold uppercase text-slate-500 block mb-1">End Date</label>
                 <input type="date" id="endDate" onchange="runReport()" class="w-full p-2.5 border rounded-lg">
             </div>
 
             <div class="md:col-span-3">
-                <label class="text-xs font-bold text-slate-500 uppercase">Job Site</label>
-                <select id="siteSelect" onchange="runReport()" class="w-full p-2.5 border rounded-lg" disabled>
+                <label class="text-xs font-bold uppercase text-slate-500 block mb-1">Job Site</label>
+                <select id="siteSelect" onchange="runReport()" disabled class="w-full p-2.5 border rounded-lg">
                     <option value="All">All Sites</option>
                 </select>
             </div>
 
             <div class="md:col-span-2">
-                <button onclick="window.print()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg">Print</button>
+                <button onclick="window.print()"
+                        class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-bold">
+                    Print
+                </button>
             </div>
+
         </div>
+
     </div>
 
-    <!-- REPORT -->
+    <!-- REPORT BODY -->
     <div id="reportContainer" class="hidden space-y-6">
 
         <!-- HEADER CARD -->
         <div class="bg-white rounded-xl shadow-sm border p-6 flex flex-col md:flex-row justify-between gap-6">
+
             <div>
                 <h1 id="reportStudentName" class="text-4xl font-extrabold text-slate-900 mb-2"></h1>
                 <p><strong>Report Period:</strong> <span id="reportPeriod"></span></p>
@@ -93,18 +105,17 @@
             </div>
 
             <div class="bg-slate-50 border rounded-xl p-6 text-center w-full md:w-64">
-                <p class="text-xs uppercase tracking-wider mb-2">Overall Average</p>
+                <p class="text-xs uppercase mb-2 tracking-wide">Overall Average</p>
                 <div id="overallScoreDisplay" class="text-5xl font-black text-slate-300">N/A</div>
-                <p class="text-xs text-slate-500 mt-1">Scale: 0–4</p>
+                <p class="text-xs mt-2 text-slate-400">Scale: 0–4</p>
             </div>
+
         </div>
 
-        <!-- BAR CHART -->
+        <!-- SKILL BAR CHART -->
         <div class="bg-white rounded-xl shadow-sm border p-5">
-            <h3 class="text-sm font-bold mb-4">Skill Performance</h3>
-            <div class="h-80">
-                <canvas id="skillsChart"></canvas>
-            </div>
+            <h3 class="text-sm font-bold text-slate-700 mb-4">Skill Performance</h3>
+            <canvas id="skillsChart" class="h-80"></canvas>
         </div>
 
         <!-- SKILL GRID -->
@@ -136,28 +147,28 @@ const SKILL_MAP = {
 
 const SKILLS = Object.keys(SKILL_MAP);
 
-let students = {};
 let allEntries = [];
+let students = {};
 let charts = { skills: null };
 
-/* ========== CORRECT DATE PARSER FOR GOOGLE SHEETS (M/D/YYYY) ========== */
+/* ========== DATE PARSER: Supports M/D/YYYY and ISO ========== */
 function safeDate(str) {
     if (!str) return null;
 
-    // ISO format (YYYY-MM-DD)
+    // ISO format
     if (str.includes("-")) {
         const d = new Date(str);
         return isNaN(d) ? null : d;
     }
 
-    // US format (M/D/YYYY)
+    // Google Sheets US format: M/D/YYYY
     const parts = str.split("/");
     if (parts.length === 3) {
         const m = parseInt(parts[0]) - 1;
         const d = parseInt(parts[1]);
         const y = parseInt(parts[2]);
-        const date = new Date(y, m, d);
-        return isNaN(date) ? null : date;
+        const dt = new Date(y, m, d);
+        return isNaN(dt) ? null : dt;
     }
 
     return null;
@@ -192,28 +203,28 @@ window.onload = async () => {
 
     } catch (err) {
         console.error(err);
-        alert("Error loading data from spreadsheet.");
+        alert("Error loading database.");
     }
 };
 
-/* ========== STUDENT CHANGE ========== */
+/* ========== STUDENT CHANGED ========== */
 function handleStudentChange() {
     const sid = document.getElementById("studentSelect").value;
-    const siteSelect = document.getElementById("siteSelect");
+    const siteSel = document.getElementById("siteSelect");
 
-    siteSelect.innerHTML = `<option value="All">All Sites</option>`;
-    siteSelect.disabled = !sid;
+    siteSel.innerHTML = `<option value="All">All Sites</option>`;
+    siteSel.disabled = !sid;
 
     if (!sid) {
         document.getElementById("reportContainer").classList.add("hidden");
         return;
     }
 
-    const studentEntries = allEntries.filter(e => e.student_id == sid);
+    const entries = allEntries.filter(e => e.student_id == sid);
 
-    [...new Set(studentEntries.map(e => e.job_site))]
+    [...new Set(entries.map(e => e.job_site))]
         .sort()
-        .forEach(s => siteSelect.innerHTML += `<option value="${s}">${s}</option>`);
+        .forEach(site => siteSel.innerHTML += `<option value="${site}">${site}</option>`);
 
     runReport();
 }
@@ -223,20 +234,19 @@ function runReport() {
     const sid = document.getElementById("studentSelect").value;
     if (!sid) return;
 
+    const siteFilter = document.getElementById("siteSelect").value;
     const startVal = document.getElementById("startDate").value;
     const endVal = document.getElementById("endDate").value;
-    const siteFilter = document.getElementById("siteSelect").value;
 
-    const startD = startVal ? new Date(startVal) : new Date("2000-01-01");
-    const endD = endVal ? new Date(endVal) : new Date("2100-01-01");
+    const startDate = startVal ? new Date(startVal) : new Date("2000-01-01");
+    const endDate = endVal ? new Date(endVal) : new Date("2100-01-01");
 
     const filtered = allEntries.filter(e => {
         if (e.student_id != sid) return false;
 
         const d = safeDate(e.date);
-        if (!d) return false;
+        if (!d || d < startDate || d > endDate) return false;
 
-        if (d < startD || d > endD) return false;
         if (siteFilter !== "All" && e.job_site !== siteFilter) return false;
 
         return true;
@@ -250,7 +260,7 @@ function runReport() {
     updateUI(filtered, students[sid], period, siteFilter);
 }
 
-/* ========== UPDATE UI ========== */
+/* ========== UPDATE REPORT UI ========== */
 function updateUI(entries, name, period, site) {
 
     document.getElementById("reportContainer").classList.remove("hidden");
@@ -265,17 +275,16 @@ function updateUI(entries, name, period, site) {
     entries.forEach(e => {
         SKILLS.forEach(k => {
             const val = Number(e.scores?.[k]);
-            if (!isNaN(val)) {
+            if (!isNaN(val)) { 
                 sums[k] += val;
-                counts[k]++;
+                counts[k]++; 
             }
         });
     });
 
     const avgs = SKILLS.map(k => counts[k] ? sums[k] / counts[k] : 0);
-
-    const valid = avgs.filter(v => v > 0);
-    const overall = valid.length ? valid.reduce((a,b)=>a+b) / valid.length : 0;
+    const goodValues = avgs.filter(v => v > 0);
+    const overall = goodValues.length ? goodValues.reduce((a,b)=>a+b) / goodValues.length : 0;
 
     const overallEl = document.getElementById("overallScoreDisplay");
     overallEl.innerText = overall ? overall.toFixed(2) : "N/A";
@@ -285,7 +294,7 @@ function updateUI(entries, name, period, site) {
     drawSkillGrid(avgs, counts);
 }
 
-/* ========== COLOR LOGIC ========== */
+/* ========== COLORIZE OVERALL SCORE ========== */
 function colorize(el, val) {
     el.className = "text-5xl font-black";
     if (val >= 3.5) el.classList.add("text-green-600");
@@ -294,7 +303,7 @@ function colorize(el, val) {
     else el.classList.add("text-red-600");
 }
 
-/* ========== CHART ========== */
+/* ========== BAR CHART ========== */
 function drawSkillChart(avgs) {
     if (charts.skills) charts.skills.destroy();
 
@@ -304,11 +313,11 @@ function drawSkillChart(avgs) {
             labels: SKILLS.map(k => SKILL_MAP[k]),
             datasets: [{
                 data: avgs,
-                backgroundColor: avgs.map(v => 
+                backgroundColor: avgs.map(v =>
                     v >= 3 ? "#16a34a" :
                     v >= 2 ? "#ca8a04" :
-                    v > 0 ? "#dc2626" :
-                    "#e5e7eb"
+                    v > 0  ? "#dc2626" :
+                             "#e5e7eb"
                 )
             }]
         },
@@ -319,7 +328,7 @@ function drawSkillChart(avgs) {
     });
 }
 
-/* ========== GRID ========== */
+/* ========== SKILL GRID ========== */
 function drawSkillGrid(avgs, counts) {
     const grid = document.getElementById("skillGrid");
     grid.innerHTML = "";
@@ -331,7 +340,7 @@ function drawSkillGrid(avgs, counts) {
             avg >= 3 ? "bg-green-100 text-green-700" :
             avg >= 2 ? "bg-yellow-100 text-yellow-700" :
             avg >  0 ? "bg-red-100 text-red-700" :
-            "bg-slate-100 text-slate-500";
+                       "bg-slate-100 text-slate-500";
 
         grid.innerHTML += `
             <div class="p-4 rounded-xl border shadow-sm ${color}">
