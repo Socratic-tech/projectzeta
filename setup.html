@@ -1,208 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Setup</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>School Setup Wizard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        .step-card { transition: all .3s ease; }
+        .step-card.active {
+            border-color: rgb(79 70 229);
+            box-shadow: 0 6px 20px rgba(79,70,229,.2);
+        }
+        .hidden-step { display:none; }
+    </style>
 </head>
 
-<body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-100 min-h-screen flex justify-center p-6">
 
-<!-- Magic Link Auto-Connect -->
-<script>
-const params = new URLSearchParams(window.location.search);
-const magicUrl = params.get("connect");
+<div class="max-w-3xl w-full">
 
-if (magicUrl) {
-    try {
-        const decoded = atob(magicUrl);
-        if (decoded.includes("script.google.com")) {
-            localStorage.setItem("vocational_backend_url", decoded);
-            window.location.href = "index.html";
-        }
-    } catch (e) {}
-}
-</script>
-
-<div class="bg-white max-w-6xl w-full rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
-
-    <!-- LEFT PANEL -->
-    <div class="w-full md:w-5/12 p-8 bg-slate-50 border-r border-slate-200 overflow-y-auto max-h-[80vh]">
-
-        <h1 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <span class="material-icons text-blue-600">build</span>
-            Setup Guide
+    <!-- HEADER -->
+    <div class="text-center mb-10">
+        <h1 class="text-4xl font-extrabold text-indigo-700 mb-2">
+            School Setup Wizard
         </h1>
-
-        <!-- Google Sheet Template -->
-        <div class="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
-            <h3 class="font-bold text-indigo-900 mb-2 flex items-center gap-2">
-                <span class="material-icons text-indigo-600">description</span>
-                Google Sheet Template
-            </h3>
-
-            <p class="text-sm text-indigo-800 mb-3">
-                Every school needs their own copy of the data spreadsheet.
-            </p>
-
-            <a href="https://docs.google.com/spreadsheets/d/1QM1JYApZxAtazpsSWZ0pFpwStFJ2n_EB8Pu1XbZcWRg/copy"
-               target="_blank"
-               class="inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-sm">
-                Create Your Spreadsheet
-            </a>
-
-            <p class="text-xs text-slate-500 mt-2">
-                Clicking the button will prompt you to make your own copy.
-            </p>
-        </div>
-
-        <!-- Backend Script Code -->
-        <div class="space-y-6">
-            <div>
-                <h3 class="font-bold text-slate-700 mb-2 border-b pb-1">1. Install Backend Code</h3>
-                <div class="relative group">
-<textarea id="scriptCode" readonly class="w-full h-40 p-3 text-[10px] font-mono bg-slate-800 text-green-400 rounded-lg resize-none">
-( BACKEND CODE IS NOW IN THE INSTRUCTIONS — DO NOT COPY FROM HERE )
-Use the GitHub instructions to paste the backend script.
-</textarea>
-                    <button onclick="copyCode()"
-                            class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-xs">
-                        Copy
-                    </button>
-                </div>
-            </div>
-
-            <!-- Setup Instructions -->
-            <div class="text-xs text-slate-600 space-y-2">
-                <p><strong>2.</strong> Open your Google Sheet → Extensions → Apps Script.</p>
-                <p><strong>3.</strong> Paste the backend script into Code.gs → Save.</p>
-                <p><strong>4.</strong> Run <strong>initialSetup()</strong> to create system tabs.</p>
-                <p><strong>5.</strong> Deploy Web App → New Version → Anyone → Copy URL.</p>
-                <p><strong>6.</strong> Paste that URL below to connect your database.</p>
-            </div>
-        </div>
-
+        <p class="text-slate-600 text-lg">
+            Follow these simple steps to set up the Vocational Tracker for your school.
+        </p>
     </div>
 
-    <!-- RIGHT PANEL -->
-    <div class="w-full md:w-7/12 p-8 bg-white flex flex-col">
+    <!-- PROGRESS BAR -->
+    <div class="w-full bg-slate-300 h-2 rounded-full mb-10">
+        <div id="progressBar" class="h-2 bg-indigo-600 rounded-full transition-all duration-300" style="width: 10%;"></div>
+    </div>
 
-        <h2 class="text-xl font-bold text-slate-800 mb-2">Connect Database</h2>
+    <!-- STEP 1 -->
+    <div id="step1" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 active">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="material-icons text-indigo-600 text-4xl">school</span>
+            <h2 class="text-2xl font-bold">1. Create Your School Spreadsheet</h2>
+        </div>
 
-        <div class="flex gap-2 mb-4">
-            <input type="text" id="dbUrl" placeholder="https://script.google.com/…"
-                   class="flex-1 p-3 border border-slate-300 rounded-lg text-sm">
-            <button onclick="saveAndConnect()"
-                    class="bg-blue-600 text-white font-bold px-6 rounded-lg">
-                Connect
+        <p class="text-slate-600 mb-4">
+            Every school needs their own private copy of the Vocational Tracker spreadsheet.
+        </p>
+
+        <a href="https://docs.google.com/spreadsheets/d/1QM1JYApZxAtazpsSWZ0pFpwStFJ2n_EB8Pu1XbZcWRg/copy"
+           target="_blank"
+           class="bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold hover:bg-indigo-700 transition">
+           Make a Copy of the Spreadsheet
+        </a>
+
+        <div class="text-right mt-6">
+            <button onclick="nextStep(1)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
+                Continue
             </button>
         </div>
+    </div>
 
-        <div id="statusMsg" class="hidden text-xs font-bold mb-4"></div>
-
-        <!-- Magic Link Sharing -->
-        <div id="magicSection" class="hidden bg-indigo-50 border border-indigo-100 rounded-xl p-6">
-            <h3 class="font-bold text-indigo-900 mb-2">Share Connection</h3>
-            <div class="flex flex-col md:flex-row gap-4 items-center">
-                <img id="qrImage" src="" class="w-24 h-24 bg-white p-1 rounded" />
-                <div class="flex-1">
-                    <input id="magicLinkInput" readonly
-                           class="w-full bg-white border text-xs p-2 rounded font-mono">
-                    <button onclick="copyMagicLink()"
-                            class="bg-indigo-600 text-white px-3 py-1 rounded text-xs mt-2">
-                        Copy Link
-                    </button>
-                </div>
-            </div>
+    <!-- STEP 2 -->
+    <div id="step2" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="material-icons text-indigo-600 text-4xl">code</span>
+            <h2 class="text-2xl font-bold">2. Install the Backend Script</h2>
         </div>
 
+        <p class="text-slate-600 mb-3">
+            Open your spreadsheet → <strong>Extensions → Apps Script</strong> and paste in your backend code.
+        </p>
+        <p class="text-slate-500 text-sm mb-2">(Your documentation provides the backend script.)</p>
+
+        <div class="text-right mt-6">
+            <button onclick="nextStep(2)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
+                Continue
+            </button>
+        </div>
     </div>
+
+    <!-- STEP 3 -->
+    <div id="step3" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="material-icons text-indigo-600 text-4xl">settings</span>
+            <h2 class="text-2xl font-bold">3. Run initialSetup()</h2>
+        </div>
+
+        <p class="text-slate-600 mb-4">
+            In Apps Script, run <strong>initialSetup()</strong> once using the ▶️ Run button.
+        </p>
+
+        <p class="text-slate-500 text-sm">
+            This will create your Students, Entries, Settings, and Sites sheets.
+        </p>
+
+        <div class="text-right mt-6">
+            <button onclick="nextStep(3)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div id="step4" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="material-icons text-indigo-600 text-4xl">rocket_launch</span>
+            <h2 class="text-2xl font-bold">4. Deploy the Web App</h2>
+        </div>
+
+        <ol class="list-decimal list-inside text-slate-600 space-y-2 mb-5">
+            <li>Go to <strong>Deploy → New Deployment</strong>.</li>
+            <li>Select <strong>Web App</strong>.</li>
+            <li>Execute as: <strong>Me</strong>.</li>
+            <li>Who has access: <strong>Anyone</strong>.</li>
+            <li>Click <strong>Deploy</strong> and copy the Exec URL.</li>
+        </ol>
+
+        <div class="text-right mt-6">
+            <button onclick="nextStep(4)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div id="step5" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="material-icons text-indigo-600 text-4xl">link</span>
+            <h2 class="text-2xl font-bold">5. Connect Your Backend</h2>
+        </div>
+
+        <input id="execUrlInput"
+               type="text"
+               placeholder="Paste Exec URL (https://script.google.com/macros/s/XXXX/exec)"
+               class="w-full p-3 border rounded-lg bg-slate-50 mb-4">
+
+        <button onclick="connectBackend()"
+                class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
+            Connect
+        </button>
+
+        <p id="connectStatus" class="text-sm mt-3 font-bold hidden"></p>
+    </div>
+
+    <!-- STEP 6 -->
+    <div id="step6" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="material-icons text-green-600 text-4xl">check_circle</span>
+            <h2 class="text-2xl font-bold">6. Setup Complete!</h2>
+        </div>
+
+        <p class="text-slate-600 mb-6">
+            Your school is now fully configured. Use the links below to begin.
+        </p>
+
+        <div class="space-y-3 mb-6">
+            <a href="index.html" class="block bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-indigo-700">
+                Go to Dashboard
+            </a>
+            <a href="entry.html" class="block bg-blue-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-blue-700">
+                Add New Entry
+            </a>
+            <a href="admin.html" class="block bg-slate-700 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-slate-800">
+                Open Admin Console
+            </a>
+        </div>
+
+        <h3 class="text-xl font-bold mb-2">Share Your Connection Link</h3>
+        <p class="text-slate-500 text-sm mb-3">
+            Share this link with staff to automatically connect them to your backend.
+        </p>
+
+        <input id="magicLinkOutput"
+               class="w-full bg-white border p-2 rounded mb-3 text-xs font-mono"
+               readonly />
+
+        <img id="qrOutput" class="w-28 h-28 bg-white p-1 rounded border" />
+
+        <button onclick="copyMagicLinkFinal()"
+                class="bg-indigo-600 text-white px-4 py-2 mt-3 rounded text-xs font-bold">
+            Copy Link
+        </button>
+    </div>
+
 </div>
 
+
 <script>
-function copyCode() {
-    const el = document.getElementById("scriptCode");
-    el.select();
-    document.execCommand("copy");
-    alert("Copied!");
-}
+/************************************************************
+ * STEP NAVIGATION
+ ************************************************************/
+function nextStep(step) {
+    document.getElementById("step" + step).classList.remove("active");
+    document.getElementById("step" + step).classList.add("hidden-step");
 
-function copyMagicLink() {
-    const el = document.getElementById("magicLinkInput");
-    el.select();
-    document.execCommand("copy");
-    alert("Copied!");
-}
+    const next = step + 1;
+    document.getElementById("step" + next).classList.add("active");
+    document.getElementById("step" + next).classList.remove("hidden-step");
 
-/* Load URL if already saved */
-const existingUrl = localStorage.getItem("vocational_backend_url");
-if (existingUrl) {
-    document.getElementById("dbUrl").value = existingUrl;
-    showMagicSection(existingUrl);
+    const progress = (next / 6) * 100;
+    document.getElementById("progressBar").style.width = progress + "%";
 }
 
 /************************************************************
- * STEP: Connect to Backend
+ * BACKEND CONNECTION
  ************************************************************/
-async function saveAndConnect() {
-    const msg = document.getElementById("statusMsg");
-    let url = document.getElementById("dbUrl").value.trim();
+async function connectBackend() {
+    const url = document.getElementById("execUrlInput").value.trim();
+    const status = document.getElementById("connectStatus");
 
-    msg.textContent = "Verifying...";
-    msg.className = "text-blue-600 block";
+    if (!url) {
+        status.innerText = "Please enter a valid Exec URL.";
+        status.className = "text-red-600 font-bold";
+        status.classList.remove("hidden");
+        return;
+    }
 
-    // Auto-correct /dev → /exec
-    if (url.includes("/dev")) url = url.replace("/dev", "/exec");
-    if (!url.endsWith("/exec")) url = url.replace(/\/+$/, "") + "/exec";
+    status.innerText = "Testing connection...";
+    status.className = "text-blue-600 font-bold";
+    status.classList.remove("hidden");
 
     try {
-        // Test student fetch
-        const studentRes = await fetch(url + "?action=getStudents");
-        const studentText = await studentRes.text();
-        const studentJson = JSON.parse(studentText);
+        const sRes = await fetch(url + "?action=getStudents");
+        const sJson = await sRes.json();
 
-        if (studentJson.status !== "success") throw new Error();
+        if (sJson.status !== "success") throw new Error();
 
-        // GET ADMIN PASSWORD FROM BACKEND
-        const adminRes = await fetch(url + "?action=getAdminConfig");
-        const adminJson = await adminRes.json();
+        const aRes = await fetch(url + "?action=getAdminConfig");
+        const aJson = await aRes.json();
 
-        // Save backend URL + admin password
         localStorage.setItem("vocational_backend_url", url);
-        localStorage.setItem("vt_admin_password", adminJson.password);
+        localStorage.setItem("vt_admin_password", aJson.password);
 
-        msg.textContent = "Connected!";
-        msg.className = "text-green-600 block";
+        const base = window.location.href.split("?")[0];
+        const magic = base + "?connect=" + btoa(url);
 
-        showMagicSection(url);
+        document.getElementById("magicLinkOutput").value = magic;
+        document.getElementById("qrOutput").src =
+            "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(magic);
+
+        status.innerText = "Connected!";
+        status.className = "text-green-600 font-bold";
+
+        nextStep(5);
 
     } catch (err) {
         console.error(err);
-        msg.textContent = "Connection Failed.";
-        msg.className = "text-red-600 block";
+        status.innerText = "Connection failed. Check your Exec URL.";
+        status.className = "text-red-600 font-bold";
     }
 }
 
 /************************************************************
- * Build Magic Link + QR
+ * COPY MAGIC LINK
  ************************************************************/
-function showMagicSection(url) {
-    const magic = document.getElementById("magicSection");
-    const input = document.getElementById("magicLinkInput");
-    const qr = document.getElementById("qrImage");
-
-    const base = window.location.href.split("?")[0];
-    const link = base + "?connect=" + btoa(url);
-
-    input.value = link;
-
-    qr.src =
-        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" +
-        encodeURIComponent(link);
-
-    magic.classList.remove("hidden");
+function copyMagicLinkFinal() {
+    const el = document.getElementById("magicLinkOutput");
+    el.select();
+    document.execCommand("copy");
+    alert("Copied!");
 }
 </script>
 
