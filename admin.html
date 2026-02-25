@@ -21,12 +21,11 @@
             </div>
 
             <div class="flex gap-4">
-                <a href="index.html" class="hover:bg-slate-800 px-3 py-2 rounded text-sm flex items-center gap-1">
+                <a href="index.html" class="hover:bg-slate-800 px-3 py-2 rounded flex items-center gap-1 text-sm">
                     <span class="material-icons text-sm">assignment</span> Entry
                 </a>
 
-                <!-- FIXED: reports → report -->
-                <a href="report.html" class="hover:bg-slate-800 px-3 py-2 rounded text-sm flex items-center gap-1">
+                <a href="report.html" class="hover:bg-slate-800 px-3 py-2 rounded flex items-center gap-1 text-sm">
                     <span class="material-icons text-sm">analytics</span> Reports
                 </a>
             </div>
@@ -40,12 +39,12 @@
      class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center backdrop-blur-sm">
 
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full text-center">
-        
+
         <div class="bg-red-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
             <span class="material-icons text-red-600 text-3xl">lock</span>
         </div>
 
-        <h2 class="text-2xl font-bold text-slate-800 mb-2">Admin Access</h2>
+        <h2 class="text-2xl font-bold mb-2 text-slate-800">Admin Access</h2>
 
         <input type="password" id="adminPassInput" placeholder="Password"
                class="w-full p-3 border rounded-lg mb-4 text-center text-lg">
@@ -63,23 +62,25 @@
 <!-- MAIN CONTENT -->
 <main id="adminContent" class="hidden max-w-7xl mx-auto py-10 px-4">
 
+    <!-- CONNECTION STATUS -->
     <div class="bg-white rounded-xl shadow-sm border p-4 mb-8 flex justify-between items-center">
         <div class="flex items-center gap-2">
             <span class="material-icons text-green-500">check_circle</span>
-            <span class="text-sm font-bold text-slate-700">Database Connected</span>
+            <span class="text-sm font-bold">Database Connected</span>
         </div>
         <a href="setup.html" class="text-xs text-blue-600 hover:underline">Reconfigure</a>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        <!-- STUDENT TABLE -->
+        <!-- STUDENT ROSTER -->
         <div class="lg:col-span-2">
             <div class="bg-white rounded-xl shadow-sm border overflow-hidden h-full flex flex-col">
 
                 <div class="bg-slate-50 px-6 py-4 border-b flex justify-between items-center">
                     <h3 class="font-bold text-slate-700 flex items-center gap-2">
-                        <span class="material-icons text-slate-400">group</span> Student Roster
+                        <span class="material-icons text-slate-400">group</span>
+                        Student Roster
                     </h3>
                     <button onclick="loadStudents()" class="text-slate-500 hover:text-blue-600">
                         <span class="material-icons">refresh</span>
@@ -106,30 +107,32 @@
             </div>
         </div>
 
-        <!-- JOB SITE PANEL -->
+        <!-- JOB SITES -->
         <div>
             <div class="bg-white rounded-xl shadow-sm border overflow-hidden h-full flex flex-col">
 
                 <div class="bg-slate-50 px-6 py-4 border-b">
                     <h3 class="font-bold text-slate-700 flex items-center gap-2">
-                        <span class="material-icons text-slate-400">work</span> Job Sites
+                        <span class="material-icons text-slate-400">work</span>
+                        Job Sites
                     </h3>
                 </div>
 
                 <div class="p-6 flex-1 flex flex-col">
 
-                    <!-- ADD SITE -->
                     <div class="flex gap-2 mb-4">
-                        <input type="text" id="newSiteInput" placeholder="New Site Name"
+                        <input type="text" id="newSiteInput"
+                               placeholder="New Site Name"
                                class="flex-1 p-2 border rounded text-sm">
                         <button onclick="addSite()"
-                                class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700 font-bold text-xs">ADD</button>
+                                class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700 font-bold text-xs">
+                            ADD
+                        </button>
                     </div>
 
-                    <!-- SITE LIST -->
                     <div class="flex-1 overflow-y-auto border rounded bg-slate-50 p-2">
                         <ul id="sitesList" class="space-y-1">
-                            <li class="text-xs text-slate-400 text-center py-4">Loading sites...</li>
+                            <li class="text-xs text-slate-400 text-center py-4">Loading sites…</li>
                         </ul>
                     </div>
 
@@ -143,93 +146,80 @@
 </main>
 
 <script>
-/* GET BACKEND URL */
+/************************************************************
+ * GLOBAL CONFIG
+ ************************************************************/
 const url = localStorage.getItem("vocational_backend_url");
+const storedAdminPass = localStorage.getItem("vt_admin_password");
 
-/* Redirect if no backend configured */
+/************************************************************
+ * REDIRECT IF SETUP NOT COMPLETE
+ ************************************************************/
 window.onload = () => {
     if (!url) window.location.href = "setup.html";
 };
 
-/* ============================================================
-   CORRECTED PASSWORD VERIFY (NO-CORS REMOVED)
-   ============================================================ */
-async function verifyPassword() {
-    const pass = document.getElementById("adminPassInput").value;
+/************************************************************
+ * LOCAL PASSWORD VERIFICATION (NO CORS ISSUES)
+ ************************************************************/
+function verifyPassword() {
+    const typedPass = document.getElementById("adminPassInput").value.trim();
     const err = document.getElementById("authError");
 
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "verifyAdmin", password: pass })
-        });
+    if (typedPass === storedAdminPass) {
+        document.getElementById("authModal").classList.add("hidden");
+        document.getElementById("adminContent").classList.remove("hidden");
 
-        const text = await response.text();
-        const json = JSON.parse(text);
-
-        if (json.status === "success") {
-            document.getElementById("authModal").classList.add("hidden");
-            document.getElementById("adminContent").classList.remove("hidden");
-
-            loadStudents();
-            loadSites();
-        } else {
-            throw new Error();
-        }
-    } catch (e) {
+        loadStudents();
+        loadSites();
+    } else {
         err.classList.remove("hidden");
         err.innerText = "Incorrect Password";
     }
 }
 
-/* ============================================================
-   LOAD STUDENTS
-   ============================================================ */
+/************************************************************
+ * LOAD STUDENTS
+ ************************************************************/
 async function loadStudents() {
     try {
         const res = await fetch(url + "?action=getStudents");
-        const data = await res.json();
+        const json = await res.json();
 
         const tbody = document.getElementById("studentTableBody");
         tbody.innerHTML = "";
 
-        data.data.forEach(s => {
+        json.data.forEach(s => {
             tbody.innerHTML += `
                 <tr class="border-b hover:bg-slate-50">
                     <td class="px-4 py-3 font-mono text-xs">${s.student_id}</td>
                     <td class="px-4 py-3 font-medium">${s.name}</td>
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 text-[10px] font-bold rounded-full
-                                  ${s.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}">
+                              ${s.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}">
                             ${s.active ? "Active" : "Inactive"}
                         </span>
                     </td>
                 </tr>`;
         });
 
-    } catch (e) {
-        console.error("Error loading students:", e);
+    } catch (err) {
+        console.error("Error loading students:", err);
     }
 }
 
-/* ============================================================
-   LOAD JOB SITES
-   ============================================================ */
+/************************************************************
+ * LOAD JOB SITES
+ ************************************************************/
 async function loadSites() {
     try {
         const res = await fetch(url + "?action=getSites");
-        const data = await res.json();
+        const json = await res.json();
 
         const list = document.getElementById("sitesList");
         list.innerHTML = "";
 
-        if (data.data.length === 0) {
-            list.innerHTML = `<li class="text-xs text-slate-400 text-center py-4">No sites found.</li>`;
-            return;
-        }
-
-        data.data.forEach(site => {
+        json.data.forEach(site => {
             list.innerHTML += `
                 <li class="flex justify-between items-center bg-white p-2 rounded shadow-sm border">
                     <span class="text-sm font-medium text-slate-700">${site}</span>
@@ -240,14 +230,14 @@ async function loadSites() {
                 </li>`;
         });
 
-    } catch (e) {
-        console.error("Error loading sites:", e);
+    } catch (err) {
+        console.error("Error loading sites:", err);
     }
 }
 
-/* ============================================================
-   ADD SITE  (POST MUST USE no-cors)
-   ============================================================ */
+/************************************************************
+ * ADD SITE  (NO-CORS)
+ ************************************************************/
 async function addSite() {
     const input = document.getElementById("newSiteInput");
     const name = input.value.trim();
@@ -259,7 +249,7 @@ async function addSite() {
     await fetch(url, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "addSite", site_name: name })
     });
 
@@ -269,16 +259,16 @@ async function addSite() {
     loadSites();
 }
 
-/* ============================================================
-   DELETE SITE  (POST MUST USE no-cors)
-   ============================================================ */
+/************************************************************
+ * DELETE SITE  (NO-CORS)
+ ************************************************************/
 async function deleteSite(name) {
     if (!confirm(`Delete "${name}"?`)) return;
 
     await fetch(url, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "deleteSite", site_name: name })
     });
 
