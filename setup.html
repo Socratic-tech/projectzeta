@@ -55,78 +55,104 @@
         </a>
 
         <div class="text-right mt-6">
-            <button onclick="nextStep(1)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
+            <button onclick="nextStep(1)" 
+                    class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
                 Continue
             </button>
         </div>
     </div>
 
-    <!-- STEP 2 -->
-    <div id="step2" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+    <!-- STEP 2 — UPDATED -->
+    <div id="step2" 
+         class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+
         <div class="flex items-center gap-3 mb-4">
-            <span class="material-icons text-indigo-600 text-4xl">code</span>
-            <h2 class="text-2xl font-bold">2. Install the Backend Script</h2>
+            <span class="material-icons text-indigo-600 text-4xl">verified_user</span>
+            <h2 class="text-2xl font-bold">2. Access & Authorize the Script</h2>
         </div>
 
-        <p class="text-slate-600 mb-3">
-            Open your new spreadsheet → <strong>Extensions → Apps Script</strong> → paste in the backend code.
+        <p class="text-slate-600 mb-4">
+            Your spreadsheet already contains the Vocational Tracker backend script.
         </p>
 
-        <p class="text-slate-500 text-sm mb-2">(Provided in your documentation.)</p>
+        <ol class="list-decimal list-inside text-slate-600 space-y-2 mb-5">
+            <li>Open your spreadsheet.</li>
+            <li>Go to <strong>Extensions → Apps Script</strong>.</li>
+            <li>Click the <strong>Run</strong> button for any function.</li>
+            <li>Google will ask you to authorize — click <strong>Allow</strong>.</li>
+            <li>Once authorized, continue below.</li>
+        </ol>
+
+        <p class="text-slate-500 text-sm mb-2">
+            No scripting changes are needed — everything is pre-installed.
+        </p>
 
         <div class="text-right mt-6">
-            <button onclick="nextStep(2)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
+            <button onclick="nextStep(2)" 
+                    class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
                 Continue
             </button>
         </div>
     </div>
 
     <!-- STEP 3 -->
-    <div id="step3" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+    <div id="step3" 
+         class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+
         <div class="flex items-center gap-3 mb-4">
             <span class="material-icons text-indigo-600 text-4xl">settings</span>
             <h2 class="text-2xl font-bold">3. Run initialSetup()</h2>
         </div>
 
         <p class="text-slate-600 mb-4">
-            In Apps Script, run <strong>initialSetup()</strong> using the ▶️ Run button.
+            In the Apps Script editor, run <strong>initialSetup()</strong> once using the ▶️ button.
         </p>
 
         <p class="text-slate-500 text-sm">
-            This creates all required sheets: Students, Entries, Settings, Sites.
+            This builds the Students, Entries, Settings, and Sites sheets.
         </p>
 
         <div class="text-right mt-6">
-            <button onclick="nextStep(3)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
+            <button onclick="nextStep(3)" 
+                    class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
                 Continue
             </button>
         </div>
     </div>
 
     <!-- STEP 4 -->
-    <div id="step4" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+    <div id="step4" 
+         class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+
         <div class="flex items-center gap-3 mb-4">
             <span class="material-icons text-indigo-600 text-4xl">rocket_launch</span>
             <h2 class="text-2xl font-bold">4. Deploy the Web App</h2>
         </div>
 
         <ol class="list-decimal list-inside text-slate-600 space-y-2 mb-5">
-            <li><strong>Deploy → New Deployment</strong></li>
-            <li>Select: <strong>Web App</strong></li>
-            <li>Execute as: <strong>Me</strong></li>
-            <li>Who has access: <strong>Anyone</strong></li>
-            <li>Click <strong>Deploy</strong> and copy the Exec URL</li>
+            <li>Go to <strong>Deploy → New Deployment</strong>.</li>
+            <li>Select <strong>Web App</strong>.</li>
+            <li>Execute as: <strong>Me</strong>.</li>
+            <li>Who has access: <strong>Anyone</strong>.</li>
+            <li>Click <strong>Deploy</strong> and copy the Exec URL.</li>
         </ol>
 
+        <p class="text-slate-500 text-sm">
+            You will paste that Exec URL in the next step.
+        </p>
+
         <div class="text-right mt-6">
-            <button onclick="nextStep(4)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
+            <button onclick="nextStep(4)" 
+                    class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
                 Continue
             </button>
         </div>
     </div>
 
     <!-- STEP 5 -->
-    <div id="step5" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+    <div id="step5" 
+         class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+
         <div class="flex items-center gap-3 mb-4">
             <span class="material-icons text-indigo-600 text-4xl">link</span>
             <h2 class="text-2xl font-bold">5. Connect Your Backend</h2>
@@ -146,30 +172,37 @@
     </div>
 
     <!-- STEP 6 -->
-    <div id="step6" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+    <div id="step6" 
+         class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
+
         <div class="flex items-center gap-3 mb-4">
             <span class="material-icons text-green-600 text-4xl">check_circle</span>
             <h2 class="text-2xl font-bold">6. Setup Complete!</h2>
         </div>
 
         <p class="text-slate-600 mb-6">
-            Your school is now fully configured. Use the links below to begin using the system.
+            Your school is now fully configured. Use the links below to begin.
         </p>
 
         <div class="space-y-3 mb-6">
-            <a href="index.html" class="block bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-indigo-700">
+            <a href="index.html" 
+               class="block bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-indigo-700">
                 Go to Dashboard
             </a>
-            <a href="entry.html" class="block bg-blue-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-blue-700">
+            <a href="entry.html" 
+               class="block bg-blue-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-blue-700">
                 Add New Entry
             </a>
-            <a href="admin.html" class="block bg-slate-700 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-slate-800">
+            <a href="admin.html" 
+               class="block bg-slate-700 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-slate-800">
                 Open Admin Console
             </a>
         </div>
 
         <h3 class="text-xl font-bold mb-2">Share Your Connection Link</h3>
-        <p class="text-slate-500 text-sm mb-3">Staff can use this link to automatically connect.</p>
+        <p class="text-slate-500 text-sm mb-3">
+            Staff can use this link to automatically connect.
+        </p>
 
         <input id="magicLinkOutput"
                class="w-full bg-white border p-2 rounded mb-3 text-xs font-mono"
@@ -197,12 +230,11 @@ function nextStep(step) {
     document.getElementById("step" + next).classList.add("active");
     document.getElementById("step" + next).classList.remove("hidden-step");
 
-    const progress = (next / 6) * 100;
-    document.getElementById("progressBar").style.width = progress + "%";
+    document.getElementById("progressBar").style.width = ((next / 6) * 100) + "%";
 }
 
 /************************************************************
- * BACKEND CONNECTION
+ * CONNECT BACKEND
  ************************************************************/
 async function connectBackend() {
     const url = document.getElementById("execUrlInput").value.trim();
@@ -235,10 +267,8 @@ async function connectBackend() {
         const magic = base + "?connect=" + btoa(url);
 
         document.getElementById("magicLinkOutput").value = magic;
-
         document.getElementById("qrOutput").src =
-            "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" +
-            encodeURIComponent(magic);
+            "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(magic);
 
         status.innerText = "Connected!";
         status.className = "text-green-600 font-bold";
@@ -246,7 +276,6 @@ async function connectBackend() {
         nextStep(5);
 
     } catch (err) {
-        console.error(err);
         status.innerText = "Connection failed. Check your Exec URL.";
         status.className = "text-red-600 font-bold";
     }
