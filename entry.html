@@ -14,57 +14,98 @@
 
 <body class="bg-slate-100 text-slate-900 font-sans pb-20">
 
-<!-- NAV -->
+<!-- NAVBAR -->
 <nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
-    <div class="max-w-3xl mx-auto px-4">
+    <div class="max-w-5xl mx-auto px-4">
         <div class="flex justify-between h-16 items-center">
 
-            <div class="flex items-center gap-2">
-                <span class="material-icons text-yellow-400">assignment</span>
-                <span class="font-bold text-lg tracking-tight">Vocational Entry</span>
-            </div>
+            <!-- Left Navigation -->
+            <div class="flex items-center gap-6 text-sm font-semibold">
 
-            <div class="flex gap-3">
-                <a href="setup.html" class="text-blue-200 hover:text-white">
-                    <span class="material-icons">settings</span>
+                <a href="index.html" 
+                   class="flex items-center gap-1 hover:text-yellow-300 transition">
+                    <span class="material-icons text-yellow-400">home</span>
+                    Dashboard
+                </a>
+
+                <a href="entry.html"
+                   class="flex items-center gap-1 text-yellow-300 font-bold">
+                    <span class="material-icons">edit_note</span>
+                    Entry
+                </a>
+
+                <a href="report.html"
+                   class="flex items-center gap-1 hover:text-yellow-300 transition">
+                    <span class="material-icons">analytics</span>
+                    Reports
                 </a>
 
                 <a href="admin.html"
-                   class="bg-blue-800 hover:bg-blue-700 px-3 py-1 rounded text-xs font-bold uppercase tracking-wide">
+                   class="flex items-center gap-1 hover:text-yellow-300 transition">
+                    <span class="material-icons">admin_panel_settings</span>
                     Admin
                 </a>
             </div>
 
+            <!-- Right Settings Button -->
+            <button onclick="toggleSettings()" 
+                    class="text-blue-200 hover:text-white transition">
+                <span class="material-icons">tune</span>
+            </button>
         </div>
     </div>
 </nav>
+
+<!-- SETTINGS PANEL -->
+<div id="settingsPanel" class="hidden bg-slate-800 text-white p-4">
+    <div class="max-w-3xl mx-auto">
+
+        <label class="text-xs uppercase font-bold text-gray-400">
+            Database Connection URL
+        </label>
+
+        <div class="flex gap-2 mt-1">
+            <input type="text" id="apiUrlInput"
+                   placeholder="Paste Google Script URL…"
+                   class="flex-1 bg-black/30 text-sm p-2 rounded border border-slate-600 
+                          focus:border-blue-500 outline-none font-mono text-green-400">
+
+            <button onclick="saveUrl()"
+                    class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded text-xs font-bold uppercase">
+                Save
+            </button>
+        </div>
+
+    </div>
+</div>
 
 <!-- MAIN FORM -->
 <div class="max-w-3xl mx-auto px-4 py-6">
 
     <form id="entryForm" onsubmit="submitEntry(event)" class="space-y-6">
 
-        <!-- STUDENT / SITE / DATE -->
+        <!-- STUDENT SECTION -->
         <div class="bg-white p-5 rounded-xl shadow-sm border">
 
-            <h2 class="text-lg font-bold mb-4 border-b pb-2 flex items-center gap-2">
-                <span class="material-icons text-blue-600">person</span>
-                Student Details
+            <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
+                <span class="material-icons text-blue-600">person</span> Student Details
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <div>
-                    <label class="text-xs font-bold uppercase mb-1 block text-slate-500">Student</label>
-                    <select id="studentSelect" required class="w-full p-3 border rounded-lg bg-slate-50">
-                        <option>Loading…</option>
+                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Student Name</label>
+                    <select id="studentSelect" required 
+                            class="w-full p-3 border rounded-lg bg-slate-50">
+                        <option>Loading...</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold uppercase mb-1 block text-slate-500">Job Site</label>
-                    <select id="siteSelect" required class="w-full p-3 border rounded-lg bg-slate-50">
-                        <option>Loading…</option>
+                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Job Site</label>
+                    <select id="siteSelect" required 
+                            class="w-full p-3 border rounded-lg bg-slate-50">
+                        <option>Loading...</option>
                     </select>
                 </div>
 
@@ -73,18 +114,19 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 
                 <div>
-                    <label class="text-xs font-bold uppercase mb-1 block text-slate-500">Date</label>
-                    <input type="date" id="dateInput" required class="w-full p-3 border rounded-lg bg-slate-50">
+                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Date</label>
+                    <input type="date" id="dateInput" required 
+                           class="w-full p-3 border rounded-lg bg-slate-50">
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold uppercase mb-1 block text-slate-500">Evaluator</label>
-                    <input type="text" id="evaluatorInput" placeholder="Your Name"
-                           required class="w-full p-3 border rounded-lg bg-slate-50">
+                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Evaluator</label>
+                    <input type="text" id="evaluatorInput"
+                           placeholder="Your Name" required
+                           class="w-full p-3 border rounded-lg bg-slate-50">
                 </div>
 
             </div>
-
         </div>
 
         <!-- SCORING KEY -->
@@ -103,9 +145,8 @@
         <!-- SKILLS -->
         <div class="bg-white p-5 rounded-xl shadow-sm border">
 
-            <h2 class="text-lg font-bold mb-6 border-b pb-2 flex items-center gap-2">
-                <span class="material-icons text-purple-600">psychology</span>
-                Skills Assessment
+            <h2 class="text-lg font-bold text-slate-800 mb-6 border-b pb-2 flex items-center gap-2">
+                <span class="material-icons text-purple-600">psychology</span> Skills Assessment
             </h2>
 
             <div id="skillsContainer" class="space-y-6"></div>
@@ -115,9 +156,8 @@
         <!-- NOTES -->
         <div class="bg-white p-5 rounded-xl shadow-sm border">
 
-            <h2 class="text-lg font-bold mb-4 border-b pb-2 flex items-center gap-2">
-                <span class="material-icons text-slate-600">note</span>
-                Notes
+            <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
+                <span class="material-icons text-slate-600">note</span> Notes
             </h2>
 
             <textarea id="commentsInput" rows="3"
@@ -126,8 +166,8 @@
         </div>
 
         <button type="submit" id="submitBtn"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl 
-                       shadow-lg transition flex justify-center items-center gap-2 text-lg">
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg 
+                       transition flex justify-center items-center gap-2 text-lg">
             <span class="material-icons">send</span>
             SUBMIT ENTRY
         </button>
@@ -139,7 +179,6 @@
 /************************************************************
  * CONSTANTS + STATE
  ************************************************************/
-
 const SKILLS_LIST = [
     "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
     "Initiates familiar tasks", "Maintains a productive work rate", "Complete tasks in a logical order",
@@ -164,7 +203,7 @@ let skillScores = {};
 const API_URL = localStorage.getItem("vocational_backend_url");
 
 /************************************************************
- * INIT PAGE
+ * INIT
  ************************************************************/
 window.onload = () => {
     document.getElementById("dateInput").valueAsDate = new Date();
@@ -173,14 +212,29 @@ window.onload = () => {
 };
 
 /************************************************************
- * BUILD SKILL BUTTONS
+ * SETTINGS PANEL
+ ************************************************************/
+function toggleSettings() {
+    document.getElementById("settingsPanel").classList.toggle("hidden");
+}
+
+function saveUrl() {
+    const url = document.getElementById("apiUrlInput").value.trim();
+    if (!url) return;
+    
+    localStorage.setItem("vocational_backend_url", url);
+    alert("Saved!");
+}
+
+/************************************************************
+ * SKILL BUTTONS
  ************************************************************/
 function renderSkills() {
     const container = document.getElementById("skillsContainer");
     container.innerHTML = "";
 
     SKILLS_LIST.forEach((skill, idx) => {
-        skillScores[idx] = 4; // default
+        skillScores[idx] = 4;
 
         let html = `
             <div>
@@ -206,13 +260,13 @@ function renderSkills() {
     updateAllButtons();
 }
 
-function updateAllButtons() {
-    SKILLS_LIST.forEach((_, idx) => updateButtons(idx));
-}
-
 function setScore(idx, score) {
     skillScores[idx] = score;
     updateButtons(idx);
+}
+
+function updateAllButtons() {
+    SKILLS_LIST.forEach((_, idx) => updateButtons(idx));
 }
 
 function updateButtons(idx) {
@@ -229,11 +283,11 @@ function updateButtons(idx) {
 }
 
 /************************************************************
- * LOAD STUDENTS + SITES
+ * STUDENTS + SITES
  ************************************************************/
 async function loadDropdowns() {
     if (!API_URL) {
-        alert("Database not configured");
+        alert("Database not configured.");
         return;
     }
 
@@ -241,11 +295,10 @@ async function loadDropdowns() {
         const sRes = await fetch(API_URL + "?action=getStudents");
         const sJson = await sRes.json();
 
-        const studentSel = document.getElementById("studentSelect");
-        studentSel.innerHTML = `<option value="">Select Student…</option>`;
-
+        const sSel = document.getElementById("studentSelect");
+        sSel.innerHTML = `<option value="">Select Student…</option>`;
         sJson.data.forEach(s => {
-            studentSel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
+            sSel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
         });
 
         const jRes = await fetch(API_URL + "?action=getSites");
@@ -253,7 +306,6 @@ async function loadDropdowns() {
 
         const siteSel = document.getElementById("siteSelect");
         siteSel.innerHTML = `<option value="">Select Site…</option>`;
-
         jJson.data.forEach(site => {
             siteSel.innerHTML += `<option value="${site}">${site}</option>`;
         });
@@ -294,7 +346,7 @@ async function submitEntry(e) {
         await fetch(API_URL, {
             method: "POST",
             mode: "no-cors",
-            headers: { "Content-Type": "text/plain" }, // GAS-friendly
+            headers: { "Content-Type": "text/plain" },
             body: JSON.stringify(payload)
         });
 
