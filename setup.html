@@ -27,7 +27,7 @@
             School Setup Wizard
         </h1>
         <p class="text-slate-600 text-lg">
-            Follow these simple steps to set up the Vocational Tracker for your school.
+            Follow these steps to set up the Vocational Tracker for your school.
         </p>
     </div>
 
@@ -47,7 +47,8 @@
             Every school needs their own private copy of the Vocational Tracker spreadsheet.
         </p>
 
-        <a href="https://docs.google.com/spreadsheets/d/1QM1JYApZxAtazpsSWZ0pFpwStFJ2n_EB8Pu1XbZcWRg/copy"
+        <!-- UPDATED TEMPLATE LINK -->
+        <a href="https://docs.google.com/spreadsheets/d/13ei5Z36X4kd0nbkCoSfeICU-4e9QNbAjzJ-Xugd1-Js/copy"
            target="_blank"
            class="bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold hover:bg-indigo-700 transition">
            Make a Copy of the Spreadsheet
@@ -68,9 +69,10 @@
         </div>
 
         <p class="text-slate-600 mb-3">
-            Open your spreadsheet → <strong>Extensions → Apps Script</strong> and paste in your backend code.
+            Open your new spreadsheet → <strong>Extensions → Apps Script</strong> → paste in the backend code.
         </p>
-        <p class="text-slate-500 text-sm mb-2">(Your documentation provides the backend script.)</p>
+
+        <p class="text-slate-500 text-sm mb-2">(Provided in your documentation.)</p>
 
         <div class="text-right mt-6">
             <button onclick="nextStep(2)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
@@ -87,11 +89,11 @@
         </div>
 
         <p class="text-slate-600 mb-4">
-            In Apps Script, run <strong>initialSetup()</strong> once using the ▶️ Run button.
+            In Apps Script, run <strong>initialSetup()</strong> using the ▶️ Run button.
         </p>
 
         <p class="text-slate-500 text-sm">
-            This will create your Students, Entries, Settings, and Sites sheets.
+            This creates all required sheets: Students, Entries, Settings, Sites.
         </p>
 
         <div class="text-right mt-6">
@@ -109,11 +111,11 @@
         </div>
 
         <ol class="list-decimal list-inside text-slate-600 space-y-2 mb-5">
-            <li>Go to <strong>Deploy → New Deployment</strong>.</li>
-            <li>Select <strong>Web App</strong>.</li>
-            <li>Execute as: <strong>Me</strong>.</li>
-            <li>Who has access: <strong>Anyone</strong>.</li>
-            <li>Click <strong>Deploy</strong> and copy the Exec URL.</li>
+            <li><strong>Deploy → New Deployment</strong></li>
+            <li>Select: <strong>Web App</strong></li>
+            <li>Execute as: <strong>Me</strong></li>
+            <li>Who has access: <strong>Anyone</strong></li>
+            <li>Click <strong>Deploy</strong> and copy the Exec URL</li>
         </ol>
 
         <div class="text-right mt-6">
@@ -151,7 +153,7 @@
         </div>
 
         <p class="text-slate-600 mb-6">
-            Your school is now fully configured. Use the links below to begin.
+            Your school is now fully configured. Use the links below to begin using the system.
         </p>
 
         <div class="space-y-3 mb-6">
@@ -167,9 +169,7 @@
         </div>
 
         <h3 class="text-xl font-bold mb-2">Share Your Connection Link</h3>
-        <p class="text-slate-500 text-sm mb-3">
-            Share this link with staff to automatically connect them to your backend.
-        </p>
+        <p class="text-slate-500 text-sm mb-3">Staff can use this link to automatically connect.</p>
 
         <input id="magicLinkOutput"
                class="w-full bg-white border p-2 rounded mb-3 text-xs font-mono"
@@ -184,7 +184,6 @@
     </div>
 
 </div>
-
 
 <script>
 /************************************************************
@@ -236,8 +235,10 @@ async function connectBackend() {
         const magic = base + "?connect=" + btoa(url);
 
         document.getElementById("magicLinkOutput").value = magic;
+
         document.getElementById("qrOutput").src =
-            "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(magic);
+            "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" +
+            encodeURIComponent(magic);
 
         status.innerText = "Connected!";
         status.className = "text-green-600 font-bold";
