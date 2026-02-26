@@ -11,24 +11,36 @@
 <body class="bg-slate-100 font-sans">
 
 <!-- NAVBAR -->
-<nav class="bg-slate-900 text-white shadow-lg">
+<nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between h-16 items-center">
 
-            <div class="flex items-center gap-2">
-                <span class="material-icons text-red-500">admin_panel_settings</span>
-                <span class="font-bold text-xl">Admin Dashboard</span>
-            </div>
-
-            <div class="flex gap-4">
-                <a href="index.html" class="hover:bg-slate-800 px-3 py-2 rounded flex items-center gap-1 text-sm">
-                    <span class="material-icons text-sm">assignment</span> Entry
+            <!-- Left Navigation -->
+            <div class="flex items-center gap-6 text-sm font-semibold">
+                <a href="index.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
+                    <span class="material-icons text-yellow-400">home</span>
+                    Dashboard
                 </a>
 
-                <a href="report.html" class="hover:bg-slate-800 px-3 py-2 rounded flex items-center gap-1 text-sm">
-                    <span class="material-icons text-sm">analytics</span> Reports
+                <a href="entry.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
+                    <span class="material-icons">edit_note</span>
+                    Entry
+                </a>
+
+                <a href="report.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
+                    <span class="material-icons">analytics</span>
+                    Reports
+                </a>
+
+                <a href="admin.html" class="flex items-center gap-1 text-yellow-300 font-bold">
+                    <span class="material-icons">admin_panel_settings</span>
+                    Admin
                 </a>
             </div>
+
+            <a href="setup.html" class="text-blue-200 hover:text-white transition flex items-center gap-1">
+                <span class="material-icons">tune</span>
+            </a>
 
         </div>
     </div>
@@ -44,9 +56,10 @@
             <span class="material-icons text-red-600 text-3xl">lock</span>
         </div>
 
-        <h2 class="text-2xl font-bold mb-2 text-slate-800">Admin Access</h2>
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Admin Access</h2>
 
-        <input type="password" id="adminPassInput" placeholder="Password"
+        <input type="password" id="adminPassInput" 
+               placeholder="Password"
                class="w-full p-3 border rounded-lg mb-4 text-center text-lg">
 
         <button onclick="verifyPassword()"
@@ -77,26 +90,53 @@
         <div class="lg:col-span-2">
             <div class="bg-white rounded-xl shadow-sm border overflow-hidden h-full flex flex-col">
 
+                <!-- HEADER -->
                 <div class="bg-slate-50 px-6 py-4 border-b flex justify-between items-center">
                     <h3 class="font-bold text-slate-700 flex items-center gap-2">
                         <span class="material-icons text-slate-400">group</span>
                         Student Roster
                     </h3>
-                    <button onclick="loadStudents()" class="text-slate-500 hover:text-blue-600">
+                    <button onclick="loadStudents()" 
+                            class="text-slate-500 hover:text-blue-600">
                         <span class="material-icons">refresh</span>
                     </button>
                 </div>
 
-                <div class="p-6 flex-1 overflow-auto">
-                    <p class="text-xs text-slate-500 mb-4 bg-yellow-50 p-2 rounded border border-yellow-100">
-                        <strong>Note:</strong> Manage students directly in the Google Sheet "Students" tab.
-                    </p>
+                <!-- ADD STUDENT -->
+                <div class="p-6 bg-slate-50 border-b border-slate-200">
+                    <div class="mb-4">
+                        <h4 class="font-bold text-slate-700 flex items-center gap-2">
+                            <span class="material-icons text-blue-600">person_add</span>
+                            Add Student
+                        </h4>
+                    </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <input id="newStudentName"
+                               type="text"
+                               placeholder="Name"
+                               class="p-2 border rounded bg-white text-sm">
+
+                        <input id="newStudentGrade"
+                               type="text"
+                               placeholder="Grade (optional)"
+                               class="p-2 border rounded bg-white text-sm">
+
+                        <button onclick="addStudentAdmin()"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-bold">
+                            Add Student
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STUDENT TABLE -->
+                <div class="p-6 flex-1 overflow-auto">
                     <table class="w-full text-sm text-left text-slate-600">
                         <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
                             <tr>
-                                <th class="px-4 py-2">ID</th>
+                                <th class="px-4 py-2">Student ID</th>
                                 <th class="px-4 py-2">Name</th>
+                                <th class="px-4 py-2">Grade</th>
                                 <th class="px-4 py-2">Status</th>
                             </tr>
                         </thead>
@@ -107,7 +147,7 @@
             </div>
         </div>
 
-        <!-- JOB SITES -->
+        <!-- JOB SITE PANEL -->
         <div>
             <div class="bg-white rounded-xl shadow-sm border overflow-hidden h-full flex flex-col">
 
@@ -124,6 +164,7 @@
                         <input type="text" id="newSiteInput"
                                placeholder="New Site Name"
                                class="flex-1 p-2 border rounded text-sm">
+
                         <button onclick="addSite()"
                                 class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700 font-bold text-xs">
                             ADD
@@ -153,20 +194,20 @@ const url = localStorage.getItem("vocational_backend_url");
 const storedAdminPass = localStorage.getItem("vt_admin_password");
 
 /************************************************************
- * REDIRECT IF SETUP NOT COMPLETE
+ * REDIRECT IF SETUP NOT DONE
  ************************************************************/
 window.onload = () => {
     if (!url) window.location.href = "setup.html";
 };
 
 /************************************************************
- * LOCAL PASSWORD VERIFICATION (NO CORS ISSUES)
+ * LOCAL PASSWORD CHECK
  ************************************************************/
 function verifyPassword() {
-    const typedPass = document.getElementById("adminPassInput").value.trim();
+    const typed = document.getElementById("adminPassInput").value.trim();
     const err = document.getElementById("authError");
 
-    if (typedPass === storedAdminPass) {
+    if (typed === storedAdminPass) {
         document.getElementById("authModal").classList.add("hidden");
         document.getElementById("adminContent").classList.remove("hidden");
 
@@ -194,6 +235,7 @@ async function loadStudents() {
                 <tr class="border-b hover:bg-slate-50">
                     <td class="px-4 py-3 font-mono text-xs">${s.student_id}</td>
                     <td class="px-4 py-3 font-medium">${s.name}</td>
+                    <td class="px-4 py-3">${s.grade || ""}</td>
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 text-[10px] font-bold rounded-full
                               ${s.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}">
@@ -209,7 +251,36 @@ async function loadStudents() {
 }
 
 /************************************************************
- * LOAD JOB SITES
+ * ADD STUDENT (AUTO-ID)
+ ************************************************************/
+async function addStudentAdmin() {
+    const name = document.getElementById("newStudentName").value.trim();
+    const grade = document.getElementById("newStudentGrade").value.trim();
+
+    if (!name) {
+        alert("Please enter a student name.");
+        return;
+    }
+
+    await fetch(url, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({
+            action: "addStudent",
+            name: name,
+            grade: grade
+        })
+    });
+
+    document.getElementById("newStudentName").value = "";
+    document.getElementById("newStudentGrade").value = "";
+
+    loadStudents();
+}
+
+/************************************************************
+ * LOAD SITES
  ************************************************************/
 async function loadSites() {
     try {
@@ -236,15 +307,12 @@ async function loadSites() {
 }
 
 /************************************************************
- * ADD SITE  (NO-CORS)
+ * ADD SITE
  ************************************************************/
 async function addSite() {
     const input = document.getElementById("newSiteInput");
     const name = input.value.trim();
     if (!name) return;
-
-    input.value = "Adding…";
-    input.disabled = true;
 
     await fetch(url, {
         method: "POST",
@@ -254,13 +322,11 @@ async function addSite() {
     });
 
     input.value = "";
-    input.disabled = false;
-
     loadSites();
 }
 
 /************************************************************
- * DELETE SITE  (NO-CORS)
+ * DELETE SITE
  ************************************************************/
 async function deleteSite(name) {
     if (!confirm(`Delete "${name}"?`)) return;
