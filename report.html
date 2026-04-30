@@ -125,14 +125,31 @@
             </div>
         </div>
 
-        <!-- SKILL BAR CHART -->
+        <!-- BEHAVIORAL SKILLS CHART -->
         <div class="bg-white rounded-xl shadow-sm border p-5">
-            <h3 class="text-sm font-bold text-slate-700 mb-4">Skill Performance</h3>
+            <h3 class="text-sm font-bold text-slate-700 mb-1 flex items-center gap-2">
+                <span class="material-icons text-purple-500 text-sm">psychology</span>
+                Behavioral Skills Performance
+            </h3>
+            <p class="text-xs text-slate-400 mb-4">Average score across all evaluations in this period</p>
             <canvas id="skillsChart" class="h-80"></canvas>
         </div>
 
-        <!-- SKILL GRID -->
+        <!-- BEHAVIORAL SKILLS GRID -->
         <div id="skillGrid" class="grid grid-cols-1 md:grid-cols-4 gap-4"></div>
+
+        <!-- JOB TASKS SECTION (shown only when task scores exist) -->
+        <div id="tasksSection" class="hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border p-5">
+                <h3 class="text-sm font-bold text-slate-700 mb-1 flex items-center gap-2">
+                    <span class="material-icons text-orange-500 text-sm">assignment</span>
+                    Job Tasks Performance
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">Average score for site-specific tasks in this period</p>
+                <canvas id="tasksChart" class="h-64"></canvas>
+            </div>
+            <div id="tasksGrid" class="grid grid-cols-1 md:grid-cols-4 gap-4"></div>
+        </div>
 
         <!-- EVALUATION HISTORY -->
         <div class="bg-white rounded-xl shadow-sm border p-6">
@@ -156,22 +173,18 @@
         <div class="bg-white rounded-xl shadow-sm border p-6">
             <h3 class="text-xl font-bold text-slate-700 mb-6">Signatures</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-
                 <div>
                     <p class="text-sm mb-2 font-semibold text-slate-700">Student Signature:</p>
                     <div class="border-b border-slate-400 h-10"></div>
                 </div>
-
                 <div>
                     <p class="text-sm mb-2 font-semibold text-slate-700">Employer Signature:</p>
                     <div class="border-b border-slate-400 h-10"></div>
                 </div>
-
                 <div>
                     <p class="text-sm mb-2 font-semibold text-slate-700">Date:</p>
                     <div class="border-b border-slate-400 h-10"></div>
                 </div>
-
             </div>
         </div>
 
@@ -180,7 +193,7 @@
 
 <script>
 /************************************************************
- * SKILL MAP
+ * SKILL MAP (behavioral)
  ************************************************************/
 const SKILL_MAP = {
     "Punctual": "Punctual",
@@ -204,13 +217,14 @@ const SKILL_MAP = {
 const SKILLS = Object.keys(SKILL_MAP);
 
 let allEntries = [];
-let students = {};
-let charts = { skills: null };
+let allTasks   = {}; // { site_name: [task, ...] }
+let students   = {};
+let charts     = { skills: null, tasks: null };
 
 const API_URL = localStorage.getItem("vocational_backend_url");
 
 /************************************************************
- * SAFE DATE PARSER
+ * DATE HELPERS
  ************************************************************/
 function safeDate(str) {
     if (!str) return null;
@@ -226,9 +240,7 @@ function safeDate(str) {
     return null;
 }
 
-function fmt(d) {
-    return d.toLocaleDateString("en-US");
-}
+function fmt(d) { return d.toLocaleDateString("en-US"); }
 
 /************************************************************
  * INITIAL LOAD
@@ -237,21 +249,32 @@ window.onload = async () => {
     if (!API_URL) return alert("Database not configured.");
 
     try {
-        const [sRes, eRes] = await Promise.all([
+        const [sRes, eRes, tRes] = await Promise.all([
             fetch(API_URL + "?action=getStudents"),
-            fetch(API_URL + "?action=getEntries")
+            fetch(API_URL + "?action=getEntries"),
+            fetch(API_URL + "?action=getTasks")
         ]);
 
         const sJson = await sRes.json();
         const eJson = await eRes.json();
+        const tJson = await tRes.json();
 
+        // Students
         const sel = document.getElementById("studentSelect");
         sJson.data.forEach(s => {
             students[s.student_id] = s.name;
             sel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
         });
 
+        // Entries
         allEntries = eJson.data;
+
+        // Tasks lookup
+        allTasks = {};
+        (tJson.data || []).forEach(t => {
+            if (!allTasks[t.site_name]) allTasks[t.site_name] = [];
+            allTasks[t.site_name].push(t.task_name);
+        });
 
         document.getElementById("loadingIndicator").classList.add("hidden");
         document.getElementById("mainContent").classList.remove("hidden");
@@ -267,8 +290,8 @@ window.onload = async () => {
  ************************************************************/
 function handleStudentChange() {
     const sid = document.getElementById("studentSelect").value;
-
     const siteSel = document.getElementById("siteSelect");
+
     siteSel.innerHTML = `<option value="All">All Sites</option>`;
     siteSel.disabled = !sid;
 
@@ -292,8 +315,8 @@ function runReport() {
     if (!sid) return;
 
     const siteFilter = document.getElementById("siteSelect").value;
-    const startVal = document.getElementById("startDate").value;
-    const endVal = document.getElementById("endDate").value;
+    const startVal   = document.getElementById("startDate").value;
+    const endVal     = document.getElementById("endDate").value;
 
     const startD = startVal ? new Date(startVal) : new Date("2000-01-01");
     const endD   = endVal   ? new Date(endVal)   : new Date("2100-01-01");
@@ -307,7 +330,7 @@ function runReport() {
     });
 
     let period = "All Time";
-    if (startVal && endVal) period = `${fmt(new Date(startVal))} - ${fmt(new Date(endVal))}`;
+    if (startVal && endVal) period = `${fmt(new Date(startVal))} – ${fmt(new Date(endVal))}`;
     else if (startVal)      period = `Since ${fmt(new Date(startVal))}`;
     else if (endVal)        period = `Until ${fmt(new Date(endVal))}`;
 
@@ -325,19 +348,45 @@ function updateUI(entries, name, period, siteFilter) {
     document.getElementById("reportSiteFilter").innerText = siteFilter;
     document.getElementById("reportCount").innerText = entries.length;
 
-    let sums = {}, counts = {};
-    SKILLS.forEach(k => { sums[k] = 0; counts[k] = 0; });
+    // --- BEHAVIORAL SKILLS ---
+    const skillSums = {}, skillCounts = {};
+    SKILLS.forEach(k => { skillSums[k] = 0; skillCounts[k] = 0; });
 
     entries.forEach(e => {
         SKILLS.forEach(k => {
             const v = Number(e.scores?.[k]);
-            if (!isNaN(v)) { sums[k] += v; counts[k]++; }
+            if (!isNaN(v)) { skillSums[k] += v; skillCounts[k]++; }
         });
     });
 
-    const avgs = SKILLS.map(k => counts[k] ? sums[k] / counts[k] : 0);
-    const valid = avgs.filter(v => v > 0);
-    const overall = valid.length ? valid.reduce((a, b) => a + b) / valid.length : 0;
+    const skillAvgs = SKILLS.map(k => skillCounts[k] ? skillSums[k] / skillCounts[k] : 0);
+
+    // --- JOB TASKS ---
+    // Collect all task keys seen across filtered entries (prefix "task:")
+    const taskKeySet = new Set();
+    entries.forEach(e => {
+        Object.keys(e.scores || {}).forEach(k => {
+            if (k.startsWith("task:")) taskKeySet.add(k);
+        });
+    });
+    const taskKeys = [...taskKeySet].sort();
+    const taskLabels = taskKeys.map(k => k.replace(/^task:/, ""));
+
+    const taskSums = {}, taskCounts = {};
+    taskKeys.forEach(k => { taskSums[k] = 0; taskCounts[k] = 0; });
+
+    entries.forEach(e => {
+        taskKeys.forEach(k => {
+            const v = Number(e.scores?.[k]);
+            if (!isNaN(v)) { taskSums[k] += v; taskCounts[k]++; }
+        });
+    });
+
+    const taskAvgs = taskKeys.map(k => taskCounts[k] ? taskSums[k] / taskCounts[k] : 0);
+
+    // --- OVERALL AVERAGE (skills + tasks combined) ---
+    const allAvgs = [...skillAvgs, ...taskAvgs].filter(v => v > 0);
+    const overall = allAvgs.length ? allAvgs.reduce((a, b) => a + b) / allAvgs.length : 0;
 
     const el = document.getElementById("overallScoreDisplay");
     el.innerText = overall ? overall.toFixed(2) : "N/A";
@@ -347,12 +396,21 @@ function updateUI(entries, name, period, siteFilter) {
          overall >= 1.5 ? "text-yellow-600" :
                           "text-red-600");
 
-    drawSkillChart(avgs);
-    drawSkillGrid(avgs, counts);
+    drawSkillChart(skillAvgs);
+    drawSkillGrid(skillAvgs, skillCounts);
+
+    if (taskKeys.length > 0) {
+        document.getElementById("tasksSection").classList.remove("hidden");
+        drawTaskChart(taskLabels, taskAvgs);
+        drawTaskGrid(taskLabels, taskAvgs, taskCounts);
+    } else {
+        document.getElementById("tasksSection").classList.add("hidden");
+        if (charts.tasks) { charts.tasks.destroy(); charts.tasks = null; }
+    }
 }
 
 /************************************************************
- * SKILL CHART
+ * BEHAVIORAL SKILLS CHART + GRID
  ************************************************************/
 function drawSkillChart(avgs) {
     if (charts.skills) charts.skills.destroy();
@@ -361,38 +419,71 @@ function drawSkillChart(avgs) {
         data: {
             labels: SKILLS.map(k => SKILL_MAP[k]),
             datasets: [{
+                label: "Avg Score",
                 data: avgs,
                 backgroundColor: avgs.map(v =>
-                    v >= 3 ? "#16a34a" :
-                    v >= 2 ? "#ca8a04" :
-                    v > 0  ? "#dc2626" :
-                             "#e5e7eb")
+                    v >= 3 ? "#16a34a" : v >= 2 ? "#ca8a04" : v > 0 ? "#dc2626" : "#e5e7eb")
             }]
         },
-        options: { responsive: true, scales: { y: { min: 0, max: 4 } } }
+        options: { responsive: true, plugins: { legend: { display: false } },
+                   scales: { y: { min: 0, max: 4 } } }
+    });
+}
+
+function drawSkillGrid(avgs, counts) {
+    const grid = document.getElementById("skillGrid");
+    grid.innerHTML = "";
+    SKILLS.forEach((k, i) => {
+        const avg = counts[k] ? avgs[i].toFixed(1) : "N/A";
+        const color = avg >= 3 ? "bg-green-100 text-green-700" :
+                      avg >= 2 ? "bg-yellow-100 text-yellow-700" :
+                      avg >  0 ? "bg-red-100 text-red-700" :
+                                 "bg-slate-100 text-slate-500";
+        grid.innerHTML += `
+            <div class="p-4 rounded-xl border shadow-sm ${color}">
+                <p class="font-bold text-sm">${SKILL_MAP[k]}</p>
+                <p class="text-2xl font-extrabold">${avg}</p>
+                <p class="text-xs mt-1">${counts[k] || 0} logs</p>
+            </div>`;
     });
 }
 
 /************************************************************
- * SKILL GRID
+ * JOB TASKS CHART + GRID
  ************************************************************/
-function drawSkillGrid(avgs, counts) {
-    const grid = document.getElementById("skillGrid");
+function drawTaskChart(labels, avgs) {
+    if (charts.tasks) charts.tasks.destroy();
+    charts.tasks = new Chart(document.getElementById("tasksChart"), {
+        type: "bar",
+        data: {
+            labels,
+            datasets: [{
+                label: "Avg Score",
+                data: avgs,
+                backgroundColor: avgs.map(v =>
+                    v >= 3 ? "#16a34a" : v >= 2 ? "#ca8a04" : v > 0 ? "#dc2626" : "#e5e7eb")
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } },
+                   scales: { y: { min: 0, max: 4 } } }
+    });
+}
+
+function drawTaskGrid(labels, avgs, counts) {
+    const grid = document.getElementById("tasksGrid");
     grid.innerHTML = "";
-
-    SKILLS.forEach((k, i) => {
-        const avg = counts[k] ? avgs[i].toFixed(1) : "N/A";
-        const color =
-            avg >= 3 ? "bg-green-100 text-green-700" :
-            avg >= 2 ? "bg-yellow-100 text-yellow-700" :
-            avg >  0 ? "bg-red-100 text-red-700" :
-                       "bg-slate-100 text-slate-500";
-
+    labels.forEach((label, i) => {
+        const key = `task:${label}`;
+        const avg = counts[key] ? avgs[i].toFixed(1) : "N/A";
+        const color = avg >= 3 ? "bg-green-100 text-green-700" :
+                      avg >= 2 ? "bg-yellow-100 text-yellow-700" :
+                      avg >  0 ? "bg-red-100 text-red-700" :
+                                 "bg-slate-100 text-slate-500";
         grid.innerHTML += `
-            <div class="p-4 rounded-xl border shadow-sm ${color}">
-                <p class="font-bold">${SKILL_MAP[k]}</p>
+            <div class="p-4 rounded-xl border shadow-sm ${color} border-l-4 border-l-orange-300">
+                <p class="font-bold text-sm">${label}</p>
                 <p class="text-2xl font-extrabold">${avg}</p>
-                <p class="text-xs mt-1">${counts[k]} logs</p>
+                <p class="text-xs mt-1">${counts[key] || 0} logs</p>
             </div>`;
     });
 }
