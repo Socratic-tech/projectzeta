@@ -370,7 +370,18 @@ function updateUI(entries, name, period, siteFilter) {
         });
     });
     const taskKeys = [...taskKeySet].sort();
-    const taskLabels = taskKeys.map(k => k.replace(/^task:/, ""));
+
+    // Build reverse lookup: task name → site name
+    const taskSiteMap = {};
+    Object.entries(allTasks).forEach(([site, tasks]) => {
+        tasks.forEach(t => { taskSiteMap[t] = site; });
+    });
+
+    const taskLabels = taskKeys.map(k => {
+        const name = k.replace(/^task:/, "");
+        const site = taskSiteMap[name];
+        return site ? `${name} (${site})` : name;
+    });
 
     const taskSums = {}, taskCounts = {};
     taskKeys.forEach(k => { taskSums[k] = 0; taskCounts[k] = 0; });
@@ -472,8 +483,18 @@ function drawTaskChart(labels, avgs) {
 function drawTaskGrid(labels, avgs, counts) {
     const grid = document.getElementById("tasksGrid");
     grid.innerHTML = "";
+
+    // Build reverse lookup for grid cards
+    const taskSiteMap = {};
+    Object.entries(allTasks).forEach(([site, tasks]) => {
+        tasks.forEach(t => { taskSiteMap[t] = site; });
+    });
+
     labels.forEach((label, i) => {
-        const key = `task:${label}`;
+        // label already includes "(Site)" from chart — extract raw task name for key lookup
+        const rawName = label.replace(/ \(.*\)$/, "");
+        const key = `task:${rawName}`;
+        const site = taskSiteMap[rawName] || "";
         const avg = counts[key] ? avgs[i].toFixed(1) : "N/A";
         const color = avg >= 3 ? "bg-green-100 text-green-700" :
                       avg >= 2 ? "bg-yellow-100 text-yellow-700" :
@@ -481,7 +502,8 @@ function drawTaskGrid(labels, avgs, counts) {
                                  "bg-slate-100 text-slate-500";
         grid.innerHTML += `
             <div class="p-4 rounded-xl border shadow-sm ${color} border-l-4 border-l-orange-300">
-                <p class="font-bold text-sm">${label}</p>
+                <p class="font-bold text-sm">${rawName}</p>
+                ${site ? `<p class="text-xs text-slate-400 mb-1">(${site})</p>` : ""}
                 <p class="text-2xl font-extrabold">${avg}</p>
                 <p class="text-xs mt-1">${counts[key] || 0} logs</p>
             </div>`;
