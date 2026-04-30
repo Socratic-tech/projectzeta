@@ -1,265 +1,373 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>School Setup Wizard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>School Setup Wizard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+    .step-card { transition: all .3s ease; }
+    .step-card.active {
+        border-color: rgb(79 70 229);
+        box-shadow: 0 6px 20px rgba(79,70,229,.2);
+    }
+    .hidden-step { display: none; }
 
-    <style>
-        .step-card { transition: all .3s ease; }
-        .step-card.active {
-            border-color: rgb(79 70 229);
-            box-shadow: 0 6px 20px rgba(79,70,229,.2);
-        }
-        .hidden-step { display:none; }
-    </style>
+    .callout {
+        background: #eff6ff;
+        border-left: 4px solid #3b82f6;
+        border-radius: 0 8px 8px 0;
+    }
+    .callout-warn {
+        background: #fffbeb;
+        border-left: 4px solid #f59e0b;
+        border-radius: 0 8px 8px 0;
+    }
+    .callout-success {
+        background: #f0fdf4;
+        border-left: 4px solid #22c55e;
+        border-radius: 0 8px 8px 0;
+    }
+
+    /* Simulated UI mockup elements */
+    .mock-ui {
+        background: #1e1e2e;
+        border-radius: 10px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: #cdd6f4;
+        overflow: hidden;
+    }
+    .mock-toolbar {
+        background: #181825;
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #313244;
+    }
+    .mock-run-btn {
+        background: #1e66f5;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 14px;
+        font-size: 12px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: default;
+    }
+    .mock-select {
+        background: #313244;
+        color: #cdd6f4;
+        border: 1px solid #45475a;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 12px;
+        cursor: default;
+    }
+    .mock-log {
+        padding: 10px 14px;
+        font-size: 11px;
+        line-height: 1.8;
+    }
+    .mock-log .info { color: #89b4fa; }
+    .mock-log .success { color: #a6e3a1; }
+    .mock-log .time { color: #6c7086; }
+</style>
 </head>
-
 <body class="bg-slate-100 min-h-screen flex justify-center p-6">
-
 <div class="max-w-3xl w-full">
 
     <!-- HEADER -->
     <div class="text-center mb-10">
-        <h1 class="text-4xl font-extrabold text-indigo-700 mb-2">
-            School Setup Wizard
-        </h1>
-        <p class="text-slate-600 text-lg">
-            Follow these steps to set up the Vocational Tracker for your school.
-        </p>
+        <h1 class="text-4xl font-extrabold text-indigo-700 mb-2">School Setup Wizard</h1>
+        <p class="text-slate-600 text-lg">Follow these steps to set up the Vocational Tracker for your school.</p>
     </div>
 
     <!-- PROGRESS BAR -->
     <div class="w-full bg-slate-300 h-2 rounded-full mb-10">
-        <div id="progressBar" class="h-2 bg-indigo-600 rounded-full transition-all duration-300" style="width: 10%;"></div>
+        <div id="progressBar" class="h-2 bg-indigo-600 rounded-full transition-all duration-300" style="width:10%;"></div>
     </div>
 
-    <!-- STEP 1 -->
+    <!-- ───────────────────────────────────────────
+         STEP 1 — Copy Spreadsheet
+    ─────────────────────────────────────────── -->
     <div id="step1" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 active">
         <div class="flex items-center gap-3 mb-4">
             <span class="material-icons text-indigo-600 text-4xl">school</span>
             <h2 class="text-2xl font-bold">1. Create Your School Spreadsheet</h2>
         </div>
-
         <p class="text-slate-600 mb-4">
             Every school needs their own private copy of the Vocational Tracker spreadsheet.
         </p>
-
-        <!-- TEMPLATE LINK -->
         <a href="https://docs.google.com/spreadsheets/d/13ei5Z36X4kd0nbkCoSfeICU-4e9QNbAjzJ-Xugd1-Js/copy"
            target="_blank"
-           class="bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold hover:bg-indigo-700 transition">
-           Make a Copy of the Spreadsheet
+           class="inline-block bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold hover:bg-indigo-700 transition mb-4">
+            Make a Copy of the Spreadsheet
         </a>
-
+        <div class="callout p-3 text-sm text-blue-800 mb-2">
+            <strong>Tip:</strong> Save the spreadsheet to a shared Google Drive folder your whole team can access.
+        </div>
         <div class="text-right mt-6">
-            <button onclick="nextStep(1)" 
-                    class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
-                Continue
-            </button>
+            <button onclick="nextStep(1)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">Continue</button>
         </div>
     </div>
 
-    <!-- STEP 2 — ACCESS & AUTHORIZE -->
-    <div id="step2" 
-         class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
-
+    <!-- ───────────────────────────────────────────
+         STEP 2 — Authorize the Script
+    ─────────────────────────────────────────── -->
+    <div id="step2" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
         <div class="flex items-center gap-3 mb-4">
             <span class="material-icons text-indigo-600 text-4xl">verified_user</span>
             <h2 class="text-2xl font-bold">2. Access & Authorize the Script</h2>
         </div>
-
         <p class="text-slate-600 mb-4">
             Your spreadsheet already contains the Vocational Tracker backend script.
         </p>
-
         <ol class="list-decimal list-inside text-slate-600 space-y-2 mb-5">
             <li>Open your copied spreadsheet.</li>
             <li>Go to <strong>Extensions → Apps Script</strong>.</li>
-            <li>Click the <strong>Run</strong> button for any function.</li>
+            <li>Click the <strong>Run ▶</strong> button for any function.</li>
             <li>Google will ask you to authorize — select your account and click <strong>Allow</strong>.</li>
         </ol>
-
-        <p class="text-slate-500 text-sm mb-2">
-            No script edits are needed — everything is already installed.
-        </p>
-
+        <div class="callout-warn p-3 text-sm text-amber-800">
+            <strong>Note:</strong> Google may show a warning that the app is "unverified." This is normal for school-managed scripts. Click <strong>Advanced → Go to Vocational Tracker (unsafe)</strong> to proceed.
+        </div>
         <div class="text-right mt-6">
-            <button onclick="nextStep(2)" 
-                    class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
-                Continue
-            </button>
+            <button onclick="nextStep(2)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">Continue</button>
         </div>
     </div>
 
-    <!-- STEP 3 — INITIAL SETUP -->
-    <div id="step3" 
-         class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
-
+    <!-- ───────────────────────────────────────────
+         STEP 3 — initialSetup() — DETAILED
+    ─────────────────────────────────────────── -->
+    <div id="step3" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
         <div class="flex items-center gap-3 mb-4">
             <span class="material-icons text-indigo-600 text-4xl">settings</span>
             <h2 class="text-2xl font-bold">3. Run initialSetup()</h2>
         </div>
-
-        <p class="text-slate-600 mb-4">
-            In the Apps Script editor, run <strong>initialSetup()</strong> once using the ▶️ button.
+        <p class="text-slate-600 mb-5">
+            This one-time step creates all the required sheets in your spreadsheet: <strong>Students, Entries, Settings, Sites,</strong> and <strong>Tasks</strong>. You only need to do this once.
         </p>
 
-        <p class="text-slate-500 text-sm">
-            This generates the Students, Entries, Settings, and Sites sheets.
-        </p>
+        <!-- Sub-step 3a -->
+        <div class="mb-5">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="bg-indigo-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">A</span>
+                <p class="font-semibold text-slate-700">Open the Apps Script editor</p>
+            </div>
+            <p class="text-sm text-slate-500 ml-8">In your spreadsheet, click <strong>Extensions</strong> in the top menu, then select <strong>Apps Script</strong>. A new tab will open showing the script editor.</p>
+        </div>
+
+        <!-- Sub-step 3b -->
+        <div class="mb-5">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="bg-indigo-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">B</span>
+                <p class="font-semibold text-slate-700">Select <code class="bg-slate-100 px-1 rounded text-indigo-700">initialSetup</code> from the function dropdown</p>
+            </div>
+            <p class="text-sm text-slate-500 ml-8 mb-3">Near the top of the editor you'll see a dropdown that may say <em>"Select function"</em> or show a function name. Click it and choose <strong>initialSetup</strong> from the list.</p>
+
+            <!-- Mock UI showing the toolbar -->
+            <div class="mock-ui ml-8">
+                <div class="mock-toolbar">
+                    <div class="mock-run-btn">
+                        <span style="font-size:14px;">▶</span> Run
+                    </div>
+                    <div style="width:1px;height:20px;background:#45475a;"></div>
+                    <div class="mock-select">initialSetup ▾</div>
+                    <span style="color:#6c7086;font-size:11px;margin-left:4px;">← Select this</span>
+                </div>
+                <div class="mock-log">
+                    <span class="time">// Function dropdown location shown above</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub-step 3c -->
+        <div class="mb-5">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="bg-indigo-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">C</span>
+                <p class="font-semibold text-slate-700">Click the Run ▶ button</p>
+            </div>
+            <p class="text-sm text-slate-500 ml-8 mb-3">With <strong>initialSetup</strong> selected in the dropdown, click the <strong>▶ Run</strong> button. The execution log at the bottom of the screen will show the progress.</p>
+
+            <!-- Mock execution log -->
+            <div class="mock-ui ml-8">
+                <div class="mock-toolbar">
+                    <span style="color:#a6e3a1;font-size:12px;font-weight:bold;">Execution log</span>
+                </div>
+                <div class="mock-log">
+                    <div><span class="time">10:42:01 AM</span> <span class="info">Notice</span>  Execution started</div>
+                    <div><span class="time">10:42:02 AM</span> <span class="info">Info</span>    Creating Students sheet...</div>
+                    <div><span class="time">10:42:02 AM</span> <span class="info">Info</span>    Creating Entries sheet...</div>
+                    <div><span class="time">10:42:03 AM</span> <span class="info">Info</span>    Creating Settings sheet...</div>
+                    <div><span class="time">10:42:03 AM</span> <span class="info">Info</span>    Creating Sites sheet...</div>
+                    <div><span class="time">10:42:04 AM</span> <span class="info">Info</span>    Creating Tasks sheet...</div>
+                    <div><span class="time">10:42:04 AM</span> <span class="success">Notice</span>  Execution completed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub-step 3d -->
+        <div class="mb-5">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="bg-indigo-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">D</span>
+                <p class="font-semibold text-slate-700">Confirm the sheets were created</p>
+            </div>
+            <p class="text-sm text-slate-500 ml-8 mb-3">Switch back to your spreadsheet tab. You should now see these tabs at the bottom:</p>
+            <div class="ml-8 flex flex-wrap gap-2">
+                <span class="bg-white border border-slate-300 rounded px-3 py-1 text-xs font-mono text-slate-600 shadow-sm">Students</span>
+                <span class="bg-white border border-slate-300 rounded px-3 py-1 text-xs font-mono text-slate-600 shadow-sm">Entries</span>
+                <span class="bg-white border border-indigo-300 rounded px-3 py-1 text-xs font-mono text-indigo-700 shadow-sm font-bold">Settings</span>
+                <span class="bg-white border border-slate-300 rounded px-3 py-1 text-xs font-mono text-slate-600 shadow-sm">Sites</span>
+                <span class="bg-white border border-slate-300 rounded px-3 py-1 text-xs font-mono text-slate-600 shadow-sm">Tasks</span>
+            </div>
+        </div>
+
+        <!-- Sub-step 3e — Set password -->
+        <div class="mb-5">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="bg-indigo-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">E</span>
+                <p class="font-semibold text-slate-700">Set your Admin password in the Settings sheet</p>
+            </div>
+            <p class="text-sm text-slate-500 ml-8 mb-3">
+                Click the <strong>Settings</strong> tab in your spreadsheet. You'll see a default password of <code class="bg-slate-100 px-1 rounded text-indigo-700">voc123</code> in cell B2. Change this to a password your admin team will use to access the Admin panel.
+            </p>
+            <div class="callout-warn p-3 text-sm text-amber-800 ml-8">
+                <strong>Important:</strong> Change this before sharing the system with anyone. The password is stored in plain text in the sheet — keep the spreadsheet access restricted to admin staff only.
+            </div>
+        </div>
+
+        <div class="callout-success p-3 text-sm text-green-800 mt-2">
+            <strong>✓ Done?</strong> If you can see all five sheet tabs and your password is set, you're ready to continue.
+        </div>
 
         <div class="text-right mt-6">
-            <button onclick="nextStep(3)" 
-                    class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
-                Continue
-            </button>
+            <button onclick="nextStep(3)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">Continue</button>
         </div>
     </div>
 
-    <!-- STEP 4 — DEPLOY -->
-    <div id="step4" 
-         class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
-
+    <!-- ───────────────────────────────────────────
+         STEP 4 — Deploy
+    ─────────────────────────────────────────── -->
+    <div id="step4" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
         <div class="flex items-center gap-3 mb-4">
             <span class="material-icons text-indigo-600 text-4xl">rocket_launch</span>
             <h2 class="text-2xl font-bold">4. Deploy the Web App</h2>
         </div>
-
-        <ol class="list-decimal list-inside text-slate-600 space-y-2 mb-5">
-            <li>Go to <strong>Deploy → New Deployment</strong>.</li>
-            <li>Select <strong>Web App</strong>.</li>
-            <li>Execute as: <strong>Me</strong>.</li>
-            <li>Who has access: <strong>Anyone</strong>.</li>
-            <li>Click <strong>Deploy</strong> and copy the Exec URL.</li>
+        <p class="text-slate-600 mb-4">This creates the URL that connects the app to your spreadsheet.</p>
+        <ol class="list-decimal list-inside text-slate-600 space-y-3 mb-5">
+            <li>In the Apps Script editor, click <strong>Deploy → New Deployment</strong>.</li>
+            <li>Click the gear icon next to "Select type" and choose <strong>Web App</strong>.</li>
+            <li>Set <strong>Execute as:</strong> Me.</li>
+            <li>Set <strong>Who has access:</strong> Anyone.</li>
+            <li>Click <strong>Deploy</strong>.</li>
+            <li>Copy the <strong>Web App URL</strong> — it starts with <code class="bg-slate-100 px-1 rounded text-indigo-700 text-xs">https://script.google.com/macros/s/</code></li>
         </ol>
-
+        <div class="callout p-3 text-sm text-blue-800">
+            <strong>Tip:</strong> Every time you edit the script code after this, you'll need to create a <em>new deployment version</em> for the changes to take effect. The URL stays the same.
+        </div>
         <div class="text-right mt-6">
-            <button onclick="nextStep(4)" 
-                    class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
-                Continue
-            </button>
+            <button onclick="nextStep(4)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">Continue</button>
         </div>
     </div>
 
-    <!-- STEP 5 — CONNECT BACKEND -->
-    <div id="step5" 
-         class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
-
+    <!-- ───────────────────────────────────────────
+         STEP 5 — Connect Backend
+    ─────────────────────────────────────────── -->
+    <div id="step5" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
         <div class="flex items-center gap-3 mb-4">
             <span class="material-icons text-indigo-600 text-4xl">link</span>
             <h2 class="text-2xl font-bold">5. Connect Your Backend</h2>
         </div>
-
+        <p class="text-slate-600 mb-4">Paste the Web App URL from the previous step to connect this app to your spreadsheet.</p>
         <input id="execUrlInput"
                type="text"
-               placeholder="Paste Exec URL (https://script.google.com/macros/s/XXXX/exec)"
-               class="w-full p-3 border rounded-lg bg-slate-50 mb-4">
-
+               placeholder="https://script.google.com/macros/s/XXXX/exec"
+               class="w-full p-3 border rounded-lg bg-slate-50 mb-4 font-mono text-sm">
         <button onclick="connectBackend()"
-                class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
+                class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition">
             Connect
         </button>
-
         <p id="connectStatus" class="text-sm mt-3 font-bold hidden"></p>
     </div>
 
-    <!-- STEP 6 — COMPLETE -->
-    <div id="step6" 
-         class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
-
+    <!-- ───────────────────────────────────────────
+         STEP 6 — Complete
+    ─────────────────────────────────────────── -->
+    <div id="step6" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
         <div class="flex items-center gap-3 mb-4">
             <span class="material-icons text-green-600 text-4xl">check_circle</span>
-            <h2 class="text-2xl font-bold">6. Setup Complete!</h2>
+            <h2 class="text-2xl font-bold">Setup Complete!</h2>
         </div>
-
-        <p class="text-slate-600 mb-6">
-            Your school is now fully configured. Use the links below to begin.
-        </p>
+        <p class="text-slate-600 mb-6">Your school is now fully configured. Use the links below to begin.</p>
 
         <div class="space-y-3 mb-6">
-            <a href="index.html" 
-               class="block bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-indigo-700">
-                Go to Dashboard
+            <a href="admin.html"
+               class="block bg-slate-800 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-slate-700 transition">
+                <span class="material-icons align-middle text-sm mr-1">admin_panel_settings</span>
+                Open Admin Console — Add Students & Sites First
             </a>
-            <a href="entry.html" 
-               class="block bg-blue-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-blue-700">
-                Add New Entry
+            <a href="entry.html"
+               class="block bg-blue-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-blue-700 transition">
+                <span class="material-icons align-middle text-sm mr-1">edit_note</span>
+                Start Entering Evaluations
             </a>
-            <a href="admin.html" 
-               class="block bg-slate-700 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-slate-800">
-                Open Admin Console
+            <a href="report.html"
+               class="block bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-indigo-700 transition">
+                <span class="material-icons align-middle text-sm mr-1">analytics</span>
+                View Reports
             </a>
         </div>
 
-        <!-- 🔐 ADMIN PASSWORD INFO PANEL -->
-        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-8">
-            <h3 class="text-lg font-bold text-yellow-700 mb-2 flex items-center gap-2">
-                <span class="material-icons text-yellow-600">lock</span>
-                Your Admin Password
+        <!-- Admin password reminder -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+            <h3 class="text-base font-bold text-yellow-700 mb-2 flex items-center gap-2">
+                <span class="material-icons text-yellow-600 text-lg">lock</span>
+                Admin Password Reminder
             </h3>
-
-            <p class="text-sm text-yellow-800 mb-2">
-                Your Admin Password has been automatically stored so you can log in to the Admin Console.
+            <p class="text-sm text-yellow-800 mb-1">
+                Your admin password is stored in the <strong>Settings</strong> tab of your spreadsheet (cell B2).
             </p>
-            <p class="text-sm text-yellow-800 mb-2">
-                It is stored in your spreadsheet under the <strong>Settings</strong> tab.
-            </p>
-            <p class="text-sm text-yellow-800 mb-2">
-                To change the password, edit:
-            </p>
-
-<pre class="bg-white border border-yellow-300 rounded p-2 text-xs text-yellow-900 font-mono">
-Settings!A1 = "password"
-Settings!B1 = "YOUR_NEW_PASSWORD"
-</pre>
-
             <p class="text-sm text-yellow-800">
-                All staff will need this password to access the Admin Console.
+                Share this password only with staff who should have admin access.
             </p>
         </div>
 
-        <!-- SHARE -->
-        <h3 class="text-xl font-bold mb-2">Share Your Connection Link</h3>
+        <!-- Share link -->
+        <h3 class="text-lg font-bold mb-1">Share Your Entry Form Link</h3>
         <p class="text-slate-500 text-sm mb-3">
-            Staff can use this link to automatically connect to your backend.
+            Give staff this link — or print the QR code — so they can access the entry form on any phone with no setup.
         </p>
-
         <input id="magicLinkOutput"
-               class="w-full bg-white border p-2 rounded mb-3 text-xs font-mono"
+               class="w-full bg-white border p-2 rounded mb-3 text-xs font-mono text-blue-600"
                readonly />
-
-        <img id="qrOutput" class="w-28 h-28 bg-white p-1 rounded border" />
-
-        <button onclick="copyMagicLinkFinal()"
-                class="bg-indigo-600 text-white px-4 py-2 mt-3 rounded text-xs font-bold">
-            Copy Link
-        </button>
+        <div class="flex gap-3 items-center flex-wrap">
+            <button onclick="copyMagicLinkFinal()"
+                    class="bg-indigo-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-indigo-700 transition">
+                Copy Link
+            </button>
+            <p class="text-xs text-slate-400">Or generate a QR code from the Admin page after setup.</p>
+        </div>
     </div>
 
 </div>
 
-
 <script>
-/************************************************************
- * STEP NAVIGATION
- ************************************************************/
 function nextStep(step) {
     document.getElementById("step" + step).classList.remove("active");
     document.getElementById("step" + step).classList.add("hidden-step");
-
     const next = step + 1;
     document.getElementById("step" + next).classList.add("active");
     document.getElementById("step" + next).classList.remove("hidden-step");
-
     document.getElementById("progressBar").style.width = ((next / 6) * 100) + "%";
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-/************************************************************
- * CONNECT BACKEND
- ************************************************************/
 async function connectBackend() {
     const url = document.getElementById("execUrlInput").value.trim();
     const status = document.getElementById("connectStatus");
@@ -271,14 +379,13 @@ async function connectBackend() {
         return;
     }
 
-    status.innerText = "Testing connection...";
+    status.innerText = "Testing connection…";
     status.className = "text-blue-600 font-bold";
     status.classList.remove("hidden");
 
     try {
         const sRes = await fetch(url + "?action=getStudents");
         const sJson = await sRes.json();
-
         if (sJson.status !== "success") throw new Error();
 
         const aRes = await fetch(url + "?action=getAdminConfig");
@@ -287,32 +394,28 @@ async function connectBackend() {
         localStorage.setItem("vocational_backend_url", url);
         localStorage.setItem("vt_admin_password", aJson.password);
 
-        const base = window.location.href.split("?")[0];
-        const magic = base + "?connect=" + btoa(url);
-
+        // Build magic link pointing to entry.html
+        const base = window.location.href.replace(/[^/]*$/, "entry.html");
+        const magic = `${base}?db=${encodeURIComponent(url)}`;
         document.getElementById("magicLinkOutput").value = magic;
-        document.getElementById("qrOutput").src =
-            "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(magic);
 
-        status.innerText = "Connected!";
+        status.innerText = "✓ Connected successfully!";
         status.className = "text-green-600 font-bold";
 
         nextStep(5);
 
     } catch (err) {
-        status.innerText = "Connection failed. Check your Exec URL.";
+        status.innerText = "Connection failed. Double-check your Exec URL and try again.";
         status.className = "text-red-600 font-bold";
     }
 }
 
-/************************************************************
- * COPY MAGIC LINK
- ************************************************************/
 function copyMagicLinkFinal() {
     const el = document.getElementById("magicLinkOutput");
-    el.select();
-    document.execCommand("copy");
-    alert("Copied!");
+    navigator.clipboard.writeText(el.value).then(() => {
+        el.select();
+    });
+    alert("Link copied!");
 }
 </script>
 
