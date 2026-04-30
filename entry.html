@@ -80,7 +80,8 @@
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Job Site</label>
-                    <select id="siteSelect" required class="w-full p-3 border rounded-lg bg-slate-50">
+                    <select id="siteSelect" required onchange="handleSiteChange()"
+                            class="w-full p-3 border rounded-lg bg-slate-50">
                         <option>Loading...</option>
                     </select>
                 </div>
@@ -105,15 +106,25 @@
                 <div><span class="font-bold text-red-500">0</span><div>Not at All</div></div>
                 <div><span class="font-bold text-orange-500">1</span><div>Direct Prompting</div></div>
                 <div><span class="font-bold text-yellow-600">2</span><div>Indirect Prompting</div></div>
-                <div><span class="font-bold text-blue-500">3</span><div>Independant</div></div>
+                <div><span class="font-bold text-blue-500">3</span><div>Independent</div></div>
                 <div><span class="font-bold text-green-600">4</span><div>Helping/Teaching</div></div>
             </div>
         </div>
 
-        <!-- SKILLS -->
+        <!-- JOB TASKS (shown only when selected site has tasks) -->
+        <div id="tasksSection" class="hidden bg-white p-5 rounded-xl shadow-sm border border-orange-100">
+            <h2 class="text-lg font-bold text-slate-800 mb-6 border-b pb-2 flex items-center gap-2">
+                <span class="material-icons text-orange-500">assignment</span>
+                Job Tasks
+                <span id="tasksSiteName" class="text-sm font-normal text-slate-400 ml-1"></span>
+            </h2>
+            <div id="tasksContainer" class="space-y-6"></div>
+        </div>
+
+        <!-- BEHAVIORAL SKILLS -->
         <div class="bg-white p-5 rounded-xl shadow-sm border">
             <h2 class="text-lg font-bold text-slate-800 mb-6 border-b pb-2 flex items-center gap-2">
-                <span class="material-icons text-purple-600">psychology</span> Skills Assessment
+                <span class="material-icons text-purple-600">psychology</span> Behavioral Skills
             </h2>
             <div id="skillsContainer" class="space-y-6"></div>
         </div>
@@ -161,30 +172,23 @@ const SCORE_STYLES = {
 };
 
 const INACTIVE = "bg-slate-50 text-slate-400 border-slate-200";
-let skillScores = {};
+
+let skillScores = {};   // keyed by "skill:SkillName" or "task:TaskName"
+let allTasks    = {};   // { site_name: [task, ...] }
+let currentTasks = [];  // tasks for currently selected site
 let API_URL = null;
 
 /************************************************************
  * RESOLVE API URL
- * Priority: ?db= param → localStorage → show error
  ************************************************************/
 function resolveApiUrl() {
-    // 1. Check URL parameter
     const params = new URLSearchParams(window.location.search);
     const paramUrl = params.get("db");
-
     if (paramUrl) {
-        // Save it for next time so they don't need the QR again on this device
         localStorage.setItem("vocational_backend_url", paramUrl);
         return paramUrl;
     }
-
-    // 2. Fall back to localStorage (previously scanned on this device)
-    const stored = localStorage.getItem("vocational_backend_url");
-    if (stored) return stored;
-
-    // 3. Nothing found
-    return null;
+    return localStorage.getItem("vocational_backend_url") || null;
 }
 
 /************************************************************
@@ -198,10 +202,8 @@ window.onload = () => {
         return;
     }
 
-    // Show source badge
     const params = new URLSearchParams(window.location.search);
-    const fromParam = !!params.get("db");
-    document.getElementById("dbBadgeText").textContent = fromParam
+    document.getElementById("dbBadgeText").textContent = params.get("db")
         ? "Connected via QR/link"
         : "Connected (saved on this device)";
 
@@ -212,52 +214,83 @@ window.onload = () => {
 };
 
 /************************************************************
- * SKILL BUTTONS
+ * SHARED SCORE GROUP RENDERER
+ * key must be unique across both skills and tasks
+ ************************************************************/
+function renderScoreGroup(container, label, key) {
+    skillScores[key] = 2;
+
+    // Safe DOM id: replace non-alphanumeric chars
+    const safeId = key.replace(/[^a-zA-Z0-9]/g, "_");
+
+    let html = `
+        <div>
+            <label class="block text-sm font-bold mb-2">${label}</label>
+            <div class="grid grid-cols-5 gap-2">
+    `;
+    for (let i = 0; i <= 4; i++) {
+        html += `
+            <button type="button"
+                    id="btn_${safeId}_${i}"
+                    data-key="${key}"
+                    data-score="${i}"
+                    onclick="setScore('${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', ${i})"
+                    class="score-btn py-3 rounded-lg border font-bold text-lg shadow-sm">
+                ${i}
+            </button>
+        `;
+    }
+    html += "</div></div>";
+    container.innerHTML += html;
+    updateButtons(key);
+}
+
+/************************************************************
+ * BEHAVIORAL SKILLS
  ************************************************************/
 function renderSkills() {
     const container = document.getElementById("skillsContainer");
     container.innerHTML = "";
-
-    SKILLS_LIST.forEach((skill, idx) => {
-        skillScores[idx] = 2;
-
-        let html = `
-            <div>
-                <label class="block text-sm font-bold mb-2">${skill}</label>
-                <div class="grid grid-cols-5 gap-2">
-        `;
-
-        for (let i = 0; i <= 4; i++) {
-            html += `
-                <button type="button"
-                        id="btn_${idx}_${i}"
-                        onclick="setScore(${idx}, ${i})"
-                        class="score-btn py-3 rounded-lg border font-bold text-lg shadow-sm">
-                    ${i}
-                </button>
-            `;
-        }
-
-        html += "</div></div>";
-        container.innerHTML += html;
-    });
-
-    updateAllButtons();
+    SKILLS_LIST.forEach(skill => renderScoreGroup(container, skill, `skill:${skill}`));
 }
 
-function setScore(idx, score) {
-    skillScores[idx] = score;
-    updateButtons(idx);
+/************************************************************
+ * JOB TASKS
+ ************************************************************/
+function renderTasks(tasks) {
+    const section   = document.getElementById("tasksSection");
+    const container = document.getElementById("tasksContainer");
+    const siteLabel = document.getElementById("tasksSiteName");
+
+    // Clear previous task scores
+    currentTasks.forEach(t => delete skillScores[`task:${t}`]);
+    container.innerHTML = "";
+    currentTasks = tasks;
+
+    if (!tasks || tasks.length === 0) {
+        section.classList.add("hidden");
+        return;
+    }
+
+    siteLabel.textContent = `— ${document.getElementById("siteSelect").value}`;
+    section.classList.remove("hidden");
+    tasks.forEach(task => renderScoreGroup(container, task, `task:${task}`));
 }
 
-function updateAllButtons() {
-    SKILLS_LIST.forEach((_, idx) => updateButtons(idx));
+/************************************************************
+ * SCORE MANAGEMENT
+ ************************************************************/
+function setScore(key, score) {
+    skillScores[key] = score;
+    updateButtons(key);
 }
 
-function updateButtons(idx) {
-    const selected = skillScores[idx];
+function updateButtons(key) {
+    const selected = skillScores[key];
+    const safeId = key.replace(/[^a-zA-Z0-9]/g, "_");
     for (let i = 0; i <= 4; i++) {
-        const btn = document.getElementById(`btn_${idx}_${i}`);
+        const btn = document.getElementById(`btn_${safeId}_${i}`);
+        if (!btn) continue;
         btn.className = (i === selected)
             ? `score-btn py-3 rounded-lg border font-bold text-lg shadow-md ${SCORE_STYLES[i]}`
             : `score-btn py-3 rounded-lg border font-bold text-lg shadow-sm ${INACTIVE}`;
@@ -269,28 +302,46 @@ function updateButtons(idx) {
  ************************************************************/
 async function loadDropdowns() {
     try {
-        const sRes = await fetch(API_URL + "?action=getStudents");
-        const sJson = await sRes.json();
+        const [sRes, jRes, tRes] = await Promise.all([
+            fetch(API_URL + "?action=getStudents"),
+            fetch(API_URL + "?action=getSites"),
+            fetch(API_URL + "?action=getTasks")
+        ]);
 
+        const sJson = await sRes.json();
+        const jJson = await jRes.json();
+        const tJson = await tRes.json();
+
+        // Students
         const sSel = document.getElementById("studentSelect");
         sSel.innerHTML = `<option value="">Select Student…</option>`;
         sJson.data.forEach(s => {
             sSel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
         });
 
-        const jRes = await fetch(API_URL + "?action=getSites");
-        const jJson = await jRes.json();
-
+        // Sites
         const siteSel = document.getElementById("siteSelect");
         siteSel.innerHTML = `<option value="">Select Site…</option>`;
         jJson.data.forEach(site => {
             siteSel.innerHTML += `<option value="${site}">${site}</option>`;
         });
 
+        // Task lookup by site
+        allTasks = {};
+        (tJson.data || []).forEach(t => {
+            if (!allTasks[t.site_name]) allTasks[t.site_name] = [];
+            allTasks[t.site_name].push(t.task_name);
+        });
+
     } catch (err) {
         console.error("Dropdown load error:", err);
-        alert("Connected but failed to load students or sites. Check the script URL.");
+        alert("Connected but failed to load data. Check the script URL.");
     }
+}
+
+function handleSiteChange() {
+    const site = document.getElementById("siteSelect").value;
+    renderTasks(site ? (allTasks[site] || []) : []);
 }
 
 /************************************************************
@@ -301,23 +352,28 @@ async function submitEntry(e) {
 
     const btn = document.getElementById("submitBtn");
     const original = btn.innerHTML;
-
     btn.disabled = true;
     btn.innerHTML = `<span class="material-icons animate-spin">refresh</span> Saving…`;
+
+    // Combine behavioral skills + job tasks into one scores object
+    // Tasks are prefixed with "task:" to distinguish them in the sheet
+    const scores = {};
+    SKILLS_LIST.forEach(skill => {
+        scores[skill] = skillScores[`skill:${skill}`] ?? 2;
+    });
+    currentTasks.forEach(task => {
+        scores[`task:${task}`] = skillScores[`task:${task}`] ?? 2;
+    });
 
     const payload = {
         action: "addEntry",
         student_id: document.getElementById("studentSelect").value,
-        job_site: document.getElementById("siteSelect").value,
-        date: document.getElementById("dateInput").value,
-        evaluator: document.getElementById("evaluatorInput").value,
-        comments: document.getElementById("commentsInput").value,
-        scores: {}
+        job_site:   document.getElementById("siteSelect").value,
+        date:       document.getElementById("dateInput").value,
+        evaluator:  document.getElementById("evaluatorInput").value,
+        comments:   document.getElementById("commentsInput").value,
+        scores
     };
-
-    SKILLS_LIST.forEach((skill, idx) => {
-        payload.scores[skill] = skillScores[idx];
-    });
 
     try {
         await fetch(API_URL, {
@@ -329,7 +385,6 @@ async function submitEntry(e) {
 
         btn.innerHTML = `<span class="material-icons">check_circle</span> Saved!`;
         btn.classList.replace("bg-blue-600", "bg-green-600");
-
         setTimeout(() => location.reload(), 1000);
 
     } catch (err) {
