@@ -126,15 +126,16 @@
         <!-- RIGHT COLUMN: Job Sites + QR Generator -->
         <div class="flex flex-col gap-8">
 
-            <!-- JOB SITES -->
+            <!-- JOB SITES + TASKS -->
             <div class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col">
                 <div class="bg-slate-50 px-6 py-4 border-b">
                     <h3 class="font-bold text-slate-700 flex items-center gap-2">
                         <span class="material-icons text-slate-400">work</span>
-                        Job Sites
+                        Job Sites &amp; Tasks
                     </h3>
                 </div>
                 <div class="p-6 flex-1 flex flex-col">
+                    <!-- Add site -->
                     <div class="flex gap-2 mb-4">
                         <input type="text" id="newSiteInput" placeholder="New Site Name"
                                class="flex-1 p-2 border rounded text-sm">
@@ -143,10 +144,9 @@
                             ADD
                         </button>
                     </div>
-                    <div class="overflow-y-auto border rounded bg-slate-50 p-2 max-h-48">
-                        <ul id="sitesList" class="space-y-1">
-                            <li class="text-xs text-slate-400 text-center py-4">Loading sites…</li>
-                        </ul>
+                    <!-- Sites accordion -->
+                    <div id="sitesList" class="space-y-2">
+                        <p class="text-xs text-slate-400 text-center py-4">Loading sites…</p>
                     </div>
                 </div>
             </div>
@@ -307,26 +307,100 @@ async function addStudentAdmin() {
 }
 
 /************************************************************
- * SITES
+ * SITES + TASKS
  ************************************************************/
+let allTasks = {}; // { site_name: [task, task, ...] }
+
 async function loadSites() {
     try {
-        const res = await fetch(url + "?action=getSites");
-        const json = await res.json();
+        const [siteRes, taskRes] = await Promise.all([
+            fetch(url + "?action=getSites"),
+            fetch(url + "?action=getTasks")
+        ]);
+        const siteJson = await siteRes.json();
+        const taskJson = await taskRes.json();
+
+        // Build task lookup by site
+        allTasks = {};
+        (taskJson.data || []).forEach(t => {
+            if (!allTasks[t.site_name]) allTasks[t.site_name] = [];
+            allTasks[t.site_name].push(t.task_name);
+        });
+
         const list = document.getElementById("sitesList");
         list.innerHTML = "";
-        json.data.forEach(site => {
+
+        siteJson.data.forEach(site => {
+            const tasks = allTasks[site] || [];
+            const taskCount = tasks.length;
+            const safeId = site.replace(/[^a-zA-Z0-9]/g, "_");
+
             list.innerHTML += `
-                <li class="flex justify-between items-center bg-white p-2 rounded shadow-sm border">
-                    <span class="text-sm font-medium text-slate-700">${site}</span>
-                    <button onclick="deleteSite('${site}')" class="text-slate-400 hover:text-red-500">
-                        <span class="material-icons text-sm">delete</span>
-                    </button>
-                </li>`;
+                <div class="border rounded-lg overflow-hidden">
+                    <!-- Site header row -->
+                    <div class="flex items-center justify-between bg-slate-50 px-3 py-2">
+                        <button onclick="toggleSite('${safeId}')"
+                                class="flex items-center gap-2 flex-1 text-left">
+                            <span class="material-icons text-sm text-slate-400 transition-transform" 
+                                  id="chevron_${safeId}">chevron_right</span>
+                            <span class="text-sm font-semibold text-slate-700">${site}</span>
+                            <span class="text-xs text-slate-400 ml-1">(${taskCount} task${taskCount !== 1 ? "s" : ""})</span>
+                        </button>
+                        <button onclick="deleteSite('${site}')" 
+                                class="text-slate-300 hover:text-red-500 ml-2">
+                            <span class="material-icons text-sm">delete</span>
+                        </button>
+                    </div>
+
+                    <!-- Expandable task panel -->
+                    <div id="tasks_${safeId}" class="hidden bg-white px-3 pb-3 pt-2 border-t">
+
+                        <!-- Task list -->
+                        <ul id="taskList_${safeId}" class="space-y-1 mb-3">
+                            ${tasks.length === 0
+                                ? `<li class="text-xs text-slate-400 italic py-1">No tasks yet — add one below.</li>`
+                                : tasks.map(t => taskItemHTML(site, t, safeId)).join("")}
+                        </ul>
+
+                        <!-- Add task input -->
+                        <div class="flex gap-2">
+                            <input type="text"
+                                   id="newTask_${safeId}"
+                                   placeholder="New task name…"
+                                   class="flex-1 p-1.5 border rounded text-xs"
+                                   onkeydown="if(event.key==='Enter') addTask('${site}','${safeId}')">
+                            <button onclick="addTask('${site}','${safeId}')"
+                                    class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-2 rounded">
+                                ADD
+                            </button>
+                        </div>
+
+                    </div>
+                </div>`;
         });
+
     } catch (err) {
         console.error("Error loading sites:", err);
     }
+}
+
+function taskItemHTML(site, taskName, safeId) {
+    const escapedTask = taskName.replace(/'/g, "\\'");
+    return `
+        <li class="flex items-center justify-between bg-slate-50 rounded px-2 py-1">
+            <span class="text-xs text-slate-700">${taskName}</span>
+            <button onclick="deleteTask('${site}','${escapedTask}','${safeId}')"
+                    class="text-slate-300 hover:text-red-500">
+                <span class="material-icons text-sm">close</span>
+            </button>
+        </li>`;
+}
+
+function toggleSite(safeId) {
+    const panel = document.getElementById(`tasks_${safeId}`);
+    const chevron = document.getElementById(`chevron_${safeId}`);
+    const isHidden = panel.classList.toggle("hidden");
+    chevron.style.transform = isHidden ? "" : "rotate(90deg)";
 }
 
 async function addSite() {
@@ -343,13 +417,69 @@ async function addSite() {
 }
 
 async function deleteSite(name) {
-    if (!confirm(`Delete "${name}"?`)) return;
+    if (!confirm(`Delete "${name}" and all its tasks?`)) return;
     await fetch(url, {
         method: "POST", mode: "no-cors",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "deleteSite", site_name: name })
     });
     loadSites();
+}
+
+async function addTask(siteName, safeId) {
+    const input = document.getElementById(`newTask_${safeId}`);
+    const taskName = input.value.trim();
+    if (!taskName) return;
+
+    await fetch(url, {
+        method: "POST", mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ action: "addTask", site_name: siteName, task_name: taskName })
+    });
+
+    input.value = "";
+
+    // Optimistically update UI without full reload
+    if (!allTasks[siteName]) allTasks[siteName] = [];
+    allTasks[siteName].push(taskName);
+
+    const taskList = document.getElementById(`taskList_${safeId}`);
+    // Remove "no tasks" placeholder if present
+    const placeholder = taskList.querySelector("li.italic");
+    if (placeholder) placeholder.remove();
+    taskList.insertAdjacentHTML("beforeend", taskItemHTML(siteName, taskName, safeId));
+
+    // Update count label
+    const countEl = taskList.closest(".border.rounded-lg")
+        .querySelector(".text-xs.text-slate-400.ml-1");
+    if (countEl) {
+        const c = allTasks[siteName].length;
+        countEl.textContent = `(${c} task${c !== 1 ? "s" : ""})`;
+    }
+}
+
+async function deleteTask(siteName, taskName, safeId) {
+    await fetch(url, {
+        method: "POST", mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ action: "deleteTask", site_name: siteName, task_name: taskName })
+    });
+
+    // Remove from local state and re-render just the task list
+    if (allTasks[siteName]) {
+        allTasks[siteName] = allTasks[siteName].filter(t => t !== taskName);
+    }
+
+    const taskList = document.getElementById(`taskList_${safeId}`);
+    taskList.innerHTML = allTasks[siteName].length === 0
+        ? `<li class="text-xs text-slate-400 italic py-1">No tasks yet — add one below.</li>`
+        : allTasks[siteName].map(t => taskItemHTML(siteName, t, safeId)).join("");
+
+    // Update count label
+    const c = (allTasks[siteName] || []).length;
+    const countEl = taskList.closest(".border.rounded-lg")
+        .querySelector(".text-xs.text-slate-400.ml-1");
+    if (countEl) countEl.textContent = `(${c} task${c !== 1 ? "s" : ""})`;
 }
 
 /************************************************************
