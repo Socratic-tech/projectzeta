@@ -6,6 +6,7 @@
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 
 <body class="bg-slate-100 font-sans">
@@ -14,34 +15,27 @@
 <nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between h-16 items-center">
-
-            <!-- Left Navigation -->
             <div class="flex items-center gap-6 text-sm font-semibold">
                 <a href="index.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
                     <span class="material-icons text-yellow-400">home</span>
                     Dashboard
                 </a>
-
                 <a href="entry.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
                     <span class="material-icons">edit_note</span>
                     Entry
                 </a>
-
                 <a href="report.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
                     <span class="material-icons">analytics</span>
                     Reports
                 </a>
-
                 <a href="admin.html" class="flex items-center gap-1 text-yellow-300 font-bold">
                     <span class="material-icons">admin_panel_settings</span>
                     Admin
                 </a>
             </div>
-
             <a href="setup.html" class="text-blue-200 hover:text-white transition flex items-center gap-1">
                 <span class="material-icons">tune</span>
             </a>
-
         </div>
     </div>
 </nav>
@@ -49,27 +43,20 @@
 <!-- AUTH MODAL -->
 <div id="authModal"
      class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center backdrop-blur-sm">
-
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full text-center">
-
         <div class="bg-red-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
             <span class="material-icons text-red-600 text-3xl">lock</span>
         </div>
-
         <h2 class="text-2xl font-bold text-slate-800 mb-2">Admin Access</h2>
-
-        <input type="password" id="adminPassInput" 
+        <input type="password" id="adminPassInput"
                placeholder="Password"
                class="w-full p-3 border rounded-lg mb-4 text-center text-lg">
-
         <button onclick="verifyPassword()"
                 class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg">
             Unlock Dashboard
         </button>
-
         <p id="authError" class="text-red-600 text-xs font-bold mt-3 hidden">Incorrect Password</p>
     </div>
-
 </div>
 
 <!-- MAIN CONTENT -->
@@ -90,19 +77,16 @@
         <div class="lg:col-span-2">
             <div class="bg-white rounded-xl shadow-sm border overflow-hidden h-full flex flex-col">
 
-                <!-- HEADER -->
                 <div class="bg-slate-50 px-6 py-4 border-b flex justify-between items-center">
                     <h3 class="font-bold text-slate-700 flex items-center gap-2">
                         <span class="material-icons text-slate-400">group</span>
                         Student Roster
                     </h3>
-                    <button onclick="loadStudents()" 
-                            class="text-slate-500 hover:text-blue-600">
+                    <button onclick="loadStudents()" class="text-slate-500 hover:text-blue-600">
                         <span class="material-icons">refresh</span>
                     </button>
                 </div>
 
-                <!-- ADD STUDENT -->
                 <div class="p-6 bg-slate-50 border-b border-slate-200">
                     <div class="mb-4">
                         <h4 class="font-bold text-slate-700 flex items-center gap-2">
@@ -110,18 +94,11 @@
                             Add Student
                         </h4>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                        <input id="newStudentName"
-                               type="text"
-                               placeholder="Name"
+                        <input id="newStudentName" type="text" placeholder="Name"
                                class="p-2 border rounded bg-white text-sm">
-
-                        <input id="newStudentGrade"
-                               type="text"
-                               placeholder="Grade (optional)"
+                        <input id="newStudentGrade" type="text" placeholder="Grade (optional)"
                                class="p-2 border rounded bg-white text-sm">
-
                         <button onclick="addStudentAdmin()"
                                 class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-bold">
                             Add Student
@@ -129,7 +106,6 @@
                     </div>
                 </div>
 
-                <!-- STUDENT TABLE -->
                 <div class="p-6 flex-1 overflow-auto">
                     <table class="w-full text-sm text-left text-slate-600">
                         <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
@@ -147,61 +123,129 @@
             </div>
         </div>
 
-        <!-- JOB SITE PANEL -->
-        <div>
-            <div class="bg-white rounded-xl shadow-sm border overflow-hidden h-full flex flex-col">
+        <!-- RIGHT COLUMN: Job Sites + QR Generator -->
+        <div class="flex flex-col gap-8">
 
+            <!-- JOB SITES -->
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col">
                 <div class="bg-slate-50 px-6 py-4 border-b">
                     <h3 class="font-bold text-slate-700 flex items-center gap-2">
                         <span class="material-icons text-slate-400">work</span>
                         Job Sites
                     </h3>
                 </div>
-
                 <div class="p-6 flex-1 flex flex-col">
-
                     <div class="flex gap-2 mb-4">
-                        <input type="text" id="newSiteInput"
-                               placeholder="New Site Name"
+                        <input type="text" id="newSiteInput" placeholder="New Site Name"
                                class="flex-1 p-2 border rounded text-sm">
-
                         <button onclick="addSite()"
                                 class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700 font-bold text-xs">
                             ADD
                         </button>
                     </div>
-
-                    <div class="flex-1 overflow-y-auto border rounded bg-slate-50 p-2">
+                    <div class="overflow-y-auto border rounded bg-slate-50 p-2 max-h-48">
                         <ul id="sitesList" class="space-y-1">
                             <li class="text-xs text-slate-400 text-center py-4">Loading sites…</li>
                         </ul>
                     </div>
+                </div>
+            </div>
 
+            <!-- QR & LINK GENERATOR -->
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col">
+                <div class="bg-slate-50 px-6 py-4 border-b">
+                    <h3 class="font-bold text-slate-700 flex items-center gap-2">
+                        <span class="material-icons text-slate-400">qr_code_2</span>
+                        Share Entry Form
+                    </h3>
                 </div>
 
+                <div class="p-6 flex flex-col gap-4">
+
+                    <p class="text-xs text-slate-500">
+                        Generate a QR code staff can scan to open the entry form — no setup needed on their phone.
+                    </p>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">
+                            Entry Page URL
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="url" id="qrBaseUrl"
+                                   placeholder="https://yoursite.github.io/.../entry.html"
+                                   class="flex-1 p-2 border rounded text-xs font-mono bg-slate-50 focus:outline-none focus:border-blue-400">
+                            <button onclick="useThisDomain()"
+                                    title="Use this page's domain"
+                                    class="text-xs text-blue-600 border border-blue-200 rounded px-2 hover:bg-blue-50 whitespace-nowrap">
+                                Auto-fill
+                            </button>
+                        </div>
+                    </div>
+
+                    <button onclick="generateQR()"
+                            class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-sm flex items-center justify-center gap-2 transition">
+                        <span class="material-icons text-sm">qr_code</span>
+                        Generate QR & Link
+                    </button>
+
+                    <!-- OUTPUT (hidden until generated) -->
+                    <div id="qrOutput" class="hidden space-y-4">
+
+                        <!-- QR Code -->
+                        <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+                                Vocational Skills Entry
+                            </p>
+                            <div id="qrcode" class="flex justify-center"></div>
+                            <p class="text-[10px] text-slate-400 mt-3">
+                                Scan with phone camera to open entry form
+                            </p>
+                        </div>
+
+                        <!-- Generated link -->
+                        <div id="qrLinkBox"
+                             class="bg-slate-50 border rounded-lg p-2 text-[10px] font-mono text-blue-500 break-all">
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex gap-2">
+                            <button onclick="copyQrLink()"
+                                    id="qrCopyBtn"
+                                    class="flex-1 flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded-lg transition">
+                                <span class="material-icons text-sm">content_copy</span>
+                                Copy Link
+                            </button>
+                            <button onclick="printQR()"
+                                    class="flex-1 flex items-center justify-center gap-1 border border-slate-300 hover:bg-slate-50 text-slate-600 text-xs font-bold py-2 rounded-lg transition">
+                                <span class="material-icons text-sm">print</span>
+                                Print QR
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
             </div>
+
         </div>
-
     </div>
-
 </main>
 
 <script>
 /************************************************************
- * GLOBAL CONFIG
+ * CONFIG
  ************************************************************/
 const url = localStorage.getItem("vocational_backend_url");
 const storedAdminPass = localStorage.getItem("vt_admin_password");
+let qrInstance = null;
+let qrFullUrl = "";
 
-/************************************************************
- * REDIRECT IF SETUP NOT DONE
- ************************************************************/
 window.onload = () => {
     if (!url) window.location.href = "setup.html";
 };
 
 /************************************************************
- * LOCAL PASSWORD CHECK
+ * AUTH
  ************************************************************/
 function verifyPassword() {
     const typed = document.getElementById("adminPassInput").value.trim();
@@ -210,7 +254,6 @@ function verifyPassword() {
     if (typed === storedAdminPass) {
         document.getElementById("authModal").classList.add("hidden");
         document.getElementById("adminContent").classList.remove("hidden");
-
         loadStudents();
         loadSites();
     } else {
@@ -220,16 +263,14 @@ function verifyPassword() {
 }
 
 /************************************************************
- * LOAD STUDENTS
+ * STUDENTS
  ************************************************************/
 async function loadStudents() {
     try {
         const res = await fetch(url + "?action=getStudents");
         const json = await res.json();
-
         const tbody = document.getElementById("studentTableBody");
         tbody.innerHTML = "";
-
         json.data.forEach(s => {
             tbody.innerHTML += `
                 <tr class="border-b hover:bg-slate-50">
@@ -244,101 +285,156 @@ async function loadStudents() {
                     </td>
                 </tr>`;
         });
-
     } catch (err) {
         console.error("Error loading students:", err);
     }
 }
 
-/************************************************************
- * ADD STUDENT (AUTO-ID)
- ************************************************************/
 async function addStudentAdmin() {
     const name = document.getElementById("newStudentName").value.trim();
     const grade = document.getElementById("newStudentGrade").value.trim();
-
-    if (!name) {
-        alert("Please enter a student name.");
-        return;
-    }
+    if (!name) { alert("Please enter a student name."); return; }
 
     await fetch(url, {
-        method: "POST",
-        mode: "no-cors",
+        method: "POST", mode: "no-cors",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({
-            action: "addStudent",
-            name: name,
-            grade: grade
-        })
+        body: JSON.stringify({ action: "addStudent", name, grade })
     });
 
     document.getElementById("newStudentName").value = "";
     document.getElementById("newStudentGrade").value = "";
-
     loadStudents();
 }
 
 /************************************************************
- * LOAD SITES
+ * SITES
  ************************************************************/
 async function loadSites() {
     try {
         const res = await fetch(url + "?action=getSites");
         const json = await res.json();
-
         const list = document.getElementById("sitesList");
         list.innerHTML = "";
-
         json.data.forEach(site => {
             list.innerHTML += `
                 <li class="flex justify-between items-center bg-white p-2 rounded shadow-sm border">
                     <span class="text-sm font-medium text-slate-700">${site}</span>
-                    <button onclick="deleteSite('${site}')"
-                            class="text-slate-400 hover:text-red-500">
+                    <button onclick="deleteSite('${site}')" class="text-slate-400 hover:text-red-500">
                         <span class="material-icons text-sm">delete</span>
                     </button>
                 </li>`;
         });
-
     } catch (err) {
         console.error("Error loading sites:", err);
     }
 }
 
-/************************************************************
- * ADD SITE
- ************************************************************/
 async function addSite() {
     const input = document.getElementById("newSiteInput");
     const name = input.value.trim();
     if (!name) return;
-
     await fetch(url, {
-        method: "POST",
-        mode: "no-cors",
+        method: "POST", mode: "no-cors",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "addSite", site_name: name })
     });
-
     input.value = "";
     loadSites();
 }
 
-/************************************************************
- * DELETE SITE
- ************************************************************/
 async function deleteSite(name) {
     if (!confirm(`Delete "${name}"?`)) return;
-
     await fetch(url, {
-        method: "POST",
-        mode: "no-cors",
+        method: "POST", mode: "no-cors",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "deleteSite", site_name: name })
     });
-
     loadSites();
+}
+
+/************************************************************
+ * QR GENERATOR
+ ************************************************************/
+function useThisDomain() {
+    const base = window.location.href.replace(/[^/]*$/, "entry.html");
+    document.getElementById("qrBaseUrl").value = base;
+}
+
+function generateQR() {
+    const base = document.getElementById("qrBaseUrl").value.trim();
+
+    if (!base) {
+        alert("Enter the entry page URL first.");
+        return;
+    }
+
+    if (!url) {
+        alert("No database URL configured.");
+        return;
+    }
+
+    const separator = base.includes("?") ? "&" : "?";
+    qrFullUrl = `${base}${separator}db=${encodeURIComponent(url)}`;
+
+    // Update link box
+    document.getElementById("qrLinkBox").textContent = qrFullUrl;
+
+    // Regenerate QR
+    const qrDiv = document.getElementById("qrcode");
+    qrDiv.innerHTML = "";
+    qrInstance = new QRCode(qrDiv, {
+        text: qrFullUrl,
+        width: 180,
+        height: 180,
+        colorDark: "#1e293b",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+    });
+
+    document.getElementById("qrOutput").classList.remove("hidden");
+}
+
+function copyQrLink() {
+    if (!qrFullUrl) return;
+    navigator.clipboard.writeText(qrFullUrl).then(() => {
+        const btn = document.getElementById("qrCopyBtn");
+        btn.innerHTML = `<span class="material-icons text-sm">check</span> Copied!`;
+        btn.classList.replace("bg-blue-600", "bg-green-600");
+        setTimeout(() => {
+            btn.innerHTML = `<span class="material-icons text-sm">content_copy</span> Copy Link`;
+            btn.classList.replace("bg-green-600", "bg-blue-600");
+        }, 2000);
+    });
+}
+
+function printQR() {
+    const canvas = document.querySelector("#qrcode canvas");
+    if (!canvas) { alert("Generate a QR code first."); return; }
+
+    const win = window.open("", "_blank");
+    win.document.write(`
+        <html><head><title>QR Code — Vocational Entry</title>
+        <style>
+            body { font-family: sans-serif; display: flex; justify-content: center;
+                   align-items: center; min-height: 100vh; margin: 0; background: white; }
+            .wrap { text-align: center; border: 2px solid #e2e8f0;
+                    border-radius: 16px; padding: 40px; max-width: 320px; }
+            p { margin: 8px 0; color: #64748b; font-size: 13px; }
+            img { display: block; margin: 0 auto; }
+            .label { font-size: 10px; font-weight: bold; letter-spacing: 0.1em;
+                     text-transform: uppercase; color: #94a3b8; }
+        </style></head>
+        <body>
+            <div class="wrap">
+                <p class="label">Vocational Skills Entry</p>
+                <img src="${canvas.toDataURL()}" width="220" height="220">
+                <p>Scan with your phone camera<br>to open the entry form</p>
+            </div>
+        </body></html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 400);
 }
 </script>
 
