@@ -6,7 +6,6 @@
     <title>Vocational Entry</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
     <style>
         .score-btn { transition: all 0.2s ease; }
     </style>
@@ -18,121 +17,90 @@
 <nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
     <div class="max-w-5xl mx-auto px-4">
         <div class="flex justify-between h-16 items-center">
-
-            <!-- Left Navigation -->
             <div class="flex items-center gap-6 text-sm font-semibold">
-
-                <a href="index.html" 
-                   class="flex items-center gap-1 hover:text-yellow-300 transition">
+                <a href="index.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
                     <span class="material-icons text-yellow-400">home</span>
                     Dashboard
                 </a>
-
-                <a href="entry.html"
-                   class="flex items-center gap-1 text-yellow-300 font-bold">
+                <a href="#" class="flex items-center gap-1 text-yellow-300 font-bold">
                     <span class="material-icons">edit_note</span>
                     Entry
                 </a>
-
-                <a href="report.html"
-                   class="flex items-center gap-1 hover:text-yellow-300 transition">
+                <a href="report.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
                     <span class="material-icons">analytics</span>
                     Reports
                 </a>
-
-                <a href="admin.html"
-                   class="flex items-center gap-1 hover:text-yellow-300 transition">
+                <a href="admin.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
                     <span class="material-icons">admin_panel_settings</span>
                     Admin
                 </a>
             </div>
-
-            <!-- Right Settings Button -->
-            <button onclick="toggleSettings()" 
-                    class="text-blue-200 hover:text-white transition">
-                <span class="material-icons">tune</span>
-            </button>
         </div>
     </div>
 </nav>
 
-<!-- SETTINGS PANEL -->
-<div id="settingsPanel" class="hidden bg-slate-800 text-white p-4">
-    <div class="max-w-3xl mx-auto">
-
-        <label class="text-xs uppercase font-bold text-gray-400">
-            Database Connection URL
-        </label>
-
-        <div class="flex gap-2 mt-1">
-            <input type="text" id="apiUrlInput"
-                   placeholder="Paste Google Script URL…"
-                   class="flex-1 bg-black/30 text-sm p-2 rounded border border-slate-600 
-                          focus:border-blue-500 outline-none font-mono text-green-400">
-
-            <button onclick="saveUrl()"
-                    class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded text-xs font-bold uppercase">
-                Save
-            </button>
+<!-- NOT CONFIGURED MESSAGE -->
+<div id="notConfigured" class="hidden max-w-xl mx-auto mt-16 px-6">
+    <div class="bg-white rounded-2xl shadow-md border border-red-100 p-8 text-center">
+        <span class="material-icons text-red-400 text-5xl mb-4 block">link_off</span>
+        <h2 class="text-xl font-bold text-slate-800 mb-2">Database Not Configured</h2>
+        <p class="text-slate-500 text-sm mb-6">
+            This form needs a special link to connect to the data system.<br>
+            Please ask your program coordinator for the correct QR code or link.
+        </p>
+        <div class="bg-slate-50 rounded-lg p-4 text-left text-xs text-slate-400 font-mono break-all">
+            Expected URL format:<br>
+            <span class="text-blue-500">entry.html?db=https://script.google.com/...</span>
         </div>
-
     </div>
 </div>
 
 <!-- MAIN FORM -->
-<div class="max-w-3xl mx-auto px-4 py-6">
+<div id="mainForm" class="hidden max-w-3xl mx-auto px-4 py-6">
+
+    <!-- DB source badge -->
+    <div id="dbBadge" class="mb-3 flex items-center gap-2 text-xs text-slate-400">
+        <span class="material-icons text-sm text-green-500">cloud_done</span>
+        <span id="dbBadgeText">Connected</span>
+    </div>
 
     <form id="entryForm" onsubmit="submitEntry(event)" class="space-y-6">
 
         <!-- STUDENT SECTION -->
         <div class="bg-white p-5 rounded-xl shadow-sm border">
-
             <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
                 <span class="material-icons text-blue-600">person</span> Student Details
             </h2>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                 <div>
                     <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Student Name</label>
-                    <select id="studentSelect" required 
-                            class="w-full p-3 border rounded-lg bg-slate-50">
+                    <select id="studentSelect" required class="w-full p-3 border rounded-lg bg-slate-50">
                         <option>Loading...</option>
                     </select>
                 </div>
-
                 <div>
                     <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Job Site</label>
-                    <select id="siteSelect" required 
-                            class="w-full p-3 border rounded-lg bg-slate-50">
+                    <select id="siteSelect" required class="w-full p-3 border rounded-lg bg-slate-50">
                         <option>Loading...</option>
                     </select>
                 </div>
-
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-
                 <div>
                     <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Date</label>
-                    <input type="date" id="dateInput" required 
-                           class="w-full p-3 border rounded-lg bg-slate-50">
+                    <input type="date" id="dateInput" required class="w-full p-3 border rounded-lg bg-slate-50">
                 </div>
-
                 <div>
                     <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Evaluator</label>
-                    <input type="text" id="evaluatorInput"
-                           placeholder="Your Name" required
+                    <input type="text" id="evaluatorInput" placeholder="Your Name" required
                            class="w-full p-3 border rounded-lg bg-slate-50">
                 </div>
-
             </div>
         </div>
 
         <!-- SCORING KEY -->
         <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
             <h3 class="text-xs font-bold uppercase text-blue-800 mb-3 text-center">Scoring Key</h3>
-
             <div class="grid grid-cols-5 gap-1 text-center text-[10px]">
                 <div><span class="font-bold text-red-500">0</span><div>Refusal</div></div>
                 <div><span class="font-bold text-orange-500">1</span><div>Physical</div></div>
@@ -144,22 +112,17 @@
 
         <!-- SKILLS -->
         <div class="bg-white p-5 rounded-xl shadow-sm border">
-
             <h2 class="text-lg font-bold text-slate-800 mb-6 border-b pb-2 flex items-center gap-2">
                 <span class="material-icons text-purple-600">psychology</span> Skills Assessment
             </h2>
-
             <div id="skillsContainer" class="space-y-6"></div>
-
         </div>
 
         <!-- NOTES -->
         <div class="bg-white p-5 rounded-xl shadow-sm border">
-
             <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
                 <span class="material-icons text-slate-600">note</span> Notes
             </h2>
-
             <textarea id="commentsInput" rows="3"
                       placeholder="Specific details about today's performance..."
                       class="w-full p-3 border rounded-lg bg-slate-50"></textarea>
@@ -199,32 +162,54 @@ const SCORE_STYLES = {
 
 const INACTIVE = "bg-slate-50 text-slate-400 border-slate-200";
 let skillScores = {};
+let API_URL = null;
 
-const API_URL = localStorage.getItem("vocational_backend_url");
+/************************************************************
+ * RESOLVE API URL
+ * Priority: ?db= param → localStorage → show error
+ ************************************************************/
+function resolveApiUrl() {
+    // 1. Check URL parameter
+    const params = new URLSearchParams(window.location.search);
+    const paramUrl = params.get("db");
+
+    if (paramUrl) {
+        // Save it for next time so they don't need the QR again on this device
+        localStorage.setItem("vocational_backend_url", paramUrl);
+        return paramUrl;
+    }
+
+    // 2. Fall back to localStorage (previously scanned on this device)
+    const stored = localStorage.getItem("vocational_backend_url");
+    if (stored) return stored;
+
+    // 3. Nothing found
+    return null;
+}
 
 /************************************************************
  * INIT
  ************************************************************/
 window.onload = () => {
+    API_URL = resolveApiUrl();
+
+    if (!API_URL) {
+        document.getElementById("notConfigured").classList.remove("hidden");
+        return;
+    }
+
+    // Show source badge
+    const params = new URLSearchParams(window.location.search);
+    const fromParam = !!params.get("db");
+    document.getElementById("dbBadgeText").textContent = fromParam
+        ? "Connected via QR/link"
+        : "Connected (saved on this device)";
+
+    document.getElementById("mainForm").classList.remove("hidden");
     document.getElementById("dateInput").valueAsDate = new Date();
     renderSkills();
     loadDropdowns();
 };
-
-/************************************************************
- * SETTINGS PANEL
- ************************************************************/
-function toggleSettings() {
-    document.getElementById("settingsPanel").classList.toggle("hidden");
-}
-
-function saveUrl() {
-    const url = document.getElementById("apiUrlInput").value.trim();
-    if (!url) return;
-    
-    localStorage.setItem("vocational_backend_url", url);
-    alert("Saved!");
-}
 
 /************************************************************
  * SKILL BUTTONS
@@ -271,26 +256,18 @@ function updateAllButtons() {
 
 function updateButtons(idx) {
     const selected = skillScores[idx];
-
     for (let i = 0; i <= 4; i++) {
         const btn = document.getElementById(`btn_${idx}_${i}`);
-
-        btn.className =
-            (i === selected)
-                ? `score-btn py-3 rounded-lg border font-bold text-lg shadow-md ${SCORE_STYLES[i]}`
-                : `score-btn py-3 rounded-lg border font-bold text-lg shadow-sm ${INACTIVE}`;
+        btn.className = (i === selected)
+            ? `score-btn py-3 rounded-lg border font-bold text-lg shadow-md ${SCORE_STYLES[i]}`
+            : `score-btn py-3 rounded-lg border font-bold text-lg shadow-sm ${INACTIVE}`;
     }
 }
 
 /************************************************************
- * STUDENTS + SITES
+ * DROPDOWNS
  ************************************************************/
 async function loadDropdowns() {
-    if (!API_URL) {
-        alert("Database not configured.");
-        return;
-    }
-
     try {
         const sRes = await fetch(API_URL + "?action=getStudents");
         const sJson = await sRes.json();
@@ -312,12 +289,12 @@ async function loadDropdowns() {
 
     } catch (err) {
         console.error("Dropdown load error:", err);
-        alert("Failed to load students or sites.");
+        alert("Connected but failed to load students or sites. Check the script URL.");
     }
 }
 
 /************************************************************
- * SUBMIT ENTRY
+ * SUBMIT
  ************************************************************/
 async function submitEntry(e) {
     e.preventDefault();
