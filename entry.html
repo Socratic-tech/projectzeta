@@ -164,11 +164,12 @@ const SKILLS_LIST = [
 ];
 
 const SCORE_STYLES = {
-    0: "bg-red-500 text-white border-red-600",
-    1: "bg-orange-500 text-white border-orange-600",
-    2: "bg-yellow-500 text-white border-yellow-600",
-    3: "bg-blue-500 text-white border-blue-600",
-    4: "bg-green-600 text-white border-green-700"
+    0:    "bg-red-500 text-white border-red-600",
+    1:    "bg-orange-500 text-white border-orange-600",
+    2:    "bg-yellow-500 text-white border-yellow-600",
+    3:    "bg-blue-500 text-white border-blue-600",
+    4:    "bg-green-600 text-white border-green-700",
+    null: "bg-slate-300 text-slate-700 border-slate-400"
 };
 
 const INACTIVE = "bg-slate-50 text-slate-400 border-slate-200";
@@ -215,30 +216,40 @@ window.onload = () => {
 
 /************************************************************
  * SHARED SCORE GROUP RENDERER
- * key must be unique across both skills and tasks
+ * allowNA=true adds an N/A button and defaults score to null
  ************************************************************/
-function renderScoreGroup(container, label, key) {
-    skillScores[key] = 2;
+function renderScoreGroup(container, label, key, allowNA = false) {
+    skillScores[key] = allowNA ? null : 2;
 
-    // Safe DOM id: replace non-alphanumeric chars
     const safeId = key.replace(/[^a-zA-Z0-9]/g, "_");
 
     let html = `
         <div>
             <label class="block text-sm font-bold mb-2">${label}</label>
-            <div class="grid grid-cols-5 gap-2">
+            <div class="grid grid-cols-6 gap-2">
     `;
     for (let i = 0; i <= 4; i++) {
         html += `
             <button type="button"
                     id="btn_${safeId}_${i}"
-                    data-key="${key}"
-                    data-score="${i}"
                     onclick="setScore('${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', ${i})"
                     class="score-btn py-3 rounded-lg border font-bold text-lg shadow-sm">
                 ${i}
             </button>
         `;
+    }
+    if (allowNA) {
+        html += `
+            <button type="button"
+                    id="btn_${safeId}_null"
+                    onclick="setScore('${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', null)"
+                    class="score-btn py-3 rounded-lg border font-bold text-xs shadow-sm">
+                N/A
+            </button>
+        `;
+    } else {
+        // Placeholder to keep grid alignment on behavioral skills (5 cols only)
+        html = html.replace('grid-cols-6', 'grid-cols-5');
     }
     html += "</div></div>";
     container.innerHTML += html;
@@ -274,7 +285,7 @@ function renderTasks(tasks) {
 
     siteLabel.textContent = `— ${document.getElementById("siteSelect").value}`;
     section.classList.remove("hidden");
-    tasks.forEach(task => renderScoreGroup(container, task, `task:${task}`));
+    tasks.forEach(task => renderScoreGroup(container, task, `task:${task}`, true));
 }
 
 /************************************************************
@@ -288,12 +299,22 @@ function setScore(key, score) {
 function updateButtons(key) {
     const selected = skillScores[key];
     const safeId = key.replace(/[^a-zA-Z0-9]/g, "_");
+
+    // Update numeric buttons 0-4
     for (let i = 0; i <= 4; i++) {
         const btn = document.getElementById(`btn_${safeId}_${i}`);
         if (!btn) continue;
-        btn.className = (i === selected)
+        btn.className = (selected === i)
             ? `score-btn py-3 rounded-lg border font-bold text-lg shadow-md ${SCORE_STYLES[i]}`
             : `score-btn py-3 rounded-lg border font-bold text-lg shadow-sm ${INACTIVE}`;
+    }
+
+    // Update N/A button if present
+    const naBtn = document.getElementById(`btn_${safeId}_null`);
+    if (naBtn) {
+        naBtn.className = (selected === null)
+            ? `score-btn py-3 rounded-lg border font-bold text-xs shadow-md ${SCORE_STYLES[null]}`
+            : `score-btn py-3 rounded-lg border font-bold text-xs shadow-sm ${INACTIVE}`;
     }
 }
 
@@ -356,13 +377,16 @@ async function submitEntry(e) {
     btn.innerHTML = `<span class="material-icons animate-spin">refresh</span> Saving…`;
 
     // Combine behavioral skills + job tasks into one scores object
-    // Tasks are prefixed with "task:" to distinguish them in the sheet
+    // N/A tasks (null) are excluded entirely — not recorded in the sheet
     const scores = {};
     SKILLS_LIST.forEach(skill => {
         scores[skill] = skillScores[`skill:${skill}`] ?? 2;
     });
     currentTasks.forEach(task => {
-        scores[`task:${task}`] = skillScores[`task:${task}`] ?? 2;
+        const val = skillScores[`task:${task}`];
+        if (val !== null && val !== undefined) {
+            scores[`task:${task}`] = val;
+        }
     });
 
     const payload = {
