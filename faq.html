@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & FAQ — Vocational Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+        .faq-answer.open {
+            max-height: 600px;
+        }
+        .faq-chevron {
+            transition: transform 0.25s ease;
+        }
+        .faq-item.open .faq-chevron {
+            transform: rotate(180deg);
+        }
+        .faq-item.open .faq-question {
+            color: #1e40af;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-16">
+
+<!-- NAVBAR -->
+<nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-4">
+        <div class="flex justify-between h-16 items-center">
+            <div class="flex items-center gap-6 text-sm font-semibold">
+                <a href="index.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
+                    <span class="material-icons text-yellow-400">home</span>
+                    Dashboard
+                </a>
+                <a href="entry.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
+                    <span class="material-icons">edit_note</span>
+                    Entry
+                </a>
+                <a href="report.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
+                    <span class="material-icons">analytics</span>
+                    Reports
+                </a>
+                <a href="admin.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
+                    <span class="material-icons">admin_panel_settings</span>
+                    Admin
+                </a>
+                <a href="faq.html" class="flex items-center gap-1 text-yellow-300 font-bold">
+                    <span class="material-icons">help_outline</span>
+                    Help
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<div class="bg-blue-900 text-white pt-10 pb-14 px-4">
+    <div class="max-w-2xl mx-auto text-center">
+        <span class="material-icons text-yellow-400 text-5xl mb-3 block">help_outline</span>
+        <h1 class="text-3xl font-extrabold mb-2">How can we help?</h1>
+        <p class="text-blue-200 text-sm">Answers to common questions for paraprofessionals and evaluators.</p>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="max-w-2xl mx-auto px-4 -mt-6">
+
+    <!-- SECTION: Getting Started -->
+    <div class="mb-8">
+        <div class="flex items-center gap-2 mb-3 px-1">
+            <span class="material-icons text-blue-600">rocket_launch</span>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">Getting Started</h2>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden divide-y divide-slate-100">
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">How do I open the entry form on my phone?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        Scan the QR code posted at your job site with your phone's camera app. It will open the form automatically — no app download needed. Once you've scanned it once, your phone remembers the connection so you can go straight to the form in the future without scanning again.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">I see "Database Not Configured" — what do I do?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        This means your phone doesn't have the connection saved yet. You need to scan the QR code provided by your program coordinator — don't just type the web address directly into your browser. If you don't have the QR code, contact your coordinator and ask for the entry form link.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">Do I need to create an account or log in?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        No. The entry form has no login. Just open it, fill it out, and submit. You do need to type your name in the Evaluator field each time so the record shows who completed the evaluation.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SECTION: Filling Out the Form -->
+    <div class="mb-8">
+        <div class="flex items-center gap-2 mb-3 px-1">
+            <span class="material-icons text-purple-600">edit_note</span>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">Filling Out the Form</h2>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden divide-y divide-slate-100">
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">What do the score numbers mean?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        Each skill is scored on a scale of 0 to 4:
+                        <ul class="mt-3 space-y-2">
+                            <li class="flex items-start gap-2"><span class="font-bold text-red-500 w-4">0</span><span><strong>Not at All</strong> — Student did not perform the skill.</span></li>
+                            <li class="flex items-start gap-2"><span class="font-bold text-orange-500 w-4">1</span><span><strong>Direct Prompting</strong> — Required hands-on or step-by-step guidance.</span></li>
+                            <li class="flex items-start gap-2"><span class="font-bold text-yellow-600 w-4">2</span><span><strong>Indirect Prompting</strong> — Needed a verbal reminder or gesture.</span></li>
+                            <li class="flex items-start gap-2"><span class="font-bold text-blue-500 w-4">3</span><span><strong>Independent</strong> — Performed the skill without any prompting.</span></li>
+                            <li class="flex items-start gap-2"><span class="font-bold text-green-600 w-4">4</span><span><strong>Helping/Teaching</strong> — Performed the skill and helped or modeled it for others.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">What is the difference between Behavioral Skills and Job Tasks?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        <strong>Behavioral Skills</strong> are the 16 core work-readiness skills that apply at every site — things like punctuality, communication, and attitude. You score these every time.<br><br>
+                        <strong>Job Tasks</strong> are specific to the job site — for example, a grocery site might have tasks like "Facing shelves" or "Operating register." These only appear if tasks have been set up for that site by your coordinator.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">What does N/A mean on a job task?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        N/A means the task didn't come up that day — it wasn't applicable. For example, if a student's job task includes "Operating the baler" but the baler wasn't needed that shift, select N/A. This keeps it out of their averages rather than counting as a zero. Job tasks default to N/A, so you only need to change it if the task actually happened.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">I don't see the student I need in the dropdown — what do I do?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        Students are managed by your program coordinator in the Admin panel. If a student is missing, contact your coordinator and ask them to add the student to the system. You won't be able to submit an entry until they appear in the list.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">Do I need to fill out the Notes field?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        Notes are optional but encouraged. Use them to record anything specific that happened — a particularly strong or challenging moment, a behavior that context helps explain, or anything that a score alone doesn't capture. Notes show up on the student's evaluation history in reports.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SECTION: Submitting & Troubleshooting -->
+    <div class="mb-8">
+        <div class="flex items-center gap-2 mb-3 px-1">
+            <span class="material-icons text-green-600">check_circle</span>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">Submitting & Troubleshooting</h2>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden divide-y divide-slate-100">
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">How do I know my entry was saved successfully?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        After tapping Submit, the button will turn green and show a checkmark with "Saved!" The form will then reset automatically so you're ready for the next entry. If the button stays blue or shows an error, the save may have failed — check your internet connection and try again.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">I submitted but the form didn't reset — did it save?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        If you saw the green "Saved!" confirmation, the entry was recorded even if the reset seemed slow. If you're unsure, contact your coordinator — they can check the data directly in the spreadsheet to confirm whether it came through.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">The page won't load or shows an error — what should I try?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        Try these steps in order:
+                        <ol class="mt-3 space-y-2 list-decimal list-inside">
+                            <li>Check that your phone has an internet connection (WiFi or cellular).</li>
+                            <li>Close the browser tab and reopen the link or re-scan the QR code.</li>
+                            <li>Try a different browser (Chrome or Safari work best).</li>
+                            <li>If none of those work, let your coordinator know — the system may need attention on their end.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-800">Can I go back and edit an entry after submitting?</span>
+                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                    <div class="pb-4">
+                        Not through the app. Once an entry is submitted it goes directly to the spreadsheet. If you need to correct a mistake, contact your coordinator — they can edit or remove the record from the spreadsheet directly.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CONTACT FOOTER -->
+    <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5 text-center text-sm text-blue-700">
+        <span class="material-icons text-blue-400 block mb-2">support_agent</span>
+        <strong>Still have questions?</strong><br>
+        <span class="text-blue-500">Contact your program coordinator for help.</span>
+    </div>
+
+</div>
+
+<script>
+function toggle(item) {
+    const answer = item.querySelector(".faq-answer");
+    const isOpen = item.classList.contains("open");
+
+    // Close all others
+    document.querySelectorAll(".faq-item.open").forEach(el => {
+        el.classList.remove("open");
+        el.querySelector(".faq-answer").classList.remove("open");
+    });
+
+    // Toggle clicked
+    if (!isOpen) {
+        item.classList.add("open");
+        answer.classList.add("open");
+    }
+}
+</script>
+
+</body>
+</html>
