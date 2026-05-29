@@ -241,12 +241,91 @@
  ************************************************************/
 const url = localStorage.getItem("vocational_backend_url");
 const storedAdminPass = localStorage.getItem("vt_admin_password");
+
 let qrInstance = null;
 let qrFullUrl = "";
+let allTasks = Object.create(null);
+let currentSites = [];
 
-window.onload = () => {
+window.addEventListener("load", () => {
     if (!url) window.location.href = "setup.html";
-};
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const passInput = document.getElementById("adminPassInput");
+    if (passInput) {
+        passInput.addEventListener("keydown", event => {
+            if (event.key === "Enter") verifyPassword();
+        });
+    }
+
+    const siteInput = document.getElementById("newSiteInput");
+    if (siteInput) {
+        siteInput.addEventListener("keydown", event => {
+            if (event.key === "Enter") addSite();
+        });
+    }
+});
+
+/************************************************************
+ * SAFE HELPERS
+ ************************************************************/
+function asText(value) {
+    return value === null || value === undefined ? "" : String(value).trim();
+}
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    }[char]));
+}
+
+function clearChildren(element) {
+    while (element.firstChild) element.removeChild(element.firstChild);
+}
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function buildGetUrl(action) {
+    return `${url}?action=${encodeURIComponent(action)}&_=${Date.now()}`;
+}
+
+async function postAction(payload) {
+    if (!url) throw new Error("No database URL configured.");
+
+    await fetch(url, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+    });
+}
+
+function makeIcon(name, className = "") {
+    const span = document.createElement("span");
+    span.className = `material-icons ${className}`.trim();
+    span.textContent = name;
+    return span;
+}
+
+function showSitesMessage(message, isError = false) {
+    const list = document.getElementById("sitesList");
+    if (!list) return;
+
+    clearChildren(list);
+
+    const p = document.createElement("p");
+    p.className = `text-xs text-center py-4 ${isError ? "text-red-500 font-bold" : "text-slate-400"}`;
+    p.textContent = message;
+
+    list.appendChild(p);
+}
 
 /************************************************************
  * AUTH
@@ -258,6 +337,7 @@ function verifyPassword() {
     if (typed === storedAdminPass) {
         document.getElementById("authModal").classList.add("hidden");
         document.getElementById("adminContent").classList.remove("hidden");
+
         loadStudents();
         loadSites();
     } else {
@@ -271,20 +351,24 @@ function verifyPassword() {
  ************************************************************/
 async function loadStudents() {
     try {
-        const res = await fetch(url + "?action=getStudents");
+        const res = await fetch(buildGetUrl("getStudents"));
         const json = await res.json();
+
         const tbody = document.getElementById("studentTableBody");
         tbody.innerHTML = "";
-        json.data.forEach(s => {
+
+        (json.data || []).forEach(s => {
+            const active = s.active === true || String(s.active).toLowerCase() === "true";
+
             tbody.innerHTML += `
                 <tr class="border-b hover:bg-slate-50">
-                    <td class="px-4 py-3 font-mono text-xs">${s.student_id}</td>
-                    <td class="px-4 py-3 font-medium">${s.name}</td>
-                    <td class="px-4 py-3">${s.grade || ""}</td>
+                    <td class="px-4 py-3 font-mono text-xs">${escapeHTML(s.student_id)}</td>
+                    <td class="px-4 py-3 font-medium">${escapeHTML(s.name)}</td>
+                    <td class="px-4 py-3">${escapeHTML(s.grade || "")}</td>
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 text-[10px] font-bold rounded-full
-                              ${s.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}">
-                            ${s.active ? "Active" : "Inactive"}
+                              ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}">
+                            ${active ? "Active" : "Inactive"}
                         </span>
                     </td>
                 </tr>`;
@@ -295,195 +379,345 @@ async function loadStudents() {
 }
 
 async function addStudentAdmin() {
-    const name = document.getElementById("newStudentName").value.trim();
-    const grade = document.getElementById("newStudentGrade").value.trim();
-    if (!name) { alert("Please enter a student name."); return; }
+    const nameInput = document.getElementById("newStudentName");
+    const gradeInput = document.getElementById("newStudentGrade");
 
-    await fetch(url, {
-        method: "POST", mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "addStudent", name, grade })
-    });
+    const name = nameInput.value.trim();
+    const grade = gradeInput.value.trim();
 
-    document.getElementById("newStudentName").value = "";
-    document.getElementById("newStudentGrade").value = "";
-    loadStudents();
+    if (!name) {
+        alert("Please enter a student name.");
+        return;
+    }
+
+    try {
+        await postAction({
+            action: "addStudent",
+            name,
+            grade
+        });
+
+        nameInput.value = "";
+        gradeInput.value = "";
+
+        await delay(600);
+        loadStudents();
+    } catch (err) {
+        console.error("Error adding student:", err);
+        alert("Could not add the student. Check the browser console and Apps Script deployment.");
+    }
 }
 
 /************************************************************
  * SITES + TASKS
  ************************************************************/
-let allTasks = {}; // { site_name: [task, task, ...] }
+async function loadSites(openSiteName = "") {
+    if (!url) return;
 
-async function loadSites() {
     try {
+        showSitesMessage("Loading sites…");
+
         const [siteRes, taskRes] = await Promise.all([
-            fetch(url + "?action=getSites"),
-            fetch(url + "?action=getTasks")
+            fetch(buildGetUrl("getSites")),
+            fetch(buildGetUrl("getTasks"))
         ]);
+
         const siteJson = await siteRes.json();
         const taskJson = await taskRes.json();
 
-        // Build task lookup by site
-        allTasks = {};
+        currentSites = (siteJson.data || [])
+            .map(asText)
+            .filter(Boolean)
+            .filter((site, index, arr) =>
+                arr.findIndex(s => s.toLowerCase() === site.toLowerCase()) === index
+            )
+            .sort((a, b) => a.localeCompare(b));
+
+        allTasks = Object.create(null);
+
         (taskJson.data || []).forEach(t => {
-            if (!allTasks[t.site_name]) allTasks[t.site_name] = [];
-            allTasks[t.site_name].push(t.task_name);
+            const siteName = asText(t.site_name);
+            const taskName = asText(t.task_name);
+
+            if (!siteName || !taskName) return;
+
+            if (!allTasks[siteName]) allTasks[siteName] = [];
+
+            if (!allTasks[siteName].includes(taskName)) {
+                allTasks[siteName].push(taskName);
+            }
         });
 
-        const list = document.getElementById("sitesList");
-        list.innerHTML = "";
-
-        siteJson.data.forEach(site => {
-            const tasks = allTasks[site] || [];
-            const taskCount = tasks.length;
-            const safeId = site.replace(/[^a-zA-Z0-9]/g, "_");
-
-            list.innerHTML += `
-                <div class="border rounded-lg overflow-hidden">
-                    <!-- Site header row -->
-                    <div class="flex items-center justify-between bg-slate-50 px-3 py-2">
-                        <button onclick="toggleSite('${safeId}')"
-                                class="flex items-center gap-2 flex-1 text-left">
-                            <span class="material-icons text-sm text-slate-400 transition-transform" 
-                                  id="chevron_${safeId}">chevron_right</span>
-                            <span class="text-sm font-semibold text-slate-700">${site}</span>
-                            <span class="text-xs text-slate-400 ml-1">(${taskCount} task${taskCount !== 1 ? "s" : ""})</span>
-                        </button>
-                        <button onclick="deleteSite('${site}')" 
-                                class="text-slate-300 hover:text-red-500 ml-2">
-                            <span class="material-icons text-sm">delete</span>
-                        </button>
-                    </div>
-
-                    <!-- Expandable task panel -->
-                    <div id="tasks_${safeId}" class="hidden bg-white px-3 pb-3 pt-2 border-t">
-
-                        <!-- Task list -->
-                        <ul id="taskList_${safeId}" class="space-y-1 mb-3">
-                            ${tasks.length === 0
-                                ? `<li class="text-xs text-slate-400 italic py-1">No tasks yet — add one below.</li>`
-                                : tasks.map(t => taskItemHTML(site, t, safeId)).join("")}
-                        </ul>
-
-                        <!-- Add task input -->
-                        <div class="flex gap-2">
-                            <input type="text"
-                                   id="newTask_${safeId}"
-                                   placeholder="New task name…"
-                                   class="flex-1 p-1.5 border rounded text-xs"
-                                   onkeydown="if(event.key==='Enter') addTask('${site}','${safeId}')">
-                            <button onclick="addTask('${site}','${safeId}')"
-                                    class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-2 rounded">
-                                ADD
-                            </button>
-                        </div>
-
-                    </div>
-                </div>`;
-        });
-
+        renderSites(openSiteName);
     } catch (err) {
         console.error("Error loading sites:", err);
+        showSitesMessage("Error loading sites. Check the browser console.", true);
     }
 }
 
-function taskItemHTML(site, taskName, safeId) {
-    const escapedTask = taskName.replace(/'/g, "\\'");
-    return `
-        <li class="flex items-center justify-between bg-slate-50 rounded px-2 py-1">
-            <span class="text-xs text-slate-700">${taskName}</span>
-            <button onclick="deleteTask('${site}','${escapedTask}','${safeId}')"
-                    class="text-slate-300 hover:text-red-500">
-                <span class="material-icons text-sm">close</span>
-            </button>
-        </li>`;
+function renderSites(openSiteName = "") {
+    const list = document.getElementById("sitesList");
+    if (!list) return;
+
+    clearChildren(list);
+
+    if (currentSites.length === 0) {
+        showSitesMessage("No sites yet — add one above.");
+        return;
+    }
+
+    currentSites.forEach(siteName => {
+        const tasks = allTasks[siteName] || [];
+        const card = createSiteCard(siteName, tasks, siteName === openSiteName);
+        list.appendChild(card);
+    });
 }
 
-function toggleSite(safeId) {
-    const panel = document.getElementById(`tasks_${safeId}`);
-    const chevron = document.getElementById(`chevron_${safeId}`);
-    const isHidden = panel.classList.toggle("hidden");
-    chevron.style.transform = isHidden ? "" : "rotate(90deg)";
+function createSiteCard(siteName, tasks, startOpen = false) {
+    const card = document.createElement("div");
+    card.className = "border rounded-lg overflow-hidden";
+
+    const header = document.createElement("div");
+    header.className = "flex items-center justify-between bg-slate-50 px-3 py-2";
+
+    const toggleButton = document.createElement("button");
+    toggleButton.type = "button";
+    toggleButton.className = "flex items-center gap-2 flex-1 text-left";
+
+    const chevron = makeIcon("chevron_right", "text-sm text-slate-400 transition-transform");
+    if (startOpen) chevron.style.transform = "rotate(90deg)";
+
+    const siteLabel = document.createElement("span");
+    siteLabel.className = "text-sm font-semibold text-slate-700";
+    siteLabel.textContent = siteName;
+
+    const countLabel = document.createElement("span");
+    countLabel.className = "text-xs text-slate-400 ml-1";
+    countLabel.textContent = formatTaskCount(tasks.length);
+
+    toggleButton.appendChild(chevron);
+    toggleButton.appendChild(siteLabel);
+    toggleButton.appendChild(countLabel);
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "text-slate-300 hover:text-red-500 ml-2";
+    deleteButton.title = `Delete ${siteName}`;
+    deleteButton.appendChild(makeIcon("delete", "text-sm"));
+
+    deleteButton.addEventListener("click", event => {
+        event.stopPropagation();
+        deleteSite(siteName);
+    });
+
+    header.appendChild(toggleButton);
+    header.appendChild(deleteButton);
+
+    const panel = document.createElement("div");
+    panel.className = "bg-white px-3 pb-3 pt-2 border-t";
+
+    if (!startOpen) {
+        panel.classList.add("hidden");
+    }
+
+    toggleButton.addEventListener("click", () => {
+        const isHidden = panel.classList.toggle("hidden");
+        chevron.style.transform = isHidden ? "" : "rotate(90deg)";
+    });
+
+    const taskList = document.createElement("ul");
+    taskList.className = "space-y-1 mb-3";
+
+    renderTaskList(taskList, siteName, countLabel);
+
+    const addRow = document.createElement("div");
+    addRow.className = "flex gap-2";
+
+    const taskInput = document.createElement("input");
+    taskInput.type = "text";
+    taskInput.placeholder = "New task name…";
+    taskInput.className = "flex-1 p-1.5 border rounded text-xs";
+
+    taskInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            addTask(siteName, taskInput);
+        }
+    });
+
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-2 rounded";
+    addButton.textContent = "ADD";
+
+    addButton.addEventListener("click", () => {
+        addTask(siteName, taskInput);
+    });
+
+    addRow.appendChild(taskInput);
+    addRow.appendChild(addButton);
+
+    panel.appendChild(taskList);
+    panel.appendChild(addRow);
+
+    card.appendChild(header);
+    card.appendChild(panel);
+
+    return card;
+}
+
+function renderTaskList(taskList, siteName, countLabel) {
+    clearChildren(taskList);
+
+    const tasks = allTasks[siteName] || [];
+    countLabel.textContent = formatTaskCount(tasks.length);
+
+    if (tasks.length === 0) {
+        const empty = document.createElement("li");
+        empty.className = "text-xs text-slate-400 italic py-1";
+        empty.textContent = "No tasks yet — add one below.";
+        taskList.appendChild(empty);
+        return;
+    }
+
+    tasks.forEach(taskName => {
+        const li = document.createElement("li");
+        li.className = "flex items-center justify-between bg-slate-50 rounded px-2 py-1";
+
+        const label = document.createElement("span");
+        label.className = "text-xs text-slate-700";
+        label.textContent = taskName;
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "text-slate-300 hover:text-red-500";
+        deleteButton.title = `Delete ${taskName}`;
+        deleteButton.appendChild(makeIcon("close", "text-sm"));
+
+        deleteButton.addEventListener("click", () => {
+            deleteTask(siteName, taskName);
+        });
+
+        li.appendChild(label);
+        li.appendChild(deleteButton);
+
+        taskList.appendChild(li);
+    });
+}
+
+function formatTaskCount(count) {
+    return `(${count} task${count !== 1 ? "s" : ""})`;
 }
 
 async function addSite() {
     const input = document.getElementById("newSiteInput");
     const name = input.value.trim();
+
     if (!name) return;
-    await fetch(url, {
-        method: "POST", mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "addSite", site_name: name })
-    });
-    input.value = "";
-    loadSites();
+
+    const alreadyExists = currentSites.some(site => site.toLowerCase() === name.toLowerCase());
+
+    if (alreadyExists) {
+        alert(`"${name}" already exists.`);
+        return;
+    }
+
+    try {
+        await postAction({
+            action: "addSite",
+            site_name: name
+        });
+
+        input.value = "";
+
+        currentSites.push(name);
+        currentSites.sort((a, b) => a.localeCompare(b));
+
+        if (!allTasks[name]) allTasks[name] = [];
+
+        renderSites(name);
+
+        await delay(600);
+        loadSites(name);
+    } catch (err) {
+        console.error("Error adding site:", err);
+        alert("Could not add the site. Check the browser console and Apps Script deployment.");
+    }
 }
 
 async function deleteSite(name) {
     if (!confirm(`Delete "${name}" and all its tasks?`)) return;
-    await fetch(url, {
-        method: "POST", mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "deleteSite", site_name: name })
-    });
-    loadSites();
+
+    try {
+        await postAction({
+            action: "deleteSite",
+            site_name: name
+        });
+
+        currentSites = currentSites.filter(site => site !== name);
+        delete allTasks[name];
+
+        renderSites();
+
+        await delay(600);
+        loadSites();
+    } catch (err) {
+        console.error("Error deleting site:", err);
+        alert("Could not delete the site. Check the browser console and Apps Script deployment.");
+    }
 }
 
-async function addTask(siteName, safeId) {
-    const input = document.getElementById(`newTask_${safeId}`);
+async function addTask(siteName, input) {
     const taskName = input.value.trim();
+
     if (!taskName) return;
 
-    await fetch(url, {
-        method: "POST", mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "addTask", site_name: siteName, task_name: taskName })
-    });
+    try {
+        await postAction({
+            action: "addTask",
+            site_name: siteName,
+            task_name: taskName
+        });
 
-    input.value = "";
+        input.value = "";
 
-    // Optimistically update UI without full reload
-    if (!allTasks[siteName]) allTasks[siteName] = [];
-    allTasks[siteName].push(taskName);
+        if (!allTasks[siteName]) {
+            allTasks[siteName] = [];
+        }
 
-    const taskList = document.getElementById(`taskList_${safeId}`);
-    // Remove "no tasks" placeholder if present
-    const placeholder = taskList.querySelector("li.italic");
-    if (placeholder) placeholder.remove();
-    taskList.insertAdjacentHTML("beforeend", taskItemHTML(siteName, taskName, safeId));
+        if (!allTasks[siteName].includes(taskName)) {
+            allTasks[siteName].push(taskName);
+        }
 
-    // Update count label
-    const countEl = taskList.closest(".border.rounded-lg")
-        .querySelector(".text-xs.text-slate-400.ml-1");
-    if (countEl) {
-        const c = allTasks[siteName].length;
-        countEl.textContent = `(${c} task${c !== 1 ? "s" : ""})`;
+        renderSites(siteName);
+
+        await delay(600);
+        loadSites(siteName);
+    } catch (err) {
+        console.error("Error adding task:", err);
+        alert("Could not add the task. Check the browser console and Apps Script deployment.");
     }
 }
 
-async function deleteTask(siteName, taskName, safeId) {
-    await fetch(url, {
-        method: "POST", mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "deleteTask", site_name: siteName, task_name: taskName })
-    });
+async function deleteTask(siteName, taskName) {
+    try {
+        await postAction({
+            action: "deleteTask",
+            site_name: siteName,
+            task_name: taskName
+        });
 
-    // Remove from local state and re-render just the task list
-    if (allTasks[siteName]) {
-        allTasks[siteName] = allTasks[siteName].filter(t => t !== taskName);
+        if (allTasks[siteName]) {
+            allTasks[siteName] = allTasks[siteName].filter(task => task !== taskName);
+        }
+
+        renderSites(siteName);
+
+        await delay(600);
+        loadSites(siteName);
+    } catch (err) {
+        console.error("Error deleting task:", err);
+        alert("Could not delete the task. Check the browser console and Apps Script deployment.");
     }
-
-    const taskList = document.getElementById(`taskList_${safeId}`);
-    taskList.innerHTML = allTasks[siteName].length === 0
-        ? `<li class="text-xs text-slate-400 italic py-1">No tasks yet — add one below.</li>`
-        : allTasks[siteName].map(t => taskItemHTML(siteName, t, safeId)).join("");
-
-    // Update count label
-    const c = (allTasks[siteName] || []).length;
-    const countEl = taskList.closest(".border.rounded-lg")
-        .querySelector(".text-xs.text-slate-400.ml-1");
-    if (countEl) countEl.textContent = `(${c} task${c !== 1 ? "s" : ""})`;
 }
 
 /************************************************************
@@ -510,12 +744,11 @@ function generateQR() {
     const separator = base.includes("?") ? "&" : "?";
     qrFullUrl = `${base}${separator}db=${encodeURIComponent(url)}`;
 
-    // Update link box
     document.getElementById("qrLinkBox").textContent = qrFullUrl;
 
-    // Regenerate QR
     const qrDiv = document.getElementById("qrcode");
     qrDiv.innerHTML = "";
+
     qrInstance = new QRCode(qrDiv, {
         text: qrFullUrl,
         width: 180,
@@ -530,44 +763,122 @@ function generateQR() {
 
 function copyQrLink() {
     if (!qrFullUrl) return;
-    navigator.clipboard.writeText(qrFullUrl).then(() => {
+
+    const markCopied = () => {
         const btn = document.getElementById("qrCopyBtn");
+
         btn.innerHTML = `<span class="material-icons text-sm">check</span> Copied!`;
         btn.classList.replace("bg-blue-600", "bg-green-600");
+
         setTimeout(() => {
             btn.innerHTML = `<span class="material-icons text-sm">content_copy</span> Copy Link`;
             btn.classList.replace("bg-green-600", "bg-blue-600");
         }, 2000);
-    });
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard
+            .writeText(qrFullUrl)
+            .then(markCopied)
+            .catch(() => fallbackCopy(qrFullUrl, markCopied));
+    } else {
+        fallbackCopy(qrFullUrl, markCopied);
+    }
+}
+
+function fallbackCopy(text, onSuccess) {
+    const textarea = document.createElement("textarea");
+
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+        document.execCommand("copy");
+        if (onSuccess) onSuccess();
+    } catch (err) {
+        console.error("Copy failed:", err);
+        alert("Could not copy automatically. Select and copy the generated link manually.");
+    } finally {
+        document.body.removeChild(textarea);
+    }
 }
 
 function printQR() {
     const canvas = document.querySelector("#qrcode canvas");
-    if (!canvas) { alert("Generate a QR code first."); return; }
+
+    if (!canvas) {
+        alert("Generate a QR code first.");
+        return;
+    }
 
     const win = window.open("", "_blank");
+
+    if (!win) {
+        alert("Popup blocked. Allow popups for this site, then try again.");
+        return;
+    }
+
     win.document.write(`
-        <html><head><title>QR Code — Vocational Entry</title>
-        <style>
-            body { font-family: sans-serif; display: flex; justify-content: center;
-                   align-items: center; min-height: 100vh; margin: 0; background: white; }
-            .wrap { text-align: center; border: 2px solid #e2e8f0;
-                    border-radius: 16px; padding: 40px; max-width: 320px; }
-            p { margin: 8px 0; color: #64748b; font-size: 13px; }
-            img { display: block; margin: 0 auto; }
-            .label { font-size: 10px; font-weight: bold; letter-spacing: 0.1em;
-                     text-transform: uppercase; color: #94a3b8; }
-        </style></head>
+        <html>
+        <head>
+            <title>QR Code — Vocational Entry</title>
+            <style>
+                body {
+                    font-family: sans-serif;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    margin: 0;
+                    background: white;
+                }
+
+                .wrap {
+                    text-align: center;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 16px;
+                    padding: 40px;
+                    max-width: 320px;
+                }
+
+                p {
+                    margin: 8px 0;
+                    color: #64748b;
+                    font-size: 13px;
+                }
+
+                img {
+                    display: block;
+                    margin: 0 auto;
+                }
+
+                .label {
+                    font-size: 10px;
+                    font-weight: bold;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    color: #94a3b8;
+                }
+            </style>
+        </head>
         <body>
             <div class="wrap">
                 <p class="label">Vocational Skills Entry</p>
                 <img src="${canvas.toDataURL()}" width="220" height="220">
                 <p>Scan with your phone camera<br>to open the entry form</p>
             </div>
-        </body></html>
+        </body>
+        </html>
     `);
+
     win.document.close();
     win.focus();
+
     setTimeout(() => win.print(), 400);
 }
 </script>
