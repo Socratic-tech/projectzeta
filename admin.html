@@ -55,8 +55,9 @@
         <input type="password" id="adminPassInput"
                placeholder="Password"
                class="w-full p-3 border rounded-lg mb-4 text-center text-lg">
-        <button onclick="verifyPassword()"
-                class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg">
+        <button id="unlockBtn" onclick="verifyPassword()"
+                class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg
+                       disabled:opacity-60 disabled:cursor-not-allowed">
             Unlock Dashboard
         </button>
         <p id="authError" class="text-red-600 text-xs font-bold mt-3 hidden">Incorrect Password</p>
@@ -240,7 +241,10 @@
  * CONFIG
  ************************************************************/
 const url = localStorage.getItem("vocational_backend_url");
-const storedAdminPass = localStorage.getItem("vt_admin_password");
+// Offline fallback only. The password is read from the Settings tab
+// at unlock time, so a change in the spreadsheet takes effect right
+// away and a device that never ran the setup wizard can still sign in.
+const cachedAdminPass = localStorage.getItem("vt_admin_password");
 
 let qrInstance = null;
 let qrFullUrl = "";
@@ -330,20 +334,72 @@ function showSitesMessage(message, isError = false) {
 /************************************************************
  * AUTH
  ************************************************************/
-function verifyPassword() {
+/**
+ * Checks the typed password against the Settings tab.
+ *
+ * Previously this compared against a copy cached in localStorage by
+ * the setup wizard. That produced two bugs: changing the password in
+ * the spreadsheet had no effect until the wizard was re-run on every
+ * device, and any device that had the backend URL but never ran the
+ * wizard (anyone who scanned the entry QR code) had no cached copy at
+ * all, so every password was rejected.
+ */
+async function verifyPassword() {
     const typed = document.getElementById("adminPassInput").value.trim();
-    const err = document.getElementById("authError");
+    const err   = document.getElementById("authError");
+    const btn   = document.getElementById("unlockBtn");
 
-    if (typed === storedAdminPass) {
-        document.getElementById("authModal").classList.add("hidden");
-        document.getElementById("adminContent").classList.remove("hidden");
+    const originalLabel = btn.textContent.trim();
+    btn.disabled = true;
+    btn.textContent = "Checking\u2026";
+    err.classList.add("hidden");
 
-        loadStudents();
-        loadSites();
-    } else {
-        err.classList.remove("hidden");
-        err.innerText = "Incorrect Password";
+    let livePass = null;
+    try {
+        const res  = await fetch(buildGetUrl("getAdminConfig"));
+        const json = await res.json();
+        if (json && json.status === "success") {
+            livePass = asText(json.password).trim();
+        }
+    } catch (fetchErr) {
+        console.warn("Couldn't reach the spreadsheet for the password:", fetchErr);
     }
+
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+
+    const showError = message => {
+        err.classList.remove("hidden");
+        err.innerText = message;
+    };
+
+    // Reached the sheet, but there's no password row in Settings
+    if (livePass === "") {
+        return showError("No password is set in the Settings tab (cell B2). Add one, then try again.");
+    }
+
+    const expected = livePass !== null ? livePass : cachedAdminPass;
+
+    if (!expected) {
+        return showError("Can't reach the spreadsheet, and this device has no saved password. Check your connection.");
+    }
+
+    if (typed !== expected) {
+        return showError(livePass !== null
+            ? "Incorrect password."
+            : "Incorrect password \u2014 checked against this device's saved copy, since the spreadsheet is unreachable.");
+    }
+
+    // Keep the offline fallback current
+    if (livePass !== null) {
+        localStorage.setItem("vt_admin_password", livePass);
+    }
+
+    document.getElementById("authModal").classList.add("hidden");
+    document.getElementById("adminContent").classList.remove("hidden");
+
+    loadStudents();
+    loadSites();
 }
 
 /************************************************************
