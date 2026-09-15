@@ -4,288 +4,412 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Help & FAQ — Vocational Tracker</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
     <style>
         .faq-answer {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease, padding 0.3s ease;
+            transition: max-height .3s ease, padding .3s ease;
         }
+
         .faq-answer.open {
-            max-height: 600px;
+            max-height: 900px;
         }
+
         .faq-chevron {
-            transition: transform 0.25s ease;
+            transition: transform .25s ease;
         }
+
         .faq-item.open .faq-chevron {
             transform: rotate(180deg);
         }
+
         .faq-item.open .faq-question {
-            color: #1e40af;
+            color: #1d4ed8;
+        }
+
+        body.entry-mode .system-only {
+            display: none !important;
+        }
+
+        body.entry-mode .entry-only-heading {
+            display: block !important;
         }
     </style>
+
+    <script>
+    const VT_ENV = "";
+
+    function vtKey(name) {
+        return VT_ENV ? VT_ENV + ":" + name : name;
+    }
+
+    if (VT_ENV) {
+        document.addEventListener("DOMContentLoaded", function () {
+            const css = document.createElement("style");
+            css.textContent =
+                ".vt-env-banner{position:sticky;top:0;z-index:9999;background:#92400e;" +
+                "color:#fff;font:700 12px/1.3 ui-sans-serif,system-ui;padding:8px 12px;" +
+                "text-align:center;letter-spacing:.05em;text-transform:uppercase}" +
+                "@media print{.vt-env-banner{display:none!important}}";
+            document.head.appendChild(css);
+
+            const bar = document.createElement("div");
+            bar.className = "vt-env-banner";
+            bar.textContent = VT_ENV + " instance — test data only, not production";
+            document.body.prepend(bar);
+        });
+    }
+    </script>
 </head>
 
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-16">
+<body class="bg-slate-100 text-slate-900 font-sans min-h-screen pb-16">
 
-<!-- NAVBAR -->
 <nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
     <div class="max-w-5xl mx-auto px-4">
-        <div class="flex justify-between h-16 items-center">
-            <div class="flex items-center gap-6 text-sm font-semibold">
-                <a href="index.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
-                    <span class="material-icons text-yellow-400">home</span>
-                    Dashboard
-                </a>
-                <a href="entry.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
-                    <span class="material-icons">edit_note</span>
-                    Entry
-                </a>
-                <a href="report.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
-                    <span class="material-icons">analytics</span>
-                    Reports
-                </a>
-                <a href="admin.html" class="flex items-center gap-1 hover:text-yellow-300 transition">
-                    <span class="material-icons">admin_panel_settings</span>
-                    Admin
-                </a>
-                <a href="faq.html" class="flex items-center gap-1 text-yellow-300 font-bold">
-                    <span class="material-icons">help_outline</span>
-                    Help
-                </a>
-            </div>
+        <div class="min-h-16 py-3 flex items-center gap-5 overflow-x-auto text-sm font-semibold">
+            <a href="index.html" class="system-only flex items-center gap-1 hover:text-yellow-300 whitespace-nowrap">
+                <span class="material-icons text-yellow-400">home</span>
+                Dashboard
+            </a>
+            <a href="entry.html" id="faqEntryLink" class="flex items-center gap-1 hover:text-yellow-300 whitespace-nowrap">
+                <span class="material-icons">edit_note</span>
+                Entry
+            </a>
+            <a href="report.html" class="system-only flex items-center gap-1 hover:text-yellow-300 whitespace-nowrap">
+                <span class="material-icons">analytics</span>
+                Reports
+            </a>
+            <a href="admin.html" class="system-only flex items-center gap-1 hover:text-yellow-300 whitespace-nowrap">
+                <span class="material-icons">admin_panel_settings</span>
+                Admin
+            </a>
+            <a href="faq.html" class="flex items-center gap-1 text-yellow-300 font-bold whitespace-nowrap">
+                <span class="material-icons">help_outline</span>
+                Help
+            </a>
         </div>
     </div>
 </nav>
 
-<!-- HERO -->
-<div class="bg-blue-900 text-white pt-10 pb-14 px-4">
+<header class="bg-blue-900 text-white pt-10 pb-14 px-4">
     <div class="max-w-2xl mx-auto text-center">
         <span class="material-icons text-yellow-400 text-5xl mb-3 block">help_outline</span>
-        <h1 class="text-3xl font-extrabold mb-2">How can we help?</h1>
-        <p class="text-blue-200 text-sm">Answers to common questions for paraprofessionals and evaluators.</p>
+        <h1 class="text-3xl font-extrabold mb-2">Vocational Tracker Help</h1>
+        <p class="text-blue-100 text-sm">
+            Entry staff, report viewers, and administrators all use different levels of access.
+        </p>
     </div>
-</div>
+</header>
 
-<!-- MAIN -->
-<div class="max-w-2xl mx-auto px-4 -mt-6">
+<main class="max-w-2xl mx-auto px-4 -mt-6">
 
-    <!-- SECTION: Getting Started -->
-    <div class="mb-8">
+    <section class="mb-8">
         <div class="flex items-center gap-2 mb-3 px-1">
-            <span class="material-icons text-blue-600">rocket_launch</span>
-            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">Getting Started</h2>
+            <span class="material-icons text-blue-700">qr_code_2</span>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-600">Job-site Entry</h2>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden divide-y divide-slate-100">
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden divide-y divide-slate-200">
 
             <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">How do I open the entry form on my phone?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">How do I open the entry form on my phone?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
                 </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
-                        Scan the QR code posted at your job site with your phone's camera app. It will open the form automatically — no app download needed. Once you've scanned it once, your phone remembers the connection so you can go straight to the form in the future without scanning again.
+                        Scan the QR code provided by your program coordinator. The secure link contains a restricted
+                        entry code that allows the form to load student, site, and task choices and submit an evaluation.
+                        It does <strong>not</strong> provide access to Reports or Admin.
                     </div>
                 </div>
             </div>
 
             <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">I see "Database Not Configured" — what do I do?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">Do I need an account or personal code to enter data?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
                 </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
-                        This means your phone doesn't have the connection saved yet. You need to scan the QR code provided by your program coordinator — don't just type the web address directly into your browser. If you don't have the QR code, contact your coordinator and ask for the entry form link.
+                        No. Job-site entry is intentionally the simplest workflow: scan the authorized QR code,
+                        complete the form, and submit. You still enter your name in the Evaluator field so the record
+                        shows who completed the evaluation.
                     </div>
                 </div>
             </div>
 
             <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">Do I need to create an account or log in?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">Why does the normal Entry link say my access code is missing?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
                 </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
-                        No. The entry form has no login. Just open it, fill it out, and submit. You do need to type your name in the Evaluator field each time so the record shows who completed the evaluation.
+                        The public web address by itself is not enough to enter data. On a device that has never scanned
+                        the job-site QR, you must scan the current QR code first. After a successful scan, the device can
+                        remember the secure entry connection for future use.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">The QR used to work and now it says the link expired. What happened?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        Your coordinator may have rotated the entry code. Rotation immediately disables every older QR
+                        and saved entry link. Scan the newly issued QR code and the device will save the new connection.
                     </div>
                 </div>
             </div>
 
         </div>
-    </div>
+    </section>
 
-    <!-- SECTION: Filling Out the Form -->
-    <div class="mb-8">
+    <section class="mb-8 system-only">
         <div class="flex items-center gap-2 mb-3 px-1">
-            <span class="material-icons text-purple-600">edit_note</span>
-            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">Filling Out the Form</h2>
+            <span class="material-icons text-violet-700">key</span>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-600">Reports & Administrator Access</h2>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden divide-y divide-slate-100">
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden divide-y divide-slate-200">
 
             <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">What do the score numbers mean?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">How do I get my Reports or Admin code?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
                 </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
-                        Each skill is scored on a scale of 0 to 4:
-                        <ul class="mt-3 space-y-2">
-                            <li class="flex items-start gap-2"><span class="font-bold text-red-500 w-4">0</span><span><strong>Not at All</strong> — Student did not perform the skill.</span></li>
-                            <li class="flex items-start gap-2"><span class="font-bold text-orange-500 w-4">1</span><span><strong>Direct Prompting</strong> — Required hands-on or step-by-step guidance.</span></li>
-                            <li class="flex items-start gap-2"><span class="font-bold text-yellow-600 w-4">2</span><span><strong>Indirect Prompting</strong> — Needed a verbal reminder or gesture.</span></li>
-                            <li class="flex items-start gap-2"><span class="font-bold text-blue-500 w-4">3</span><span><strong>Independent</strong> — Performed the skill without any prompting.</span></li>
-                            <li class="flex items-start gap-2"><span class="font-bold text-green-600 w-4">4</span><span><strong>Helping/Teaching</strong> — Performed the skill and helped or modeled it for others.</span></li>
+                        A spreadsheet administrator adds you from <strong>Vocational Tracker → Setup & Credentials</strong>
+                        inside the Google Sheet. Your personal code is generated and emailed to the address they enter.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">I am an administrator. Do I need a second code for Reports?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        No. An active administrator automatically has Reports access. Use the same personal administrator
+                        code on both the Admin and Reports pages.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">I lost my administrator code. Can it be looked up?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        No. The tracker stores only a one-way hash of a personal administrator code. The original may
+                        still be in the email that was sent when it was created. If it is truly lost, a spreadsheet
+                        administrator can generate a replacement code for only that person. Everyone else's code keeps working.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">Can a report viewer's code be emailed again?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        Yes. Report-only viewer codes can be re-emailed from the spreadsheet's Setup & Credentials sidebar.
+                        Administrator codes cannot be recovered, so the equivalent Admin action generates a new code.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">What happens when someone is disabled?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        A disabled report viewer immediately loses Reports access. A disabled administrator loses both
+                        Admin and Reports access because those permissions are tied to the same personal admin code.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="mb-8">
+        <div class="flex items-center gap-2 mb-3 px-1">
+            <span class="material-icons text-purple-700">edit_note</span>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-600">Filling Out an Evaluation</h2>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden divide-y divide-slate-200">
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">What do the score numbers mean?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        <ul class="space-y-2">
+                            <li><strong class="text-red-700">0 — Not at All:</strong> Student did not perform the skill.</li>
+                            <li><strong class="text-orange-700">1 — Direct Prompting:</strong> Required direct or step-by-step prompting.</li>
+                            <li><strong class="text-amber-700">2 — Indirect Prompting:</strong> Needed a verbal reminder, cue, or gesture.</li>
+                            <li><strong class="text-blue-700">3 — Independent:</strong> Performed the skill without prompting.</li>
+                            <li><strong class="text-green-700">4 — Helping/Teaching:</strong> Performed the skill and helped or modeled it for others.</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
             <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">What is the difference between Behavioral Skills and Job Tasks?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">What is the difference between Behavioral Skills and Job Tasks?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
                 </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
-                        <strong>Behavioral Skills</strong> are the 16 core work-readiness skills that apply at every site — things like punctuality, communication, and attitude. You score these every time.<br><br>
-                        <strong>Job Tasks</strong> are specific to the job site — for example, a grocery site might have tasks like "Facing shelves" or "Operating register." These only appear if tasks have been set up for that site by your coordinator.
+                        <strong>Behavioral Skills</strong> are the core work-readiness skills scored at every site.
+                        <strong>Job Tasks</strong> are site-specific duties configured by an administrator. Job Tasks
+                        can be marked N/A when that task did not occur during the shift.
                     </div>
                 </div>
             </div>
 
             <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">What does N/A mean on a job task?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">I do not see the student I need. What should I do?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
                 </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
-                        N/A means the task didn't come up that day — it wasn't applicable. For example, if a student's job task includes "Operating the baler" but the baler wasn't needed that shift, select N/A. This keeps it out of their averages rather than counting as a zero. Job tasks default to N/A, so you only need to change it if the task actually happened.
+                        Contact your program coordinator. Only active students appear in the entry dropdown. An
+                        administrator can add the student or reactivate an existing student from the Admin page.
                     </div>
                 </div>
             </div>
 
             <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">I don't see the student I need in the dropdown — what do I do?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">Do I need to fill out Notes?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
                 </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
-                        Students are managed by your program coordinator in the Admin panel. If a student is missing, contact your coordinator and ask them to add the student to the system. You won't be able to submit an entry until they appear in the list.
-                    </div>
-                </div>
-            </div>
-
-            <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">Do I need to fill out the Notes field?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
-                </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
-                    <div class="pb-4">
-                        Notes are optional but encouraged. Use them to record anything specific that happened — a particularly strong or challenging moment, a behavior that context helps explain, or anything that a score alone doesn't capture. Notes show up on the student's evaluation history in reports.
+                        Notes are optional but useful when a score alone does not tell the whole story. Record relevant
+                        context, strong performance, challenges, or anything the student's team should understand later.
                     </div>
                 </div>
             </div>
 
         </div>
-    </div>
+    </section>
 
-    <!-- SECTION: Submitting & Troubleshooting -->
-    <div class="mb-8">
+    <section class="mb-8">
         <div class="flex items-center gap-2 mb-3 px-1">
-            <span class="material-icons text-green-600">check_circle</span>
-            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">Submitting & Troubleshooting</h2>
+            <span class="material-icons text-green-700">check_circle</span>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-600">Submitting & Troubleshooting</h2>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden divide-y divide-slate-100">
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden divide-y divide-slate-200">
 
             <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">How do I know my entry was saved successfully?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">How do I know an entry was actually saved?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
                 </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
-                        After tapping Submit, the button will turn green and show a checkmark with "Saved!" The form will then reset automatically so you're ready for the next entry. If the button stays blue or shows an error, the save may have failed — check your internet connection and try again.
+                        The page waits for a real response from the tracker before showing <strong>Saved!</strong>.
+                        If the server rejects the entry or the connection fails, the form shows an error instead of
+                        pretending the entry was recorded.
                     </div>
                 </div>
             </div>
 
             <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">I submitted but the form didn't reset — did it save?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">The page will not load or shows an error. What should I try?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
                 </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
-                        If you saw the green "Saved!" confirmation, the entry was recorded even if the reset seemed slow. If you're unsure, contact your coordinator — they can check the data directly in the spreadsheet to confirm whether it came through.
-                    </div>
-                </div>
-            </div>
-
-            <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">The page won't load or shows an error — what should I try?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
-                </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
-                    <div class="pb-4">
-                        Try these steps in order:
-                        <ol class="mt-3 space-y-2 list-decimal list-inside">
-                            <li>Check that your phone has an internet connection (WiFi or cellular).</li>
-                            <li>Close the browser tab and reopen the link or re-scan the QR code.</li>
-                            <li>Try a different browser (Chrome or Safari work best).</li>
-                            <li>If none of those work, let your coordinator know — the system may need attention on their end.</li>
+                        <ol class="list-decimal list-inside space-y-2">
+                            <li>Confirm the device has Wi-Fi or cellular data.</li>
+                            <li>Re-scan the current job-site QR code.</li>
+                            <li>Close the tab and open it again.</li>
+                            <li>If the secure link was rotated, use the newly printed QR.</li>
+                            <li>If the problem continues, contact your program coordinator.</li>
                         </ol>
                     </div>
                 </div>
             </div>
 
             <div class="faq-item" onclick="toggle(this)">
-                <button class="w-full flex justify-between items-center px-5 py-4 text-left">
-                    <span class="faq-question font-semibold text-sm text-slate-800">Can I go back and edit an entry after submitting?</span>
-                    <span class="material-icons faq-chevron text-slate-400 text-lg">expand_more</span>
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">Can I edit a submitted entry?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
                 </button>
-                <div class="faq-answer px-5 text-sm text-slate-600 leading-relaxed">
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
-                        Not through the app. Once an entry is submitted it goes directly to the spreadsheet. If you need to correct a mistake, contact your coordinator — they can edit or remove the record from the spreadsheet directly.
+                        Not from the entry form. Contact your program coordinator if a submitted record needs correction.
                     </div>
                 </div>
             </div>
 
         </div>
-    </div>
+    </section>
 
-    <!-- CONTACT FOOTER -->
-    <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5 text-center text-sm text-blue-700">
-        <span class="material-icons text-blue-400 block mb-2">support_agent</span>
+    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 text-center text-sm text-blue-900">
+        <span class="material-icons text-blue-600 block mb-2">support_agent</span>
         <strong>Still have questions?</strong><br>
-        <span class="text-blue-500">Contact your program coordinator for help.</span>
+        Contact your program coordinator for help.
     </div>
 
-</div>
+</main>
 
 <script>
+(function applyContextMode() {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("mode") === "entry") {
+        document.body.classList.add("entry-mode");
+
+        const subtitle = document.querySelector("header p");
+        if (subtitle) {
+            subtitle.textContent = "Quick help for job-site evaluators using the secure entry form.";
+        }
+
+        const entryLink = document.getElementById("faqEntryLink");
+        if (entryLink) {
+            entryLink.href = "entry.html";
+        }
+    }
+})();
+
 function toggle(item) {
     const answer = item.querySelector(".faq-answer");
     const isOpen = item.classList.contains("open");
 
-    // Close all others
     document.querySelectorAll(".faq-item.open").forEach(el => {
         el.classList.remove("open");
         el.querySelector(".faq-answer").classList.remove("open");
     });
 
-    // Toggle clicked
     if (!isOpen) {
         item.classList.add("open");
         answer.classList.add("open");
