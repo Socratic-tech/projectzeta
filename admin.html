@@ -3,10 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin — Vocational Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/************************************************************
+ * INSTANCE NAMESPACE
+ *
+ * GitHub Pages serves every repo under one origin, and localStorage
+ * is scoped to the origin, not the path. Without this, the beta and
+ * production copies fight over the same storage slots -- scan beta's
+ * QR and the device silently repoints, with no visible difference.
+ *
+ * TO PROMOTE THIS BUILD TO PRODUCTION: set VT_ENV to "".
+ * That is the whole diff. It drops the prefix and the banner.
+ ************************************************************/
+const VT_ENV = "";
+
+function vtKey(name) { return VT_ENV ? VT_ENV + ":" + name : name; }
+
+if (VT_ENV) {
+    document.addEventListener("DOMContentLoaded", function () {
+        var css = document.createElement("style");
+        css.textContent =
+            ".vt-env-banner{position:sticky;top:0;z-index:9999;background:#b45309;" +
+            "color:#fff;font:600 12px/1.3 ui-sans-serif,system-ui;padding:8px 12px;" +
+            "text-align:center;letter-spacing:.05em;text-transform:uppercase}" +
+            "@media print{.vt-env-banner{display:none!important}}";
+        document.head.appendChild(css);
+
+        var bar = document.createElement("div");
+        bar.className = "vt-env-banner";
+        bar.textContent = VT_ENV + " instance \u2014 test data only, not production";
+        document.body.prepend(bar);
+    });
+}
+</script>
 </head>
 
 <body class="bg-slate-100 font-sans">
@@ -44,23 +77,47 @@
     </div>
 </nav>
 
+<!-- V3 UPGRADE REQUIRED -->
+<div id="upgradeModal"
+     class="hidden fixed inset-0 bg-slate-900/90 z-[60] items-center justify-center backdrop-blur-sm px-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
+        <div class="bg-red-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <span class="material-icons text-red-700 text-3xl">system_update_alt</span>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Tracker Upgrade Required</h2>
+        <p class="text-slate-600 text-sm leading-relaxed mb-5">
+            This school's backend is older than Vocational Tracker v3 and can no longer be used
+            with the production Admin page.
+        </p>
+        <a href="setup.html?mode=upgrade"
+           class="block w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-lg">
+            Upgrade Existing Tracker
+        </a>
+    </div>
+</div>
+
 <!-- AUTH MODAL -->
 <div id="authModal"
-     class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center backdrop-blur-sm">
+     class="hidden fixed inset-0 bg-slate-900/90 z-50 items-center justify-center backdrop-blur-sm">
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full text-center">
         <div class="bg-red-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
             <span class="material-icons text-red-600 text-3xl">lock</span>
         </div>
-        <h2 class="text-2xl font-bold text-slate-800 mb-2">Admin Access</h2>
-        <input type="password" id="adminPassInput"
-               placeholder="Password"
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Administrator Access</h2>
+        <input type="password" id="adminCodeInput"
+               placeholder="Personal Admin Code"
+               autocomplete="current-password"
+               autocapitalize="none"
                class="w-full p-3 border rounded-lg mb-4 text-center text-lg">
-        <button id="unlockBtn" onclick="verifyPassword()"
+        <button id="unlockBtn" onclick="verifyAdminCode()"
                 class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg
                        disabled:opacity-60 disabled:cursor-not-allowed">
-            Unlock Dashboard
+            Unlock Admin
         </button>
-        <p id="authError" class="text-red-600 text-xs font-bold mt-3 hidden">Incorrect Password</p>
+        <p class="text-slate-500 text-xs mt-3">
+            Use the personal code emailed to you. Administrator codes also work on Reports.
+        </p>
+        <p id="authError" class="text-red-700 text-xs font-bold mt-3 hidden">Code not recognized</p>
     </div>
 </div>
 
@@ -68,12 +125,28 @@
 <main id="adminContent" class="hidden max-w-7xl mx-auto py-10 px-4">
 
     <!-- CONNECTION STATUS -->
-    <div class="bg-white rounded-xl shadow-sm border p-4 mb-8 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <span class="material-icons text-green-500">check_circle</span>
-            <span class="text-sm font-bold">Database Connected</span>
+    <div class="bg-white rounded-xl shadow-sm border p-4 mb-8">
+        <div class="flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-2">
+                <span class="material-icons text-green-600">check_circle</span>
+                <div>
+                    <div class="text-sm font-bold text-slate-800">Database connected</div>
+                    <div class="text-xs text-slate-500">
+                        Signed in as <span id="signedInAdmin" class="font-bold text-slate-700">Administrator</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+                <a href="report.html" class="text-blue-700 font-bold hover:underline">Open Reports</a>
+                <button onclick="signOutAdmin()" class="text-slate-500 hover:text-red-700 font-bold">Sign out</button>
+            </div>
         </div>
-        <a href="setup.html" class="text-xs text-blue-600 hover:underline">Reconfigure</a>
+
+        <div class="mt-3 bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3 text-xs">
+            Administrator and report-viewer accounts are managed from
+            <strong>Vocational Tracker → Setup &amp; Credentials</strong> inside the Google Sheet.
+            Admin codes automatically include Reports access.
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -119,6 +192,7 @@
                                 <th class="px-4 py-2">Name</th>
                                 <th class="px-4 py-2">Grade</th>
                                 <th class="px-4 py-2">Status</th>
+                                <th class="px-4 py-2 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="studentTableBody"></tbody>
@@ -207,6 +281,20 @@
                             </p>
                         </div>
 
+                        <!-- Rotate -->
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                            <p class="text-[11px] text-amber-900 mb-2">
+                                Rotating the entry code instantly disables every QR code
+                                and saved link already in circulation. Use it if a device
+                                is lost or a staff member leaves &mdash; then reprint the
+                                QR codes at every job site.
+                            </p>
+                            <button onclick="rotateEntryToken()"
+                                    class="text-[11px] bg-amber-600 text-white px-3 py-1.5 rounded hover:bg-amber-700 transition">
+                                Rotate entry code
+                            </button>
+                        </div>
+
                         <!-- Generated link -->
                         <div id="qrLinkBox"
                              class="bg-slate-50 border rounded-lg p-2 text-[10px] font-mono text-blue-500 break-all">
@@ -240,26 +328,47 @@
 /************************************************************
  * CONFIG
  ************************************************************/
-const url = localStorage.getItem("vocational_backend_url");
-// Offline fallback only. The password is read from the Settings tab
-// at unlock time, so a change in the spreadsheet takes effect right
-// away and a device that never ran the setup wizard can still sign in.
-const cachedAdminPass = localStorage.getItem("vt_admin_password");
+const REQUIRED_API_VERSION = 3;
+const url = localStorage.getItem(vtKey("vocational_backend_url"));
+let backendReady = false;
+
+// The admin code is never fetched to the client any more. The old
+// getAdminConfig route returned it in cleartext to any anonymous caller,
+// which meant the admin panel was open to anyone holding the backend URL
+// -- i.e. everyone who ever scanned the entry QR. That route is deleted.
+// We send the typed admin code with each request and the server compares.
+//
+// sessionStorage, not localStorage: close the tab, lose the admin session.
+function adminCode() {
+    // Migrate an already-open beta tab from the older session key if present.
+    const current = sessionStorage.getItem(vtKey("vt_admin_code"));
+    if (current) return current;
+
+    const legacy = sessionStorage.getItem(vtKey("vt_admin_pass"));
+    if (legacy) {
+        sessionStorage.setItem(vtKey("vt_admin_code"), legacy);
+        sessionStorage.removeItem(vtKey("vt_admin_code"));
+            sessionStorage.removeItem(vtKey("vt_admin_pass"));
+        return legacy;
+    }
+
+    return "";
+}
+let entryToken = "";
 
 let qrInstance = null;
 let qrFullUrl = "";
 let allTasks = Object.create(null);
 let currentSites = [];
+let currentStudents = [];
 
-window.addEventListener("load", () => {
-    if (!url) window.location.href = "setup.html";
-});
+window.addEventListener("load", startAdmin);
 
 document.addEventListener("DOMContentLoaded", () => {
-    const passInput = document.getElementById("adminPassInput");
+    const passInput = document.getElementById("adminCodeInput");
     if (passInput) {
         passInput.addEventListener("keydown", event => {
-            if (event.key === "Enter") verifyPassword();
+            if (event.key === "Enter") verifyAdminCode();
         });
     }
 
@@ -269,7 +378,48 @@ document.addEventListener("DOMContentLoaded", () => {
             if (event.key === "Enter") addSite();
         });
     }
+
+    // Session restoration happens only after the v3 backend gate passes.
 });
+
+async function startAdmin() {
+    if (!url) {
+        window.location.href = "setup.html";
+        return;
+    }
+
+    try {
+        const res = await fetch(url, { method: "GET", cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+
+        const health = await res.json();
+
+        if (health.status !== "online" ||
+            Number(health.apiVersion || 0) < REQUIRED_API_VERSION) {
+            document.getElementById("upgradeModal").classList.remove("hidden");
+            document.getElementById("upgradeModal").classList.add("flex");
+            return;
+        }
+
+        backendReady = true;
+
+        document.getElementById("authModal").classList.remove("hidden");
+        document.getElementById("authModal").classList.add("flex");
+
+        if (adminCode()) {
+            verifyAdminCode(true);
+        }
+
+    } catch (err) {
+        console.error("Backend check failed:", err);
+        document.getElementById("authModal").classList.remove("hidden");
+        document.getElementById("authModal").classList.add("flex");
+
+        const authError = document.getElementById("authError");
+        authError.textContent = "Can't reach the tracker backend.";
+        authError.classList.remove("hidden");
+    }
+}
 
 /************************************************************
  * SAFE HELPERS
@@ -300,15 +450,34 @@ function buildGetUrl(action) {
     return `${url}?action=${encodeURIComponent(action)}&_=${Date.now()}`;
 }
 
+/**
+ * Was mode:"no-cors", which made every admin write fire-and-forget --
+ * a rejected request looked identical to a successful one. Now that
+ * writes can be refused, the failure has to surface.
+ */
 async function postAction(payload) {
     if (!url) throw new Error("No database URL configured.");
 
-    await fetch(url, {
+    const res = await fetch(url, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(Object.assign({ code: adminCode() }, payload))
     });
+
+    const json = await res.json();
+
+    if (json.status !== "success") {
+        if (json.code === "denied") {
+            sessionStorage.removeItem(vtKey("vt_admin_code"));
+            sessionStorage.removeItem(vtKey("vt_admin_pass"));
+            alert("Your admin session is no longer valid. Please sign in again.");
+            location.reload();
+            throw new Error("denied");
+        }
+        throw new Error(json.message || "The server refused that change.");
+    }
+
+    return json;
 }
 
 function makeIcon(name, className = "") {
@@ -335,7 +504,7 @@ function showSitesMessage(message, isError = false) {
  * AUTH
  ************************************************************/
 /**
- * Checks the typed password against the Settings tab.
+ * Checks the typed admin code against the Settings tab.
  *
  * Previously this compared against a copy cached in localStorage by
  * the setup wizard. That produced two bugs: changing the password in
@@ -344,62 +513,81 @@ function showSitesMessage(message, isError = false) {
  * wizard (anyone who scanned the entry QR code) had no cached copy at
  * all, so every password was rejected.
  */
-async function verifyPassword() {
-    const typed = document.getElementById("adminPassInput").value.trim();
+async function verifyAdminCode(silent = false) {
+    if (!backendReady) return false;
+
+    const input = document.getElementById("adminCodeInput");
+    const typed = (silent ? adminCode() : input.value.trim());
     const err   = document.getElementById("authError");
     const btn   = document.getElementById("unlockBtn");
 
-    const originalLabel = btn.textContent.trim();
-    btn.disabled = true;
-    btn.textContent = "Checking\u2026";
-    err.classList.add("hidden");
-
-    let livePass = null;
-    try {
-        const res  = await fetch(buildGetUrl("getAdminConfig"));
-        const json = await res.json();
-        if (json && json.status === "success") {
-            livePass = asText(json.password).trim();
+    if (!typed) {
+        if (!silent) {
+            err.classList.remove("hidden");
+            err.textContent = "Enter your personal administrator code.";
         }
-    } catch (fetchErr) {
-        console.warn("Couldn't reach the spreadsheet for the password:", fetchErr);
+        return false;
     }
 
-    btn.disabled = false;
-    btn.textContent = originalLabel;
+    const originalLabel = btn.textContent.trim();
+
+    if (!silent) {
+        btn.disabled = true;
+        btn.textContent = "Checking…";
+        err.classList.add("hidden");
+    }
 
     const showError = message => {
-        err.classList.remove("hidden");
-        err.innerText = message;
+        if (!silent) {
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+            err.classList.remove("hidden");
+            err.textContent = message;
+        } else {
+            sessionStorage.removeItem(vtKey("vt_admin_code"));
+        }
+        return false;
     };
 
-    // Reached the sheet, but there's no password row in Settings
-    if (livePass === "") {
-        return showError("No password is set in the Settings tab (cell B2). Add one, then try again.");
+    let json;
+
+    try {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "verifyAdmin", code: typed })
+        });
+
+        json = await res.json();
+
+    } catch (fetchErr) {
+        console.warn("Couldn't reach the spreadsheet:", fetchErr);
+        return showError("Can't reach the spreadsheet. Check your connection.");
     }
 
-    const expected = livePass !== null ? livePass : cachedAdminPass;
-
-    if (!expected) {
-        return showError("Can't reach the spreadsheet, and this device has no saved password. Check your connection.");
+    if (json.status !== "success") {
+        return showError(json.message || "Code not recognized.");
     }
 
-    if (typed !== expected) {
-        return showError(livePass !== null
-            ? "Incorrect password."
-            : "Incorrect password \u2014 checked against this device's saved copy, since the spreadsheet is unreachable.");
-    }
+    sessionStorage.setItem(vtKey("vt_admin_code"), typed);
+    sessionStorage.removeItem(vtKey("vt_admin_pass"));
 
-    // Keep the offline fallback current
-    if (livePass !== null) {
-        localStorage.setItem("vt_admin_password", livePass);
-    }
+    entryToken = json.entryToken || "";
 
+    document.getElementById("signedInAdmin").textContent = json.admin || "Administrator";
     document.getElementById("authModal").classList.add("hidden");
     document.getElementById("adminContent").classList.remove("hidden");
 
-    loadStudents();
-    loadSites();
+    if (input) input.value = "";
+
+    await Promise.all([loadStudents(), loadSites()]);
+    return true;
+}
+
+function signOutAdmin() {
+    sessionStorage.removeItem(vtKey("vt_admin_code"));
+    sessionStorage.removeItem(vtKey("vt_admin_pass"));
+    location.reload();
 }
 
 /************************************************************
@@ -407,30 +595,119 @@ async function verifyPassword() {
  ************************************************************/
 async function loadStudents() {
     try {
-        const res = await fetch(buildGetUrl("getStudents"));
-        const json = await res.json();
-
+        const boot = await postAction({ action: "adminBootstrap" });
         const tbody = document.getElementById("studentTableBody");
         tbody.innerHTML = "";
 
-        (json.data || []).forEach(s => {
+        currentStudents = boot.students || [];
+
+        currentStudents.forEach(s => {
             const active = s.active === true || String(s.active).toLowerCase() === "true";
 
             tbody.innerHTML += `
                 <tr class="border-b hover:bg-slate-50">
                     <td class="px-4 py-3 font-mono text-xs">${escapeHTML(s.student_id)}</td>
-                    <td class="px-4 py-3 font-medium">${escapeHTML(s.name)}</td>
+                    <td class="px-4 py-3 font-medium text-slate-800">${escapeHTML(s.name)}</td>
                     <td class="px-4 py-3">${escapeHTML(s.grade || "")}</td>
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 text-[10px] font-bold rounded-full
-                              ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}">
+                              ${active ? "bg-green-100 text-green-800" : "bg-slate-200 text-slate-700"}">
                             ${active ? "Active" : "Inactive"}
                         </span>
                     </td>
+                    <td class="px-4 py-3">
+                        <div class="flex justify-end flex-wrap gap-2">
+                            <button onclick="editStudent('${s.student_id}')"
+                                    class="text-xs font-bold text-blue-700 hover:underline">
+                                Edit
+                            </button>
+                            <button onclick="setStudentActiveAdmin('${s.student_id}', ${!active})"
+                                    class="text-xs font-bold ${active ? "text-amber-700" : "text-green-700"} hover:underline">
+                                ${active ? "Deactivate" : "Activate"}
+                            </button>
+                            <button onclick="deleteStudentAdmin('${s.student_id}')"
+                                    class="text-xs font-bold text-red-700 hover:underline">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
                 </tr>`;
         });
+
+        if (!currentStudents.length) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-4 py-8 text-center text-slate-400">
+                        No students have been added yet.
+                    </td>
+                </tr>`;
+        }
+
     } catch (err) {
         console.error("Error loading students:", err);
+    }
+}
+
+async function editStudent(studentId) {
+    const student = currentStudents.find(s => String(s.student_id) === String(studentId));
+    if (!student) return;
+
+    const name = prompt("Student name:", student.name || "");
+    if (name === null) return;
+
+    const cleanName = name.trim();
+    if (!cleanName) {
+        alert("Student name cannot be blank.");
+        return;
+    }
+
+    const grade = prompt("Grade (optional):", student.grade || "");
+    if (grade === null) return;
+
+    try {
+        await postAction({
+            action: "updateStudent",
+            student_id: studentId,
+            name: cleanName,
+            grade: grade.trim()
+        });
+        await loadStudents();
+    } catch (err) {
+        alert("Could not update the student: " + err.message);
+    }
+}
+
+async function setStudentActiveAdmin(studentId, active) {
+    try {
+        await postAction({
+            action: "setStudentActive",
+            student_id: studentId,
+            active: active
+        });
+        await loadStudents();
+    } catch (err) {
+        alert("Could not change the student status: " + err.message);
+    }
+}
+
+async function deleteStudentAdmin(studentId) {
+    const student = currentStudents.find(s => String(s.student_id) === String(studentId));
+    const name = student ? student.name : "this student";
+
+    if (!confirm(`Delete ${name} from the student roster?
+
+Historical entries are not deleted.`)) {
+        return;
+    }
+
+    try {
+        await postAction({
+            action: "deleteStudent",
+            student_id: studentId
+        });
+        await loadStudents();
+    } catch (err) {
+        alert("Could not delete the student: " + err.message);
     }
 }
 
@@ -473,13 +750,9 @@ async function loadSites(openSiteName = "") {
     try {
         showSitesMessage("Loading sites…");
 
-        const [siteRes, taskRes] = await Promise.all([
-            fetch(buildGetUrl("getSites")),
-            fetch(buildGetUrl("getTasks"))
-        ]);
-
-        const siteJson = await siteRes.json();
-        const taskJson = await taskRes.json();
+        const boot = await postAction({ action: "adminBootstrap" });
+        const siteJson = { data: boot.sites };
+        const taskJson = { data: boot.tasks };
 
         currentSites = (siteJson.data || [])
             .map(asText)
@@ -797,8 +1070,16 @@ function generateQR() {
         return;
     }
 
+    if (!entryToken) {
+        alert("No entry token is set. Open the Google Sheet, choose Vocational Tracker → Setup & Credentials, and use Check / repair tracker setup.");
+        return;
+    }
+
+    // The token is what makes this QR safe to tape to a wall. It grants
+    // the entry form and nothing else -- whoever photographs it can
+    // submit an entry and cannot read a single score.
     const separator = base.includes("?") ? "&" : "?";
-    qrFullUrl = `${base}${separator}db=${encodeURIComponent(url)}`;
+    qrFullUrl = `${base}${separator}db=${encodeURIComponent(url)}&t=${encodeURIComponent(entryToken)}`;
 
     document.getElementById("qrLinkBox").textContent = qrFullUrl;
 
@@ -815,6 +1096,24 @@ function generateQR() {
     });
 
     document.getElementById("qrOutput").classList.remove("hidden");
+}
+
+async function rotateEntryToken() {
+    if (!confirm(
+        "Rotate the entry code?\n\n" +
+        "Every QR code and saved entry link currently in use will stop working " +
+        "immediately. Paras in the field will see an error until they scan a new code.\n\n" +
+        "You will need to reprint the QR code for every job site."
+    )) return;
+
+    try {
+        const json = await postAction({ action: "rotateEntryToken" });
+        entryToken = json.entryToken;
+        generateQR();
+        alert("Entry code rotated. Reprint and redistribute the new QR code.");
+    } catch (err) {
+        alert("Could not rotate the entry code: " + err.message);
+    }
 }
 
 function copyQrLink() {
