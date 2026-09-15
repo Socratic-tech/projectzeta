@@ -131,7 +131,8 @@
                         <h3 class="font-extrabold text-lg">Open the spreadsheet</h3>
                         <p class="text-slate-600 mt-1">
                             The bound script initializes the required tabs and security settings automatically.
-                            Look for <strong>Vocational Tracker → Setup & Credentials</strong> in the Sheets menu.
+                            Look for <strong>Vocational Tracker → Setup & Credentials</strong> in the Google Sheets menu.
+                            The order of the sheet tabs may vary; their order does not matter.
                         </p>
                     </div>
                 </div>
@@ -145,6 +146,11 @@
                         <p class="text-slate-600 mt-1">
                             Enter the administrator's name and school email in the sidebar. Their personal code
                             is emailed and works for both <strong>Admin</strong> and <strong>Reports</strong>.
+                        </p>
+                        <p class="text-slate-600 mt-2">
+                            You can also set the feature-request/support email in this sidebar. After the first
+                            successful public Admin login, v3 automatically writes the Dashboard, Entry, Reports,
+                            Admin, Setup, and Help website links into the spreadsheet's <strong>Settings</strong> tab.
                         </p>
 
                         <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-900">
@@ -161,7 +167,7 @@
                     <div>
                         <h3 class="font-extrabold text-lg">Deploy the Apps Script web app</h3>
                         <ol class="list-decimal list-inside text-slate-600 mt-2 space-y-1">
-                            <li>Extensions → Apps Script</li>
+                            <li>In <strong>Google Sheets</strong> (not your web browser's Extensions menu), choose <strong>Extensions → Apps Script</strong></li>
                             <li>Deploy → New deployment</li>
                             <li>Type: <strong>Web app</strong></li>
                             <li>Execute as: <strong>Me</strong></li>
@@ -256,8 +262,9 @@
                     <div class="flex-1">
                         <h3 class="font-extrabold text-lg">Replace the bound Apps Script files</h3>
                         <p class="text-slate-600 mt-1">
-                            Extensions → Apps Script. Replace the entire contents of <strong>Code.gs</strong>,
-                            then replace/add the HTML file named <strong>Sidebar</strong>.
+                            In <strong>Google Sheets</strong> (not your web browser's Extensions menu), choose
+                            <strong>Extensions → Apps Script</strong>. Replace the entire contents of
+                            <strong>Code.gs</strong>, then replace/add the HTML file named <strong>Sidebar</strong>.
                         </p>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
@@ -285,7 +292,7 @@
                     <div>
                         <h3 class="font-extrabold text-lg">Return to the Sheet and refresh it</h3>
                         <p class="text-slate-600 mt-1">
-                            Opening/refeshing the spreadsheet runs the v3 migration. It creates missing security tabs,
+                            Opening/refreshing the spreadsheet runs the v3 migration. It creates missing security tabs,
                             adds email columns to older access tables, preserves existing records, and marks the instance
                             as schema v3.
                         </p>
@@ -306,6 +313,11 @@
                         <p class="text-slate-600 mt-1">
                             Open <strong>Vocational Tracker → Setup & Credentials</strong>. If the old tracker used
                             one shared admin password, create the first named administrator with their email address.
+                        </p>
+                        <p class="text-slate-600 mt-2">
+                            Set a support email in the same sidebar if you want Admin-page feature requests emailed
+                            automatically. V3 will also keep the public Entry and other website links in the
+                            spreadsheet's Settings tab.
                         </p>
 
                         <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-950">
