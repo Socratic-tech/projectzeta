@@ -1,422 +1,577 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>School Setup Wizard</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<style>
-    .step-card { transition: all .3s ease; }
-    .step-card.active {
-        border-color: rgb(79 70 229);
-        box-shadow: 0 6px 20px rgba(79,70,229,.2);
-    }
-    .hidden-step { display: none; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup & Upgrade — Vocational Tracker v3</title>
 
-    .callout {
-        background: #eff6ff;
-        border-left: 4px solid #3b82f6;
-        border-radius: 0 8px 8px 0;
-    }
-    .callout-warn {
-        background: #fffbeb;
-        border-left: 4px solid #f59e0b;
-        border-radius: 0 8px 8px 0;
-    }
-    .callout-success {
-        background: #f0fdf4;
-        border-left: 4px solid #22c55e;
-        border-radius: 0 8px 8px 0;
-    }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-    /* Simulated UI mockup elements */
-    .mock-ui {
-        background: #1e1e2e;
-        border-radius: 10px;
-        font-family: 'Courier New', monospace;
-        font-size: 12px;
-        color: #cdd6f4;
-        overflow: hidden;
+    <style>
+        .mode-btn.active {
+            background: #1d4ed8;
+            color: white;
+            border-color: #1d4ed8;
+        }
+
+        .step-num {
+            width: 2rem;
+            height: 2rem;
+            flex: 0 0 2rem;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #dbeafe;
+            color: #1e3a8a;
+            font-weight: 800;
+        }
+    </style>
+
+    <script>
+    const VT_ENV = "";
+    const REQUIRED_API_VERSION = 3;
+
+    function vtKey(name) {
+        return VT_ENV ? VT_ENV + ":" + name : name;
     }
-    .mock-toolbar {
-        background: #181825;
-        padding: 8px 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border-bottom: 1px solid #313244;
-    }
-    .mock-run-btn {
-        background: #1e66f5;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 4px 14px;
-        font-size: 12px;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        cursor: default;
-    }
-    .mock-select {
-        background: #313244;
-        color: #cdd6f4;
-        border: 1px solid #45475a;
-        border-radius: 4px;
-        padding: 3px 8px;
-        font-size: 12px;
-        cursor: default;
-    }
-    .mock-log {
-        padding: 10px 14px;
-        font-size: 11px;
-        line-height: 1.8;
-    }
-    .mock-log .info { color: #89b4fa; }
-    .mock-log .success { color: #a6e3a1; }
-    .mock-log .time { color: #6c7086; }
-</style>
+    </script>
 </head>
-<body class="bg-slate-100 min-h-screen flex justify-center p-6">
-<div class="max-w-3xl w-full">
 
-    <!-- HEADER -->
-    <div class="text-center mb-10">
-        <h1 class="text-4xl font-extrabold text-indigo-700 mb-2">School Setup Wizard</h1>
-        <p class="text-slate-600 text-lg">Follow these steps to set up the Vocational Tracker for your school.</p>
-    </div>
+<body class="bg-slate-100 text-slate-900 min-h-screen font-sans">
 
-    <!-- PROGRESS BAR -->
-    <div class="w-full bg-slate-300 h-2 rounded-full mb-10">
-        <div id="progressBar" class="h-2 bg-indigo-600 rounded-full transition-all duration-300" style="width:10%;"></div>
-    </div>
-
-    <!-- ───────────────────────────────────────────
-         STEP 1 — Copy Spreadsheet
-    ─────────────────────────────────────────── -->
-    <div id="step1" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 active">
-        <div class="flex items-center gap-3 mb-4">
-            <span class="material-icons text-indigo-600 text-4xl">school</span>
-            <h2 class="text-2xl font-bold">1. Create Your School Spreadsheet</h2>
-        </div>
-        <p class="text-slate-600 mb-4">
-            Every school needs their own private copy of the Vocational Tracker spreadsheet.
-        </p>
-        <a href="https://docs.google.com/spreadsheets/d/13ei5Z36X4kd0nbkCoSfeICU-4e9QNbAjzJ-Xugd1-Js/copy"
-           target="_blank"
-           class="inline-block bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold hover:bg-indigo-700 transition mb-4">
-            Make a Copy of the Spreadsheet
+<nav class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 min-h-16 py-3 flex items-center justify-between gap-4">
+        <a href="index.html" class="flex items-center gap-2 text-blue-900 font-extrabold text-xl">
+            <span class="material-icons text-blue-700">school</span>
+            Vocational Tracker v3
         </a>
-        <div class="callout p-3 text-sm text-blue-800 mb-2">
-            <strong>Tip:</strong> Save the spreadsheet to a shared Google Drive folder your whole team can access.
-        </div>
-        <div class="text-right mt-6">
-            <button onclick="nextStep(1)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">Continue</button>
-        </div>
-    </div>
 
-    <!-- ───────────────────────────────────────────
-         STEP 2 — Authorize the Script
-    ─────────────────────────────────────────── -->
-    <div id="step2" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
-        <div class="flex items-center gap-3 mb-4">
-            <span class="material-icons text-indigo-600 text-4xl">verified_user</span>
-            <h2 class="text-2xl font-bold">2. Access & Authorize the Script</h2>
+        <a href="faq.html" class="text-slate-500 hover:text-blue-700 font-bold text-sm flex items-center gap-1">
+            <span class="material-icons">help_outline</span>
+            Help
+        </a>
+    </div>
+</nav>
+
+<header class="bg-blue-900 text-white py-10 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 bg-blue-800 border border-blue-700 rounded-full px-3 py-1 text-xs font-bold mb-4">
+            Production release 3.0.0
         </div>
-        <p class="text-slate-600 mb-4">
-            Your spreadsheet already contains the Vocational Tracker backend script.
+
+        <h1 class="text-4xl font-extrabold">Setup & Upgrade</h1>
+
+        <p class="text-blue-100 mt-3 text-lg">
+            New schools start here. Existing schools keep their current spreadsheet and upgrade it in place.
         </p>
-        <ol class="list-decimal list-inside text-slate-600 space-y-2 mb-5">
-            <li>Open your copied spreadsheet.</li>
-            <li>Go to <strong>Extensions → Apps Script</strong>.</li>
-            <li>Click the <strong>Run ▶</strong> button for any function.</li>
-            <li>Google will ask you to authorize — select your account and click <strong>Allow</strong>.</li>
-        </ol>
-        <div class="callout-warn p-3 text-sm text-amber-800">
-            <strong>Note:</strong> Google may show a warning that the app is "unverified." This is normal for school-managed scripts. Click <strong>Advanced → Go to Vocational Tracker (unsafe)</strong> to proceed.
-        </div>
-        <div class="text-right mt-6">
-            <button onclick="nextStep(2)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">Continue</button>
-        </div>
     </div>
+</header>
 
-    <!-- ───────────────────────────────────────────
-         STEP 3 — initialSetup() — DETAILED
-    ─────────────────────────────────────────── -->
-    <div id="step3" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
-        <div class="flex items-center gap-3 mb-4">
-            <span class="material-icons text-indigo-600 text-4xl">settings</span>
-            <h2 class="text-2xl font-bold">3. Run initialSetup()</h2>
-        </div>
-        <p class="text-slate-600 mb-5">
-            This one-time step creates all the required sheets in your spreadsheet: <strong>Students, Entries, Settings, Sites,</strong> and <strong>Tasks</strong>. You only need to do this once.
-        </p>
+<main class="max-w-4xl mx-auto px-4 py-8">
 
-        <!-- Sub-step 3a -->
-        <div class="mb-5">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="bg-indigo-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">A</span>
-                <p class="font-semibold text-slate-700">Open the Apps Script editor</p>
-            </div>
-            <p class="text-sm text-slate-500 ml-8">In your spreadsheet, click <strong>Extensions</strong> in the top menu, then select <strong>Apps Script</strong>. A new tab will open showing the script editor.</p>
-        </div>
-
-        <!-- Sub-step 3b -->
-        <div class="mb-5">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="bg-indigo-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">B</span>
-                <p class="font-semibold text-slate-700">Select <code class="bg-slate-100 px-1 rounded text-indigo-700">initialSetup</code> from the function dropdown</p>
-            </div>
-            <p class="text-sm text-slate-500 ml-8 mb-3">Near the top of the editor you'll see a dropdown that may say <em>"Select function"</em> or show a function name. Click it and choose <strong>initialSetup</strong> from the list.</p>
-
-            <!-- Mock UI showing the toolbar -->
-            <div class="mock-ui ml-8">
-                <div class="mock-toolbar">
-                    <div class="mock-run-btn">
-                        <span style="font-size:14px;">▶</span> Run
-                    </div>
-                    <div style="width:1px;height:20px;background:#45475a;"></div>
-                    <div class="mock-select">initialSetup ▾</div>
-                    <span style="color:#6c7086;font-size:11px;margin-left:4px;">← Select this</span>
-                </div>
-                <div class="mock-log">
-                    <span class="time">// Function dropdown location shown above</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sub-step 3c -->
-        <div class="mb-5">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="bg-indigo-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">C</span>
-                <p class="font-semibold text-slate-700">Click the Run ▶ button</p>
-            </div>
-            <p class="text-sm text-slate-500 ml-8 mb-3">With <strong>initialSetup</strong> selected in the dropdown, click the <strong>▶ Run</strong> button. The execution log at the bottom of the screen will show the progress.</p>
-
-            <!-- Mock execution log -->
-            <div class="mock-ui ml-8">
-                <div class="mock-toolbar">
-                    <span style="color:#a6e3a1;font-size:12px;font-weight:bold;">Execution log</span>
-                </div>
-                <div class="mock-log">
-                    <div><span class="time">10:42:01 AM</span> <span class="info">Notice</span>  Execution started</div>
-                    <div><span class="time">10:42:02 AM</span> <span class="info">Info</span>    Creating Students sheet...</div>
-                    <div><span class="time">10:42:02 AM</span> <span class="info">Info</span>    Creating Entries sheet...</div>
-                    <div><span class="time">10:42:03 AM</span> <span class="info">Info</span>    Creating Settings sheet...</div>
-                    <div><span class="time">10:42:03 AM</span> <span class="info">Info</span>    Creating Sites sheet...</div>
-                    <div><span class="time">10:42:04 AM</span> <span class="info">Info</span>    Creating Tasks sheet...</div>
-                    <div><span class="time">10:42:04 AM</span> <span class="success">Notice</span>  Execution completed</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sub-step 3d -->
-        <div class="mb-5">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="bg-indigo-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">D</span>
-                <p class="font-semibold text-slate-700">Confirm the sheets were created</p>
-            </div>
-            <p class="text-sm text-slate-500 ml-8 mb-3">Switch back to your spreadsheet tab. You should now see these tabs at the bottom:</p>
-            <div class="ml-8 flex flex-wrap gap-2">
-                <span class="bg-white border border-slate-300 rounded px-3 py-1 text-xs font-mono text-slate-600 shadow-sm">Students</span>
-                <span class="bg-white border border-slate-300 rounded px-3 py-1 text-xs font-mono text-slate-600 shadow-sm">Entries</span>
-                <span class="bg-white border border-indigo-300 rounded px-3 py-1 text-xs font-mono text-indigo-700 shadow-sm font-bold">Settings</span>
-                <span class="bg-white border border-slate-300 rounded px-3 py-1 text-xs font-mono text-slate-600 shadow-sm">Sites</span>
-                <span class="bg-white border border-slate-300 rounded px-3 py-1 text-xs font-mono text-slate-600 shadow-sm">Tasks</span>
-            </div>
-        </div>
-
-        <!-- Sub-step 3e — Set password -->
-        <div class="mb-5">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="bg-indigo-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">E</span>
-                <p class="font-semibold text-slate-700">Set your Admin password in the Settings sheet</p>
-            </div>
-            <p class="text-sm text-slate-500 ml-8 mb-3">
-                Click the <strong>Settings</strong> tab in your spreadsheet. Row 1 is the <code class="bg-slate-100 px-1 rounded text-indigo-700">key</code> / <code class="bg-slate-100 px-1 rounded text-indigo-700">value</code> header, and row 2 holds the default password <code class="bg-slate-100 px-1 rounded text-indigo-700">voc123</code> in <strong>cell B2</strong>. Change it to a password your admin team will use to reach the Admin panel.
-            </p>
-            <div class="callout-warn p-3 text-sm text-amber-800 ml-8">
-                <strong>Important:</strong> Change this before sharing the system with anyone. The password is stored in plain text in the sheet — keep the spreadsheet access restricted to admin staff only.
-            </div>
-        </div>
-
-        <div class="callout-success p-3 text-sm text-green-800 mt-2">
-            <strong>✓ Done?</strong> If you can see all five sheet tabs and your password is set, you're ready to continue.
-        </div>
-
-        <div class="text-right mt-6">
-            <button onclick="nextStep(3)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">Continue</button>
-        </div>
-    </div>
-
-    <!-- ───────────────────────────────────────────
-         STEP 4 — Deploy
-    ─────────────────────────────────────────── -->
-    <div id="step4" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
-        <div class="flex items-center gap-3 mb-4">
-            <span class="material-icons text-indigo-600 text-4xl">rocket_launch</span>
-            <h2 class="text-2xl font-bold">4. Deploy the Web App</h2>
-        </div>
-        <p class="text-slate-600 mb-4">This creates the URL that connects the app to your spreadsheet.</p>
-        <ol class="list-decimal list-inside text-slate-600 space-y-3 mb-5">
-            <li>In the Apps Script editor, click <strong>Deploy → New Deployment</strong>.</li>
-            <li>Click the gear icon next to "Select type" and choose <strong>Web App</strong>.</li>
-            <li>Set <strong>Execute as:</strong> Me.</li>
-            <li>Set <strong>Who has access:</strong> Anyone.</li>
-            <li>Click <strong>Deploy</strong>.</li>
-            <li>Copy the <strong>Web App URL</strong> — it starts with <code class="bg-slate-100 px-1 rounded text-indigo-700 text-xs">https://script.google.com/macros/s/</code></li>
-        </ol>
-        <div class="callout p-3 text-sm text-blue-800">
-            <strong>Tip:</strong> Every time you edit the script code after this, you'll need to create a <em>new deployment version</em> for the changes to take effect. The URL stays the same.
-        </div>
-        <div class="text-right mt-6">
-            <button onclick="nextStep(4)" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">Continue</button>
-        </div>
-    </div>
-
-    <!-- ───────────────────────────────────────────
-         STEP 5 — Connect Backend
-    ─────────────────────────────────────────── -->
-    <div id="step5" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
-        <div class="flex items-center gap-3 mb-4">
-            <span class="material-icons text-indigo-600 text-4xl">link</span>
-            <h2 class="text-2xl font-bold">5. Connect Your Backend</h2>
-        </div>
-        <p class="text-slate-600 mb-4">Paste the Web App URL from the previous step to connect this app to your spreadsheet.</p>
-        <input id="execUrlInput"
-               type="text"
-               placeholder="https://script.google.com/macros/s/XXXX/exec"
-               class="w-full p-3 border rounded-lg bg-slate-50 mb-4 font-mono text-sm">
-        <button onclick="connectBackend()"
-                class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition">
-            Connect
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-2 mb-7 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <button id="newBtn"
+                onclick="showMode('new')"
+                class="mode-btn active border border-slate-300 rounded-xl px-4 py-3 font-bold">
+            New School
         </button>
-        <p id="connectStatus" class="text-sm mt-3 font-bold hidden"></p>
+
+        <button id="upgradeBtn"
+                onclick="showMode('upgrade')"
+                class="mode-btn border border-slate-300 rounded-xl px-4 py-3 font-bold">
+            Upgrade Existing Tracker
+        </button>
     </div>
 
-    <!-- ───────────────────────────────────────────
-         STEP 6 — Complete
-    ─────────────────────────────────────────── -->
-    <div id="step6" class="step-card bg-white border-2 border-slate-200 p-6 rounded-xl mb-6 hidden-step">
-        <div class="flex items-center gap-3 mb-4">
-            <span class="material-icons text-green-600 text-4xl">check_circle</span>
-            <h2 class="text-2xl font-bold">Setup Complete!</h2>
-        </div>
-        <p class="text-slate-600 mb-6">Your school is now fully configured. Use the links below to begin.</p>
+    <!-- ===================================================== -->
+    <!-- NEW INSTALLATION -->
+    <!-- ===================================================== -->
+    <section id="newMode">
 
-        <div class="space-y-3 mb-6">
-            <a href="admin.html"
-               class="block bg-slate-800 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-slate-700 transition">
-                <span class="material-icons align-middle text-sm mr-1">admin_panel_settings</span>
-                Open Admin Console — Add Students & Sites First
-            </a>
-            <a href="entry.html"
-               class="block bg-blue-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-blue-700 transition">
-                <span class="material-icons align-middle text-sm mr-1">edit_note</span>
-                Start Entering Evaluations
-            </a>
-            <a href="report.html"
-               class="block bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold text-center hover:bg-indigo-700 transition">
-                <span class="material-icons align-middle text-sm mr-1">analytics</span>
-                View Reports
-            </a>
+        <div class="bg-green-50 border border-green-200 text-green-900 rounded-2xl p-5 mb-6">
+            <div class="flex gap-3">
+                <span class="material-icons text-green-700">verified_user</span>
+                <div>
+                    <h2 class="font-extrabold text-lg">New installations use v3 only</h2>
+                    <p class="text-sm mt-1">
+                        Personal admin codes, report-only viewer codes, emailed credentials, restricted
+                        job-site QR access, and version enforcement are all part of the default installation.
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <!-- Admin password reminder -->
-        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
-            <h3 class="text-base font-bold text-yellow-700 mb-2 flex items-center gap-2">
-                <span class="material-icons text-yellow-600 text-lg">lock</span>
-                Admin Password Reminder
-            </h3>
-            <p class="text-sm text-yellow-800 mb-1">
-                Your admin password is stored in the <strong>Settings</strong> tab of your spreadsheet (cell B2, next to <code class="bg-yellow-100 px-1 rounded">password</code>). Change it there any time — it takes effect the next time someone unlocks the Admin panel.
-            </p>
-            <p class="text-sm text-yellow-800">
-                Share this password only with staff who should have admin access.
-            </p>
+        <div class="space-y-4">
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">1</div>
+                    <div class="flex-1">
+                        <h3 class="font-extrabold text-lg">Make the school spreadsheet</h3>
+                        <p class="text-slate-600 mt-1">
+                            Each school uses its own private copy. Keep spreadsheet access limited to staff
+                            who actually need spreadsheet-level administration.
+                        </p>
+
+                        <a href="https://docs.google.com/spreadsheets/d/13ei5Z36X4kd0nbkCoSfeICU-4e9QNbAjzJ-Xugd1-Js/copy"
+                           target="_blank"
+                           class="inline-block mt-4 bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-lg">
+                            Make a Copy of the Spreadsheet
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">2</div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Open the spreadsheet</h3>
+                        <p class="text-slate-600 mt-1">
+                            The bound script initializes the required tabs and security settings automatically.
+                            Look for <strong>Vocational Tracker → Setup & Credentials</strong> in the Sheets menu.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">3</div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Create the first personal administrator</h3>
+                        <p class="text-slate-600 mt-1">
+                            Enter the administrator's name and school email in the sidebar. Their personal code
+                            is emailed and works for both <strong>Admin</strong> and <strong>Reports</strong>.
+                        </p>
+
+                        <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-900">
+                            The first email action may trigger a Google authorization request because v3 uses
+                            MailApp to send access codes.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">4</div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Deploy the Apps Script web app</h3>
+                        <ol class="list-decimal list-inside text-slate-600 mt-2 space-y-1">
+                            <li>Extensions → Apps Script</li>
+                            <li>Deploy → New deployment</li>
+                            <li>Type: <strong>Web app</strong></li>
+                            <li>Execute as: <strong>Me</strong></li>
+                            <li>Who has access: <strong>Anyone</strong></li>
+                            <li>Deploy and copy the URL ending in <code>/exec</code></li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">5</div>
+                    <div class="flex-1">
+                        <h3 class="font-extrabold text-lg">Connect this browser</h3>
+                        <p class="text-slate-600 mt-1">
+                            Paste the school's <code>/exec</code> deployment URL below. Production pages accept
+                            only API v3 or newer.
+                        </p>
+
+                        <div class="mt-4">
+                            <input id="newExecUrl"
+                                   type="text"
+                                   placeholder="https://script.google.com/macros/s/.../exec"
+                                   class="w-full p-3 border border-slate-300 rounded-lg font-mono text-sm">
+
+                            <button onclick="connectBackend('new')"
+                                    class="mt-3 w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg">
+                                Validate & Connect
+                            </button>
+
+                            <div id="newConnectStatus" class="hidden mt-3 rounded-lg p-3 text-sm font-bold"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">6</div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Build the job-site entry QR</h3>
+                        <p class="text-slate-600 mt-1">
+                            Sign into Admin with the personal admin code and use
+                            <strong>Generate QR & Link</strong>. Entry staff receive only the restricted job-site link;
+                            they do not need Admin or Reports access.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- UPGRADE EXISTING -->
+    <!-- ===================================================== -->
+    <section id="upgradeMode" class="hidden">
+
+        <div class="bg-red-50 border-2 border-red-200 text-red-950 rounded-2xl p-5 mb-6">
+            <div class="flex gap-3">
+                <span class="material-icons text-red-700">system_update_alt</span>
+                <div>
+                    <h2 class="font-extrabold text-lg">Do not make a new spreadsheet</h2>
+                    <p class="text-sm mt-1 leading-relaxed">
+                        Upgrade the existing school spreadsheet in place. Student records, entries, job sites,
+                        tasks, and existing report-viewer codes are preserved. V3 deliberately replaces the old
+                        security model.
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <!-- Share link -->
-        <h3 class="text-lg font-bold mb-1">Share Your Entry Form Link</h3>
-        <p class="text-slate-500 text-sm mb-3">
-            Give staff this link — or print the QR code — so they can access the entry form on any phone with no setup.
-        </p>
-        <input id="magicLinkOutput"
-               class="w-full bg-white border p-2 rounded mb-3 text-xs font-mono text-blue-600"
-               readonly />
-        <div class="flex gap-3 items-center flex-wrap">
-            <button onclick="copyMagicLinkFinal()"
-                    class="bg-indigo-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-indigo-700 transition">
-                Copy Link
-            </button>
-            <p class="text-xs text-slate-400">Or generate a QR code from the Admin page after setup.</p>
+        <div class="space-y-4">
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">1</div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Open the existing school's spreadsheet</h3>
+                        <p class="text-slate-600 mt-1">
+                            Optional but sensible: use File → Make a copy as a backup before changing the script.
+                            Continue working in the original production spreadsheet.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">2</div>
+                    <div class="flex-1">
+                        <h3 class="font-extrabold text-lg">Replace the bound Apps Script files</h3>
+                        <p class="text-slate-600 mt-1">
+                            Extensions → Apps Script. Replace the entire contents of <strong>Code.gs</strong>,
+                            then replace/add the HTML file named <strong>Sidebar</strong>.
+                        </p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                            <a href="Code.gs"
+                               class="border border-blue-300 bg-blue-50 text-blue-900 rounded-lg p-3 font-bold text-center">
+                                Open v3 Code.gs
+                            </a>
+
+                            <a href="Sidebar.html"
+                               class="border border-blue-300 bg-blue-50 text-blue-900 rounded-lg p-3 font-bold text-center">
+                                Open v3 Sidebar.html
+                            </a>
+                        </div>
+
+                        <div class="mt-3 text-sm text-slate-500">
+                            Save the Apps Script project. Do not create a new spreadsheet or new production deployment URL.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">3</div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Return to the Sheet and refresh it</h3>
+                        <p class="text-slate-600 mt-1">
+                            Opening/refeshing the spreadsheet runs the v3 migration. It creates missing security tabs,
+                            adds email columns to older access tables, preserves existing records, and marks the instance
+                            as schema v3.
+                        </p>
+
+                        <div class="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-900">
+                            <strong>Important:</strong> The first v3 migration automatically rotates the job-site
+                            entry token. Every pre-v3 QR code and saved entry link becomes invalid.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">4</div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Create or confirm personal administrators</h3>
+                        <p class="text-slate-600 mt-1">
+                            Open <strong>Vocational Tracker → Setup & Credentials</strong>. If the old tracker used
+                            one shared admin password, create the first named administrator with their email address.
+                        </p>
+
+                        <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-950">
+                            Once a personal administrator exists, v3 permanently removes the old
+                            <code>password</code>/<code>password_hash</code> settings. Old shared admin passwords are
+                            not accepted by v3 web pages.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">5</div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Authorize credential email</h3>
+                        <p class="text-slate-600 mt-1">
+                            Adding or regenerating a credential sends email through Apps Script. Google may ask the
+                            spreadsheet owner for permission to send email the first time. Complete that authorization.
+                        </p>
+
+                        <p class="text-slate-600 mt-2">
+                            Existing report viewers keep their current viewer code. Add their email address in the
+                            sidebar so the code can be emailed or re-sent.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">6</div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Update the existing deployment</h3>
+                        <ol class="list-decimal list-inside text-slate-600 mt-2 space-y-1">
+                            <li>Apps Script → Deploy → <strong>Manage deployments</strong></li>
+                            <li>Open the existing Web app deployment with the pencil/Edit button</li>
+                            <li>Choose <strong>New version</strong></li>
+                            <li>Keep Execute as: <strong>Me</strong></li>
+                            <li>Keep Who has access: <strong>Anyone</strong></li>
+                            <li>Deploy</li>
+                        </ol>
+
+                        <div class="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-900">
+                            <strong>Do not create a new deployment.</strong> Keeping the existing <code>/exec</code>
+                            URL preserves the school's browser configuration and avoids unnecessary relinking.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">7</div>
+                    <div class="flex-1">
+                        <h3 class="font-extrabold text-lg">Verify that the existing URL is now v3</h3>
+                        <p class="text-slate-600 mt-1">
+                            Paste the school's existing <code>/exec</code> URL. This checker will refuse any backend
+                            that does not report API v3 or newer.
+                        </p>
+
+                        <div class="mt-4">
+                            <input id="upgradeExecUrl"
+                                   type="text"
+                                   placeholder="https://script.google.com/macros/s/.../exec"
+                                   class="w-full p-3 border border-slate-300 rounded-lg font-mono text-sm">
+
+                            <button onclick="connectBackend('upgrade')"
+                                    class="mt-3 w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg">
+                                Verify v3 Upgrade
+                            </button>
+
+                            <div id="upgradeConnectStatus" class="hidden mt-3 rounded-lg p-3 text-sm font-bold"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">8</div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Generate and replace every entry QR code</h3>
+                        <p class="text-slate-600 mt-1">
+                            Sign into Admin with a personal admin code and generate the new entry QR. Replace all
+                            printed pre-v3 QR codes at job sites. Shared phones/tablets must scan the new code once.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="step-num">9</div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Run the cutover test</h3>
+                        <ul class="list-disc list-inside text-slate-600 mt-2 space-y-1">
+                            <li>Bare backend URL reports API v3 and reveals no student data.</li>
+                            <li>Old entry QR fails.</li>
+                            <li>New QR opens Entry and submits one test evaluation.</li>
+                            <li>Report-only code opens Reports but cannot open Admin.</li>
+                            <li>Admin code opens both Admin and Reports.</li>
+                            <li>Disabling a viewer removes Reports access.</li>
+                            <li>Disabling an admin removes Admin and Reports access.</li>
+                            <li>The test entry appears correctly in Reports.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <div id="connectedPanel"
+         class="hidden mt-7 bg-green-50 border-2 border-green-200 rounded-2xl p-6 text-green-950">
+        <div class="flex items-start gap-3">
+            <span class="material-icons text-green-700">check_circle</span>
+            <div class="flex-1">
+                <h2 class="font-extrabold text-xl">Vocational Tracker v3 connected</h2>
+                <p id="connectedDetails" class="text-sm mt-1"></p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                    <a href="admin.html"
+                       class="bg-slate-900 text-white font-bold text-center py-3 rounded-lg">
+                        Open Admin
+                    </a>
+                    <a href="report.html"
+                       class="bg-violet-700 text-white font-bold text-center py-3 rounded-lg">
+                        Open Reports
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
-</div>
+</main>
 
 <script>
-function nextStep(step) {
-    document.getElementById("step" + step).classList.remove("active");
-    document.getElementById("step" + step).classList.add("hidden-step");
-    const next = step + 1;
-    document.getElementById("step" + next).classList.add("active");
-    document.getElementById("step" + next).classList.remove("hidden-step");
-    document.getElementById("progressBar").style.width = ((next / 6) * 100) + "%";
-    window.scrollTo({ top: 0, behavior: "smooth" });
+function showMode(mode) {
+    const isUpgrade = mode === "upgrade";
+
+    document.getElementById("newMode").classList.toggle("hidden", isUpgrade);
+    document.getElementById("upgradeMode").classList.toggle("hidden", !isUpgrade);
+
+    document.getElementById("newBtn").classList.toggle("active", !isUpgrade);
+    document.getElementById("upgradeBtn").classList.toggle("active", isUpgrade);
+
+    const url = new URL(window.location.href);
+    if (isUpgrade) {
+        url.searchParams.set("mode", "upgrade");
+    } else {
+        url.searchParams.delete("mode");
+    }
+    history.replaceState(null, "", url);
 }
 
-async function connectBackend() {
-    const url = document.getElementById("execUrlInput").value.trim();
-    const status = document.getElementById("connectStatus");
+function statusBox(mode) {
+    return document.getElementById(
+        mode === "upgrade" ? "upgradeConnectStatus" : "newConnectStatus"
+    );
+}
 
-    if (!url) {
-        status.innerText = "Please enter a valid Exec URL.";
-        status.className = "text-red-600 font-bold";
-        status.classList.remove("hidden");
+function execInput(mode) {
+    return document.getElementById(
+        mode === "upgrade" ? "upgradeExecUrl" : "newExecUrl"
+    );
+}
+
+function showStatus(mode, type, message) {
+    const box = statusBox(mode);
+    box.classList.remove(
+        "hidden",
+        "bg-green-50", "border-green-200", "text-green-900",
+        "bg-red-50", "border-red-200", "text-red-900",
+        "bg-amber-50", "border-amber-200", "text-amber-900"
+    );
+
+    box.classList.add("border");
+
+    if (type === "success") {
+        box.classList.add("bg-green-50", "border-green-200", "text-green-900");
+    } else if (type === "warning") {
+        box.classList.add("bg-amber-50", "border-amber-200", "text-amber-900");
+    } else {
+        box.classList.add("bg-red-50", "border-red-200", "text-red-900");
+    }
+
+    box.textContent = message;
+}
+
+async function connectBackend(mode) {
+    const input = execInput(mode);
+    const url = input.value.trim();
+
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec(?:\?.*)?$/.test(url)) {
+        showStatus(mode, "error", "Paste the Web App URL ending in /exec.");
         return;
     }
 
-    status.innerText = "Testing connection…";
-    status.className = "text-blue-600 font-bold";
-    status.classList.remove("hidden");
+    showStatus(mode, "warning", "Checking backend version…");
 
     try {
-        const sRes = await fetch(url + "?action=getStudents");
-        const sJson = await sRes.json();
-        if (sJson.status !== "success") throw new Error();
+        const res = await fetch(url, { method: "GET", cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
 
-        const aRes = await fetch(url + "?action=getAdminConfig");
-        const aJson = await aRes.json();
+        const json = await res.json();
 
-        localStorage.setItem("vocational_backend_url", url);
-        localStorage.setItem("vt_admin_password", aJson.password);
+        if (json.status !== "online") {
+            throw new Error("Unexpected backend response.");
+        }
 
-        // Build magic link pointing to entry.html
-        const base = window.location.href.replace(/[^/]*$/, "entry.html");
-        const magic = `${base}?db=${encodeURIComponent(url)}`;
-        document.getElementById("magicLinkOutput").value = magic;
+        const apiVersion = Number(json.apiVersion || 0);
 
-        status.innerText = "✓ Connected successfully!";
-        status.className = "text-green-600 font-bold";
+        if (apiVersion < REQUIRED_API_VERSION) {
+            showStatus(
+                mode,
+                "error",
+                "Older tracker detected. This URL is reachable, but it is not Vocational Tracker v3. Complete the Apps Script upgrade and update the EXISTING deployment to a New version, then check again."
+            );
 
-        nextStep(5);
+            if (mode !== "upgrade") {
+                showMode("upgrade");
+                document.getElementById("upgradeExecUrl").value = url;
+            }
+
+            return;
+        }
+
+        localStorage.setItem(vtKey("vocational_backend_url"), url);
+
+        showStatus(
+            mode,
+            "success",
+            "Connected: API v" + apiVersion +
+            " · schema " + (json.schemaVersion || "?") +
+            " · release " + (json.release || "3.x")
+        );
+
+        document.getElementById("connectedDetails").textContent =
+            "Backend API v" + apiVersion +
+            ", schema " + (json.schemaVersion || "?") +
+            ", release " + (json.release || "3.x") + ".";
+
+        document.getElementById("connectedPanel").classList.remove("hidden");
 
     } catch (err) {
-        status.innerText = "Connection failed. Double-check your Exec URL and try again.";
-        status.className = "text-red-600 font-bold";
+        console.error(err);
+        showStatus(
+            mode,
+            "error",
+            "Could not validate this deployment. Confirm the /exec URL and that the Web app is deployed as Me with access set to Anyone."
+        );
     }
 }
 
-function copyMagicLinkFinal() {
-    const el = document.getElementById("magicLinkOutput");
-    navigator.clipboard.writeText(el.value).then(() => {
-        el.select();
-    });
-    alert("Link copied!");
-}
+document.addEventListener("DOMContentLoaded", () => {
+    const saved = localStorage.getItem(vtKey("vocational_backend_url")) || "";
+
+    document.getElementById("newExecUrl").value = saved;
+    document.getElementById("upgradeExecUrl").value = saved;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mode") === "upgrade") {
+        showMode("upgrade");
+    }
+});
 </script>
 
 </body>
