@@ -31,6 +31,12 @@
                 box-shadow: none !important;
                 border: 1px solid #cbd5e1 !important;
                 break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .print-break-before {
+                break-before: page;
+                page-break-before: always;
             }
 
             canvas {
@@ -264,7 +270,7 @@
             </div>
         </section>
 
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section class="print-break-before grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
                 <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
                     <span class="material-icons text-blue-700">trending_up</span>
@@ -286,7 +292,7 @@
             </div>
         </section>
 
-        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <section class="print-break-before print-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-200">
                 <h3 class="font-bold text-slate-900 flex items-center gap-2">
                     <span class="material-icons text-orange-600">work</span>
@@ -296,7 +302,7 @@
             <div id="taskAverages" class="p-5"></div>
         </section>
 
-        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <section class="print-break-before print-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-200 flex justify-between items-center">
                 <h3 class="font-bold text-slate-900 flex items-center gap-2">
                     <span class="material-icons text-slate-600">history</span>
