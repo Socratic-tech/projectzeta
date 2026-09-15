@@ -2,183 +2,367 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vocational Tracker</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <style>
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
 
-        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; }
+        .animate-fade-in-up {
+            animation: fadeInUp .45s ease-out forwards;
+        }
+
+        .status-dot {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
     </style>
+
+    <script>
+    const REQUIRED_API_VERSION = 3;
+
+    /************************************************************
+     * INSTANCE NAMESPACE
+     *
+     * TO PROMOTE THIS BUILD TO PRODUCTION: set VT_ENV to "".
+     ************************************************************/
+    const VT_ENV = "";
+
+    function vtKey(name) {
+        return VT_ENV ? VT_ENV + ":" + name : name;
+    }
+
+    if (VT_ENV) {
+        document.addEventListener("DOMContentLoaded", function () {
+            const css = document.createElement("style");
+            css.textContent =
+                ".vt-env-banner{position:sticky;top:0;z-index:9999;background:#92400e;" +
+                "color:#fff;font:700 12px/1.3 ui-sans-serif,system-ui;padding:8px 12px;" +
+                "text-align:center;letter-spacing:.05em;text-transform:uppercase}" +
+                "@media print{.vt-env-banner{display:none!important}}";
+            document.head.appendChild(css);
+
+            const bar = document.createElement("div");
+            bar.className = "vt-env-banner";
+            bar.textContent = VT_ENV + " instance — test data only, not production";
+            document.body.prepend(bar);
+        });
+    }
+    </script>
 </head>
 
-<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col">
 
-<!-- NAV -->
-<nav class="bg-white shadow border-b border-gray-200">
+<nav class="bg-white border-b border-slate-200 shadow-sm">
     <div class="max-w-7xl mx-auto px-4">
-        <div class="flex justify-between h-16 items-center">
+        <div class="min-h-16 py-3 flex flex-wrap justify-between items-center gap-3">
+            <a href="index.html" class="text-xl font-extrabold text-blue-900 flex items-center gap-2">
+                <span class="material-icons text-blue-700">school</span>
+                Vocational Tracker
+            </a>
 
-            <div class="flex items-center">
-                <h1 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
-                    <span class="material-icons">school</span>
-                    Vocational Tracker
-                </h1>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <!-- connection status -->
-                <div id="statusContainer" 
-                     class="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 border border-gray-200 
-                            text-xs font-medium text-gray-500 transition-colors">
-                    <span id="statusDot" class="status-dot bg-gray-400"></span>
-                    <span id="statusText">Checking...</span>
+            <div class="flex items-center gap-3">
+                <div id="statusContainer"
+                     class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-300
+                            text-xs font-bold text-slate-600 transition-colors">
+                    <span id="statusDot" class="status-dot bg-slate-400"></span>
+                    <span id="statusText">Checking…</span>
                 </div>
 
-                <a href="setup.html" class="text-gray-400 hover:text-indigo-600 transition-colors">
+                <a href="faq.html"
+                   aria-label="Help"
+                   class="text-slate-500 hover:text-blue-700 transition-colors">
                     <span class="material-icons">help_outline</span>
                 </a>
-            </div>
 
+                <a href="setup.html"
+                   aria-label="Setup"
+                   class="text-slate-500 hover:text-blue-700 transition-colors">
+                    <span class="material-icons">tune</span>
+                </a>
+            </div>
         </div>
     </div>
 </nav>
 
-<!-- MAIN -->
-<div class="flex-grow flex flex-col items-center justify-center p-6">
+<main class="flex-grow flex flex-col items-center justify-center px-5 py-10">
     <div class="w-full max-w-5xl animate-fade-in-up">
 
-        <div class="text-center mb-12">
-            <h2 class="text-4xl font-extrabold text-gray-900 mb-4">Dashboard</h2>
-            <p class="text-xl text-gray-500">Select an option below to access the system.</p>
+        <div class="text-center mb-9">
+            <h2 class="text-4xl font-extrabold text-slate-900 mb-3">Vocational Tracker</h2>
+            <p class="text-lg text-slate-600">
+                Choose the part of the system you need.
+            </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div id="notConfiguredNotice"
+             class="hidden mb-7 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
+            <div class="flex gap-3">
+                <span class="material-icons">warning_amber</span>
+                <div>
+                    <p class="font-bold">This browser has not been connected to a school tracker yet.</p>
+                    <p class="text-sm mt-1">
+                        Use <a href="setup.html" class="underline font-semibold">Setup</a> if you are configuring the school,
+                        or scan the job-site QR code if you only need to enter an evaluation.
+                    </p>
+                </div>
+            </div>
+        </div>
 
-            <!-- ENTRY -->
-            <a href="entry.html" 
-               class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200
-                      hover:border-indigo-500 transition-all duration-300 flex flex-col items-center 
-                      text-center cursor-pointer transform hover:-translate-y-1">
+        <div id="upgradeRequiredNotice"
+             class="hidden mb-7 rounded-xl border-2 border-red-300 bg-red-50 p-5 text-red-950">
+            <div class="flex gap-3">
+                <span class="material-icons text-red-700">system_update_alt</span>
+                <div>
+                    <p class="font-extrabold text-lg">Vocational Tracker v3 upgrade required</p>
+                    <p class="text-sm mt-1 leading-relaxed">
+                        This school is connected to an older backend that is no longer supported.
+                        Student data has not been changed. A spreadsheet administrator must complete
+                        the v3 security upgrade before Admin, Reports, or Entry can be used.
+                    </p>
+                    <a href="setup.html?mode=upgrade"
+                       class="inline-block mt-3 bg-red-700 hover:bg-red-800 text-white font-bold px-4 py-2 rounded-lg">
+                        Upgrade Existing Tracker
+                    </a>
+                </div>
+            </div>
+        </div>
 
-                <div class="bg-blue-50 text-blue-600 w-20 h-20 rounded-full flex items-center justify-center 
-                            mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                    <span class="material-icons text-4xl">edit_note</span>
+        <div id="systemCards" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <a href="entry.html"
+               id="entryCard"
+               onclick="return openEntry(event)"
+               class="group bg-white p-7 rounded-2xl shadow-sm hover:shadow-lg border border-slate-200
+                      hover:border-blue-500 transition-all flex flex-col items-center text-center">
+
+                <div class="bg-blue-100 text-blue-800 w-16 h-16 rounded-full flex items-center justify-center mb-5
+                            group-hover:bg-blue-700 group-hover:text-white transition-colors">
+                    <span class="material-icons text-3xl">edit_note</span>
                 </div>
 
-                <h3 class="text-2xl font-bold text-gray-900 group-hover:text-blue-600 mb-2">
+                <h3 class="text-2xl font-bold text-slate-900 group-hover:text-blue-700 mb-2">
                     New Entry
                 </h3>
-                <p class="text-gray-500">Log daily performance and evaluator notes.</p>
+
+                <p class="text-slate-600">
+                    Record job-site performance and evaluator notes.
+                </p>
+
+                <div class="mt-5 text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 rounded-full px-3 py-1">
+                    Secure QR required on first use
+                </div>
             </a>
 
-            <!-- REPORTS -->
-            <a href="report.html" 
-               class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200
-                      hover:border-indigo-500 transition-all duration-300 flex flex-col items-center 
-                      text-center cursor-pointer transform hover:-translate-y-1">
+            <a href="report.html"
+               class="group bg-white p-7 rounded-2xl shadow-sm hover:shadow-lg border border-slate-200
+                      hover:border-violet-500 transition-all flex flex-col items-center text-center">
 
-                <div class="bg-purple-50 text-purple-600 w-20 h-20 rounded-full flex items-center justify-center 
-                            mb-6 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                    <span class="material-icons text-4xl">assessment</span>
+                <div class="bg-violet-100 text-violet-800 w-16 h-16 rounded-full flex items-center justify-center mb-5
+                            group-hover:bg-violet-700 group-hover:text-white transition-colors">
+                    <span class="material-icons text-3xl">assessment</span>
                 </div>
 
-                <h3 class="text-2xl font-bold text-gray-900 group-hover:text-purple-600 mb-2">
+                <h3 class="text-2xl font-bold text-slate-900 group-hover:text-violet-700 mb-2">
                     Reports
                 </h3>
-                <p class="text-gray-500">View progress charts and printable report cards.</p>
+
+                <p class="text-slate-600">
+                    Review student progress, history, and printable reports.
+                </p>
+
+                <div class="mt-5 text-xs font-bold text-violet-800 bg-violet-50 border border-violet-200 rounded-full px-3 py-1">
+                    Viewer or Admin code
+                </div>
             </a>
 
-            <!-- ADMIN -->
-            <a href="admin.html" 
-               class="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200
-                      hover:border-indigo-500 transition-all duration-300 flex flex-col items-center 
-                      text-center cursor-pointer transform hover:-translate-y-1">
+            <a href="admin.html"
+               class="group bg-white p-7 rounded-2xl shadow-sm hover:shadow-lg border border-slate-200
+                      hover:border-slate-600 transition-all flex flex-col items-center text-center">
 
-                <div class="bg-gray-50 text-gray-600 w-20 h-20 rounded-full flex items-center justify-center 
-                            mb-6 group-hover:bg-gray-600 group-hover:text-white transition-colors">
-                    <span class="material-icons text-4xl">settings</span>
+                <div class="bg-slate-200 text-slate-800 w-16 h-16 rounded-full flex items-center justify-center mb-5
+                            group-hover:bg-slate-800 group-hover:text-white transition-colors">
+                    <span class="material-icons text-3xl">admin_panel_settings</span>
                 </div>
 
-                <h3 class="text-2xl font-bold text-gray-900 group-hover:text-gray-700 mb-2">
+                <h3 class="text-2xl font-bold text-slate-900 group-hover:text-slate-700 mb-2">
                     Admin
                 </h3>
-                <p class="text-gray-500">Manage job sites and settings.</p>
+
+                <p class="text-slate-600">
+                    Manage students, job sites, tasks, and entry QR codes.
+                </p>
+
+                <div class="mt-5 text-xs font-bold text-slate-800 bg-slate-100 border border-slate-300 rounded-full px-3 py-1">
+                    Personal Admin code
+                </div>
             </a>
 
+        </div>
+
+        <div class="mt-8 bg-white border border-slate-200 rounded-2xl p-5 text-sm text-slate-600">
+            <div class="flex items-start gap-3">
+                <span class="material-icons text-green-700">verified_user</span>
+                <div>
+                    <strong class="text-slate-900">Access is role-based.</strong>
+                    Job-site QR links can enter evaluations only. Report viewers can read reports only.
+                    Administrators use one personal code for both Admin and Reports.
+                </div>
+            </div>
         </div>
 
     </div>
+</main>
+
+<!-- ENTRY ACCESS MODAL -->
+<div id="entryModal"
+     class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm px-4
+            items-center justify-center">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-7 text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 text-blue-700
+                    flex items-center justify-center">
+            <span class="material-icons text-4xl">qr_code_scanner</span>
+        </div>
+
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Scan the Job-Site QR Code</h2>
+
+        <p class="text-slate-600 leading-relaxed mb-5">
+            Entry access is provided through the secure QR code at the job site.
+            This browser has not saved a valid entry link yet.
+        </p>
+
+        <p class="text-sm text-slate-500 mb-6">
+            If you are an evaluator, use the QR code provided by your program coordinator.
+        </p>
+
+        <button onclick="closeEntryModal()"
+                class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl">
+            Got it
+        </button>
+    </div>
 </div>
 
-<footer class="bg-white border-t border-gray-200 py-6 mt-8">
-    <div class="max-w-7xl mx-auto px-4 text-center text-gray-400 text-sm">
-        Vocational Tracker System
+<footer class="bg-white border-t border-slate-200 py-5 mt-8">
+    <div class="max-w-7xl mx-auto px-4 text-center text-slate-500 text-sm">
+        Vocational Tracker
     </div>
 </footer>
 
 <script>
-/* Correct backend key */
-const API_URL = localStorage.getItem("vocational_backend_url");
+const API_URL = localStorage.getItem(vtKey("vocational_backend_url"));
 
-/* UI elements */
 const statusDot = document.getElementById("statusDot");
 const statusText = document.getElementById("statusText");
 const statusContainer = document.getElementById("statusContainer");
 
-/* Update UI */
 function setStatus(type, message) {
-    statusText.innerText = message;
+    statusText.textContent = message;
 
     statusDot.className = "status-dot";
     statusContainer.className =
-        "flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium transition-colors";
+        "flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold transition-colors";
 
     if (type === "online") {
-        statusDot.classList.add("bg-green-500", "animate-pulse");
-        statusContainer.classList.add("bg-green-50", "border-green-200", "text-green-700");
-    }
-    else if (type === "offline") {
-        statusDot.classList.add("bg-red-500");
-        statusContainer.classList.add("bg-red-50", "border-red-200", "text-red-700");
-    }
-    else {
-        statusDot.classList.add("bg-yellow-500");
-        statusContainer.classList.add("bg-yellow-50", "border-yellow-200", "text-yellow-700");
+        statusDot.classList.add("bg-green-600");
+        statusContainer.classList.add("bg-green-50", "border-green-300", "text-green-800");
+    } else if (type === "offline") {
+        statusDot.classList.add("bg-red-600");
+        statusContainer.classList.add("bg-red-50", "border-red-300", "text-red-800");
+    } else {
+        statusDot.classList.add("bg-amber-500");
+        statusContainer.classList.add("bg-amber-50", "border-amber-300", "text-amber-900");
     }
 }
 
-/* Test database connectivity */
+let BACKEND_COMPATIBLE = false;
+
+function openEntry(event) {
+    if (!BACKEND_COMPATIBLE) {
+        event.preventDefault();
+
+        if (API_URL) {
+            document.getElementById("upgradeRequiredNotice").classList.remove("hidden");
+            document.getElementById("upgradeRequiredNotice").scrollIntoView({ behavior: "smooth" });
+        } else {
+            document.getElementById("notConfiguredNotice").classList.remove("hidden");
+            document.getElementById("notConfiguredNotice").scrollIntoView({ behavior: "smooth" });
+        }
+
+        return false;
+    }
+
+    const token = localStorage.getItem(vtKey("vt_entry_token"));
+
+    if (token) {
+        return true;
+    }
+
+    event.preventDefault();
+
+    const modal = document.getElementById("entryModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    return false;
+}
+
+function closeEntryModal() {
+    const modal = document.getElementById("entryModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+function setCardsEnabled(enabled) {
+    const cards = document.getElementById("systemCards");
+    if (!cards) return;
+
+    cards.classList.toggle("opacity-50", !enabled);
+    cards.classList.toggle("pointer-events-none", !enabled);
+}
+
 async function checkConnection() {
     if (!API_URL) {
-        setStatus("offline", "Not Configured");
+        BACKEND_COMPATIBLE = false;
+        setCardsEnabled(false);
+        setStatus("offline", "Not configured");
+        document.getElementById("notConfiguredNotice").classList.remove("hidden");
         return;
     }
 
     try {
-        const res = await fetch(API_URL + "?action=getSites");
-        const text = await res.text();
+        const res = await fetch(API_URL, { method: "GET", cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
 
-        // GAS returns JSON cleanly if reachable
-        if (text.trim().startsWith("{")) {
-            const json = JSON.parse(text);
+        const json = await res.json();
 
-            if (json.status === "success") {
-                setStatus("online", "System Online");
-                return;
-            }
+        if (json.status !== "online") {
+            throw new Error("Unexpected backend response");
         }
 
-        // Anything else is an error
-        setStatus("offline", "Script Error");
+        if (Number(json.apiVersion || 0) < REQUIRED_API_VERSION) {
+            BACKEND_COMPATIBLE = false;
+            setCardsEnabled(false);
+            setStatus("warning", "Upgrade required");
+            document.getElementById("upgradeRequiredNotice").classList.remove("hidden");
+            return;
+        }
+
+        BACKEND_COMPATIBLE = true;
+        setCardsEnabled(true);
+        setStatus("online", "System online · v" + json.apiVersion);
 
     } catch (err) {
         console.error(err);
+        BACKEND_COMPATIBLE = false;
+        setCardsEnabled(false);
         setStatus("offline", "Offline");
     }
 }
