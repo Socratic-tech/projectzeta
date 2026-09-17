@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar Code — Vocational Tracker v3.0.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body class="bg-slate-100 text-slate-900 font-sans min-h-screen">
+
+<nav class="bg-blue-900 text-white shadow">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-3">
+        <div>
+            <div class="text-sm text-blue-200 font-bold">Vocational Tracker v3.0.1</div>
+            <h1 class="text-xl font-extrabold">Sidebar.html — Copy/Paste Source</h1>
+        </div>
+
+        <a href="setup.html?mode=upgrade"
+           class="bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-4 py-2 font-bold text-sm">
+            Back to Upgrade Instructions
+        </a>
+    </div>
+</nav>
+
+<main class="max-w-6xl mx-auto px-4 py-8">
+
+    <section class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 mb-6">
+        <h2 class="text-2xl font-extrabold text-slate-900 mb-4">
+            How to add Sidebar.html in Google Apps Script
+        </h2>
+
+        <ol class="space-y-4">
+            <li class="flex gap-3">
+                <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold flex items-center justify-center">1</div>
+                <div>
+                    <strong>Open the school's existing Google Sheet.</strong>
+                    <div class="text-slate-600 mt-1">
+                        In Google Sheets, choose <strong>Extensions → Apps Script</strong>.
+                        This is the Extensions menu inside Google Sheets, not the browser Extensions menu.
+                    </div>
+                </div>
+            </li>
+
+            <li class="flex gap-3">
+                <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold flex items-center justify-center">2</div>
+                <div>
+                    <strong>Create the Sidebar HTML file if it does not already exist.</strong>
+                    <div class="text-slate-600 mt-1">
+                        In the Apps Script editor, look at the <strong>Files</strong> list on the left.
+                        Click the <strong>+</strong> button beside Files, then choose <strong>HTML</strong>.
+                    </div>
+                </div>
+            </li>
+
+            <li class="flex gap-3">
+                <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold flex items-center justify-center">3</div>
+                <div>
+                    <strong>Name the file exactly <code>Sidebar</code>.</strong>
+                    <div class="text-slate-600 mt-1">
+                        Do <strong>not</strong> type <code>Sidebar.html</code>. Apps Script automatically adds the
+                        <code>.html</code> extension, so the file will appear as <strong>Sidebar.html</strong>.
+                    </div>
+                </div>
+            </li>
+
+            <li class="flex gap-3">
+                <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold flex items-center justify-center">4</div>
+                <div>
+                    <strong>Delete everything Apps Script put in the new file.</strong>
+                    <div class="text-slate-600 mt-1">
+                        The new HTML file usually contains starter HTML. Select all of it and delete it.
+                    </div>
+                </div>
+            </li>
+
+            <li class="flex gap-3">
+                <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold flex items-center justify-center">5</div>
+                <div>
+                    <strong>Copy the complete code below and paste it into Sidebar.html.</strong>
+                    <div class="text-slate-600 mt-1">
+                        Use the <strong>Copy Sidebar Code</strong> button. Then paste into the empty Sidebar file in Apps Script.
+                    </div>
+                </div>
+            </li>
+
+            <li class="flex gap-3">
+                <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold flex items-center justify-center">6</div>
+                <div>
+                    <strong>Save the Apps Script project.</strong>
+                    <div class="text-slate-600 mt-1">
+                        Then return to the Google Sheet and refresh/reopen it. The <strong>Vocational Tracker</strong>
+                        menu should appear in Sheets.
+                    </div>
+                </div>
+            </li>
+        </ol>
+
+        <div class="mt-5 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-950">
+            <strong>Existing Sidebar file?</strong>
+            Click <strong>Sidebar.html</strong> in the Files list, select everything, delete it, and replace it
+            with the code below. You do not need to create a second Sidebar file.
+        </div>
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+
+        <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3">
+            <div>
+                <h2 class="font-extrabold text-lg">Complete Sidebar.html source</h2>
+                <p class="text-sm text-slate-500">Vocational Tracker v3.0.1</p>
+            </div>
+
+            <button id="copyBtn"
+                    onclick="copySidebarCode()"
+                    class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-lg">
+                <span class="material-icons text-lg">content_copy</span>
+                Copy Sidebar Code
+            </button>
+        </div>
+
+        <div id="copyStatus"
+             class="hidden mx-5 mt-4 rounded-lg border p-3 text-sm font-bold"></div>
+
+        <pre id="sidebarCode"
+             class="m-0 p-5 bg-slate-950 text-slate-100 overflow-auto text-xs leading-relaxed whitespace-pre"
+             style="max-height:70vh;"><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;base target=&quot;_top&quot;&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  
+&lt;style&gt;
+  :root {
+    --bg: #f3f4f6;
+    --card: #ffffff;
+    --text: #111827;
+    --muted: #4b5563;
+    --border: #cbd5e1;
+
+    --primary: #1d4ed8;
+    --primary-hover: #1e40af;
+    --primary-soft: #dbeafe;
+
+    --success: #166534;
+    --success-soft: #dcfce7;
+
+    --warn: #92400e;
+    --warn-soft: #fef3c7;
+
+    --danger: #991b1b;
+    --danger-soft: #fee2e2;
+
+    --surface: #f8fafc;
+    --shadow: 0 2px 8px rgba(0,0,0,.08);
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .shell {
+    min-height: 100vh;
+    padding-bottom: 18px;
+  }
+
+  .hero {
+    background: #1e3a8a;
+    color: #ffffff;
+    padding: 16px 14px;
+    border-bottom: 4px solid #1d4ed8;
+  }
+
+  .hero-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+
+  .logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #1e3a8a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    font-weight: 700;
+    flex: 0 0 auto;
+  }
+
+  .hero h1 {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1.15;
+  }
+
+  .hero p {
+    margin: 4px 0 0;
+    color: #dbeafe;
+    font-size: 14px;
+  }
+
+  .content {
+    padding: 10px;
+  }
+
+  .banner {
+    display: none;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    border: 1px solid transparent;
+  }
+
+  .banner.error {
+    display: block;
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: #fca5a5;
+  }
+
+  .banner.busy {
+    display: block;
+    background: #e0f2fe;
+    color: #0c4a6e;
+    border-color: #7dd3fc;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .card-head {
+    padding: 13px 13px 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #ffffff;
+  }
+
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    font-size: 18px;
+    font-weight: 700;
+    background: var(--primary-soft);
+    color: #1e3a8a;
+    border: 1px solid #93c5fd;
+  }
+
+  .card-title {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .card-title h2 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  .card-title p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .card-body {
+    padding: 13px;
+  }
+
+  /* Narrow Google Sheets sidebar: use vertical status rows instead of tiny cards */
+  .status-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .stat {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 10px 11px;
+  }
+
+  .status-grid .stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .stat-label {
+    color: var(--muted);
+    font-size: 13px;
+    text-transform: none;
+    letter-spacing: 0;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .stat-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .good { color: var(--success); }
+  .warn { color: var(--warn); }
+  .danger-text { color: var(--danger); }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+
+  .pill.good {
+    background: var(--success-soft);
+    color: var(--success);
+    border-color: #86efac;
+  }
+
+  .pill.warn {
+    background: var(--warn-soft);
+    color: var(--warn);
+    border-color: #fcd34d;
+  }
+
+  .pill.admin {
+    background: var(--primary-soft);
+    color: #1e3a8a;
+    border-color: #93c5fd;
+  }
+
+  .help {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 9px 0 0;
+    line-height: 1.45;
+  }
+
+  .callout {
+    border: 1px solid #93c5fd;
+    background: #eff6ff;
+    color: #1e3a8a;
+    border-radius: 10px;
+    padding: 11px 12px;
+    font-size: 14px;
+    line-height: 1.45;
+    margin-bottom: 12px;
+  }
+
+  .callout.success {
+    border-color: #86efac;
+    background: #f0fdf4;
+    color: #166534;
+  }
+
+  .callout.warn {
+    border-color: #fcd34d;
+    background: #fffbeb;
+    color: #92400e;
+  }
+
+  .callout strong {
+    font-weight: 700;
+  }
+
+  .field-label {
+    display: block;
+    font-weight: 700;
+    color: var(--text);
+    font-size: 15px;
+    margin: 0 0 7px;
+  }
+
+  input[type=&quot;text&quot;] {
+    width: 100%;
+    border: 1px solid #94a3b8;
+    background: #ffffff;
+    color: var(--text);
+    border-radius: 9px;
+    padding: 11px 12px;
+    font-size: 16px;
+    outline: none;
+    transition: border .15s, box-shadow .15s;
+  }
+
+  input[type=&quot;text&quot;]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, .16);
+  }
+
+  /* Inputs + buttons stack vertically in narrow sidebar */
+  .row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .row &gt; input { width: 100%; }
+
+  button {
+    appearance: none;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    padding: 10px 12px;
+    min-height: 42px;
+    font: 700 14px Arial, Helvetica, sans-serif;
+    cursor: pointer;
+    transition: background .15s ease, border .15s ease, opacity .15s ease;
+  }
+
+  button:disabled {
+    cursor: default;
+    opacity: .6;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+
+  .btn-secondary {
+    background: #f3f4f6;
+    color: #111827;
+    border-color: #94a3b8;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: #e5e7eb;
+  }
+
+  .btn-danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: #fca5a5;
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    background: #fecaca;
+  }
+
+  .btn-small {
+    padding: 8px 10px;
+    min-height: 38px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .btn-full {
+    width: 100%;
+  }
+
+  /* Staff rows become two-stage rows instead of squeezing everything horizontally */
+  .person {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 8px 10px;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .person:first-child {
+    border-top: 0;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #e5e7eb;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    border: 1px solid #cbd5e1;
+  }
+
+  .avatar.admin {
+    background: var(--primary-soft);
+    color: #1e3a8a;
+    border-color: #93c5fd;
+  }
+
+  .person-main {
+    min-width: 0;
+  }
+
+  .person-name {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text);
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.25;
+  }
+
+  .person-sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  .person-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .person-actions button {
+    width: 100%;
+  }
+
+  .off {
+    opacity: .75;
+  }
+
+  .off .person-name {
+    text-decoration: line-through;
+  }
+
+  .reveal {
+    display: none;
+    border: 2px solid #f59e0b;
+    background: #fff7ed;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .reveal.show {
+    display: block;
+  }
+
+  .reveal-title {
+    font-size: 13px;
+    color: #92400e;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    margin-bottom: 8px;
+  }
+
+  .reveal-value {
+    background: #ffffff;
+    border: 1px solid #fbbf24;
+    border-radius: 9px;
+    padding: 12px 9px;
+    font-family: Consolas, &quot;Courier New&quot;, monospace;
+    font-size: 18px;
+    color: #111827;
+    text-align: center;
+    word-break: break-all;
+    user-select: all;
+    margin-bottom: 8px;
+    letter-spacing: .03em;
+  }
+
+  .reveal-note {
+    font-size: 14px;
+    color: #92400e;
+    margin-bottom: 9px;
+    line-height: 1.45;
+  }
+
+  details {
+    border-top: 1px solid #e5e7eb;
+  }
+
+  summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 14px;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  summary::-webkit-details-marker { display: none; }
+
+  summary::after {
+    content: &quot;▾&quot;;
+    color: #4b5563;
+    font-size: 14px;
+  }
+
+  details[open] summary::after {
+    content: &quot;▴&quot;;
+  }
+
+  .advanced {
+    padding: 0 14px 14px;
+  }
+
+  .divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 13px 0;
+  }
+
+  .footer {
+    text-align: center;
+    color: #4b5563;
+    font-size: 12px;
+    padding: 7px 10px 0;
+    line-height: 1.4;
+  }
+
+  .empty {
+    color: var(--muted);
+    font-size: 14px;
+    padding: 8px 0 2px;
+  }
+
+  .mono {
+    font-family: Consolas, &quot;Courier New&quot;, monospace;
+    font-size: 13px;
+  }
+
+  .token-preview {
+    font-family: Consolas, &quot;Courier New&quot;, monospace;
+    font-size: 13px;
+    color: #111827;
+    word-break: break-all;
+    line-height: 1.45;
+  }
+
+  /* Refresh sits below the heading rather than shrinking it */
+  .card-head &gt; .btn-small {
+    flex: 0 0 auto;
+  }
+
+  /* Extra-narrow Sheets sidebars */
+  @media (max-width: 360px) {
+    body {
+      font-size: 16px;
+    }
+
+    .content {
+      padding: 8px;
+    }
+
+    .hero {
+      padding: 14px 12px;
+    }
+
+    .hero h1 {
+      font-size: 20px;
+    }
+
+    .hero p {
+      font-size: 13px;
+    }
+
+    .card-head {
+      flex-wrap: wrap;
+    }
+
+    .card-head &gt; .btn-small {
+      width: 100%;
+      margin-left: 46px;
+    }
+
+    .person-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .status-grid .stat {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-value {
+      white-space: normal;
+    }
+  }
+&lt;/style&gt;
+
+&lt;/head&gt;
+
+&lt;body&gt;
+&lt;div class=&quot;shell&quot;&gt;
+
+  &lt;div class=&quot;hero&quot;&gt;
+    &lt;div class=&quot;hero-row&quot;&gt;
+      &lt;div class=&quot;logo&quot;&gt;✓&lt;/div&gt;
+      &lt;div&gt;
+        &lt;h1&gt;Vocational Tracker&lt;/h1&gt;
+        &lt;p&gt;Setup, access, and security controls&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;content&quot;&gt;
+
+    &lt;div id=&quot;busy&quot; class=&quot;banner busy&quot;&gt;Working…&lt;/div&gt;
+    &lt;div id=&quot;err&quot; class=&quot;banner error&quot;&gt;&lt;/div&gt;
+
+    &lt;div id=&quot;reveal&quot; class=&quot;reveal&quot;&gt;
+      &lt;div id=&quot;revealTitle&quot; class=&quot;reveal-title&quot;&gt;&lt;/div&gt;
+      &lt;div id=&quot;revealValue&quot; class=&quot;reveal-value&quot;&gt;&lt;/div&gt;
+      &lt;div id=&quot;revealNote&quot; class=&quot;reveal-note&quot;&gt;
+        Copy this now. This credential will not be shown again.
+      &lt;/div&gt;
+      &lt;button class=&quot;btn-secondary btn-full&quot; onclick=&quot;copyReveal()&quot;&gt;Copy credential&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;card&quot;&gt;
+      &lt;div class=&quot;card-head&quot;&gt;
+        &lt;div class=&quot;card-icon&quot;&gt;●&lt;/div&gt;
+        &lt;div class=&quot;card-title&quot;&gt;
+          &lt;h2&gt;Instance status&lt;/h2&gt;
+          &lt;p&gt;Current security and setup state&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;button class=&quot;btn-secondary btn-small&quot; onclick=&quot;refresh()&quot;&gt;Refresh&lt;/button&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;card-body&quot;&gt;
+        &lt;div class=&quot;status-grid&quot;&gt;
+          &lt;div class=&quot;stat&quot;&gt;
+            &lt;div class=&quot;stat-label&quot;&gt;Administrators&lt;/div&gt;
+            &lt;div id=&quot;statAdmins&quot; class=&quot;stat-value&quot;&gt;—&lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;div class=&quot;stat&quot;&gt;
+            &lt;div class=&quot;stat-label&quot;&gt;Report viewers&lt;/div&gt;
+            &lt;div id=&quot;statViewers&quot; class=&quot;stat-value&quot;&gt;—&lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;div class=&quot;stat&quot;&gt;
+            &lt;div class=&quot;stat-label&quot;&gt;Entry QR token&lt;/div&gt;
+            &lt;div id=&quot;statToken&quot; class=&quot;stat-value&quot;&gt;—&lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;div class=&quot;stat&quot;&gt;
+            &lt;div class=&quot;stat-label&quot;&gt;Setup&lt;/div&gt;
+            &lt;div id=&quot;statSetup&quot; class=&quot;stat-value&quot;&gt;—&lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;div class=&quot;stat&quot;&gt;
+            &lt;div class=&quot;stat-label&quot;&gt;Tracker version&lt;/div&gt;
+            &lt;div id=&quot;statVersion&quot; class=&quot;stat-value&quot;&gt;—&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div id=&quot;migrationNotice&quot; class=&quot;callout warn&quot; style=&quot;display:none;margin-top:10px;margin-bottom:0;&quot;&gt;
+          &lt;strong&gt;Existing tracker upgrade detected.&lt;/strong&gt;
+          Create the first personal administrator below. When that administrator is created,
+          the old shared admin credential will be permanently retired.
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div id=&quot;firstAdminCard&quot; class=&quot;card&quot; style=&quot;display:none;&quot;&gt;
+      &lt;div class=&quot;card-head&quot;&gt;
+        &lt;div class=&quot;card-icon&quot;&gt;★&lt;/div&gt;
+        &lt;div class=&quot;card-title&quot;&gt;
+          &lt;h2&gt;Finish setup&lt;/h2&gt;
+          &lt;p&gt;Create the first administrator for this tracker&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;card-body&quot;&gt;
+        &lt;div class=&quot;callout success&quot;&gt;
+          &lt;strong&gt;The spreadsheet is ready for v3.&lt;/strong&gt;
+          Create the first personal administrator below. Their code will work for both
+          &lt;strong&gt;Admin&lt;/strong&gt; and &lt;strong&gt;Reports&lt;/strong&gt; and will be emailed automatically.
+        &lt;/div&gt;
+
+        &lt;label class=&quot;field-label&quot; for=&quot;firstAdminName&quot;&gt;Administrator name&lt;/label&gt;
+        &lt;input id=&quot;firstAdminName&quot; type=&quot;text&quot; placeholder=&quot;e.g. Jordan Smith&quot;&gt;
+
+        &lt;div style=&quot;height:8px&quot;&gt;&lt;/div&gt;
+
+        &lt;label class=&quot;field-label&quot; for=&quot;firstAdminEmail&quot;&gt;Email address&lt;/label&gt;
+        &lt;input id=&quot;firstAdminEmail&quot; type=&quot;text&quot; inputmode=&quot;email&quot; autocomplete=&quot;email&quot;
+               placeholder=&quot;jordan@school.org&quot;&gt;
+
+        &lt;div style=&quot;height:8px&quot;&gt;&lt;/div&gt;
+
+        &lt;button class=&quot;btn-primary btn-full&quot; onclick=&quot;createFirstAdmin()&quot;&gt;
+          Create &amp;amp; email code
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;card&quot;&gt;
+      &lt;div class=&quot;card-head&quot;&gt;
+        &lt;div class=&quot;card-icon&quot;&gt;A&lt;/div&gt;
+        &lt;div class=&quot;card-title&quot;&gt;
+          &lt;h2&gt;Administrators&lt;/h2&gt;
+          &lt;p&gt;Admin codes automatically include Reports access&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;card-body&quot;&gt;
+        &lt;div class=&quot;callout&quot;&gt;
+          &lt;strong&gt;One code, two permissions.&lt;/strong&gt;
+          Active administrators can manage the tracker and open Reports with the same personal code.
+          New and replacement codes are emailed automatically when an email address is saved.
+        &lt;/div&gt;
+
+        &lt;div id=&quot;admins&quot;&gt;&lt;/div&gt;
+
+        &lt;div class=&quot;divider&quot;&gt;&lt;/div&gt;
+
+        &lt;label class=&quot;field-label&quot; for=&quot;newAdmin&quot;&gt;Add administrator&lt;/label&gt;
+        &lt;input id=&quot;newAdmin&quot; type=&quot;text&quot; placeholder=&quot;Administrator&#x27;s name&quot;&gt;
+
+        &lt;div style=&quot;height:8px&quot;&gt;&lt;/div&gt;
+
+        &lt;label class=&quot;field-label&quot; for=&quot;newAdminEmail&quot;&gt;Email address&lt;/label&gt;
+        &lt;input id=&quot;newAdminEmail&quot; type=&quot;text&quot; inputmode=&quot;email&quot; autocomplete=&quot;email&quot;
+               placeholder=&quot;name@school.org&quot;&gt;
+
+        &lt;div style=&quot;height:8px&quot;&gt;&lt;/div&gt;
+
+        &lt;button class=&quot;btn-primary btn-full&quot; onclick=&quot;addAdmin()&quot;&gt;
+          Add &amp;amp; email code
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;card&quot;&gt;
+      &lt;div class=&quot;card-head&quot;&gt;
+        &lt;div class=&quot;card-icon&quot;&gt;R&lt;/div&gt;
+        &lt;div class=&quot;card-title&quot;&gt;
+          &lt;h2&gt;Report-only viewers&lt;/h2&gt;
+          &lt;p&gt;For staff who need Reports but not Admin&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;card-body&quot;&gt;
+        &lt;div id=&quot;viewers&quot;&gt;&lt;/div&gt;
+
+        &lt;div class=&quot;divider&quot;&gt;&lt;/div&gt;
+
+        &lt;label class=&quot;field-label&quot; for=&quot;newViewer&quot;&gt;Add report viewer&lt;/label&gt;
+        &lt;input id=&quot;newViewer&quot; type=&quot;text&quot; placeholder=&quot;Viewer&#x27;s name&quot;&gt;
+
+        &lt;div style=&quot;height:8px&quot;&gt;&lt;/div&gt;
+
+        &lt;label class=&quot;field-label&quot; for=&quot;newViewerEmail&quot;&gt;Email address&lt;/label&gt;
+        &lt;input id=&quot;newViewerEmail&quot; type=&quot;text&quot; inputmode=&quot;email&quot; autocomplete=&quot;email&quot;
+               placeholder=&quot;name@school.org&quot;&gt;
+
+        &lt;div style=&quot;height:8px&quot;&gt;&lt;/div&gt;
+
+        &lt;button class=&quot;btn-primary btn-full&quot; onclick=&quot;addViewer()&quot;&gt;
+          Add &amp;amp; email code
+        &lt;/button&gt;
+
+        &lt;p class=&quot;help&quot;&gt;
+          Administrators do not need to be added here; they already inherit report access.
+          New viewer codes are emailed automatically to the address provided.
+        &lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    
+    &lt;div class=&quot;card&quot;&gt;
+      &lt;div class=&quot;card-head&quot;&gt;
+        &lt;div class=&quot;card-icon&quot;&gt;↗&lt;/div&gt;
+        &lt;div class=&quot;card-title&quot;&gt;
+          &lt;h2&gt;Public website &amp;amp; support&lt;/h2&gt;
+          &lt;p&gt;Saves useful links directly in the Settings tab&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;card-body&quot;&gt;
+        &lt;label class=&quot;field-label&quot; for=&quot;publicBaseUrl&quot;&gt;Vocational Tracker website folder&lt;/label&gt;
+        &lt;input id=&quot;publicBaseUrl&quot;
+               type=&quot;text&quot;
+               inputmode=&quot;url&quot;
+               autocomplete=&quot;url&quot;
+               placeholder=&quot;https://example.org/vocational/&quot;&gt;
+
+        &lt;p class=&quot;help&quot;&gt;
+          Enter the folder that contains index.html, entry.html, report.html, and the other public pages.
+          The tracker writes direct page links into the Settings tab.
+        &lt;/p&gt;
+
+        &lt;div style=&quot;height:10px&quot;&gt;&lt;/div&gt;
+
+        &lt;label class=&quot;field-label&quot; for=&quot;supportEmail&quot;&gt;Feature request / support email&lt;/label&gt;
+        &lt;input id=&quot;supportEmail&quot;
+               type=&quot;text&quot;
+               inputmode=&quot;email&quot;
+               autocomplete=&quot;email&quot;
+               placeholder=&quot;support@school.org&quot;&gt;
+
+        &lt;div style=&quot;height:10px&quot;&gt;&lt;/div&gt;
+
+        &lt;button class=&quot;btn-primary btn-full&quot; onclick=&quot;savePublicSettings()&quot;&gt;
+          Save website &amp;amp; support settings
+        &lt;/button&gt;
+
+        &lt;div id=&quot;entryUrlBox&quot; class=&quot;stat&quot; style=&quot;margin-top:10px;display:none;&quot;&gt;
+          &lt;div class=&quot;stat-label&quot;&gt;Entry website link saved in Settings&lt;/div&gt;
+          &lt;div id=&quot;entryUrlPreview&quot; class=&quot;token-preview&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+&lt;div class=&quot;card&quot;&gt;
+      &lt;div class=&quot;card-head&quot;&gt;
+        &lt;div class=&quot;card-icon&quot;&gt;QR&lt;/div&gt;
+        &lt;div class=&quot;card-title&quot;&gt;
+          &lt;h2&gt;Job-site entry access&lt;/h2&gt;
+          &lt;p&gt;The QR token grants data entry only&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;card-body&quot;&gt;
+        &lt;div class=&quot;callout success&quot;&gt;
+          &lt;strong&gt;Restricted by design.&lt;/strong&gt;
+          The entry QR can load student/site/task choices and submit evaluations, but it cannot open
+          Reports or Admin.
+        &lt;/div&gt;
+
+        &lt;div class=&quot;stat&quot; style=&quot;margin-bottom:10px;&quot;&gt;
+          &lt;div class=&quot;stat-label&quot;&gt;Current token&lt;/div&gt;
+          &lt;div id=&quot;tokenPreview&quot; class=&quot;token-preview&quot;&gt;—&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;button class=&quot;btn-danger btn-full&quot; onclick=&quot;rotateToken()&quot;&gt;
+          Rotate entry token
+        &lt;/button&gt;
+
+        &lt;p class=&quot;help danger-text&quot;&gt;
+          Rotating the token immediately invalidates every printed QR code and saved entry link.
+          Reprint all job-site QR codes afterward.
+        &lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;card&quot;&gt;
+      &lt;details&gt;
+        &lt;summary&gt;Advanced &amp;amp; recovery&lt;/summary&gt;
+        &lt;div class=&quot;advanced&quot;&gt;
+
+          &lt;div class=&quot;callout warn&quot;&gt;
+            These controls are intended for repair or emergency recovery. Normal day-to-day management
+            should happen above.
+          &lt;/div&gt;
+
+          &lt;button class=&quot;btn-secondary btn-full&quot; onclick=&quot;repairSetup()&quot;&gt;
+            Check / repair tracker setup
+          &lt;/button&gt;
+
+          &lt;div class=&quot;divider&quot;&gt;&lt;/div&gt;
+
+          &lt;button class=&quot;btn-danger btn-full&quot; onclick=&quot;createBreakGlass()&quot;&gt;
+            Generate break-glass recovery code
+          &lt;/button&gt;
+
+          &lt;p class=&quot;help&quot;&gt;
+            This creates an emergency fallback code stored only as a one-way recovery hash.
+            It is separate from the retired shared-password system. Existing personal administrator
+            codes keep working.
+          &lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/details&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;footer&quot;&gt;
+      Vocational Tracker v3 · Credential management is available only from inside this spreadsheet.
+    &lt;/div&gt;
+
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  var state = null;
+  var currentReveal = &quot;&quot;;
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function setBusy(on, message) {
+    $(&quot;busy&quot;).textContent = message || &quot;Working…&quot;;
+    $(&quot;busy&quot;).style.display = on ? &quot;block&quot; : &quot;none&quot;;
+    $(&quot;err&quot;).style.display = &quot;none&quot;;
+  }
+
+  function fail(e) {
+    setBusy(false);
+    $(&quot;err&quot;).textContent = e &amp;&amp; e.message ? e.message : String(e);
+    $(&quot;err&quot;).style.display = &quot;block&quot;;
+  }
+
+  function reveal(label, value, note) {
+    if (!value) return;
+
+    currentReveal = String(value);
+    $(&quot;revealTitle&quot;).textContent = label || &quot;Credential&quot;;
+    $(&quot;revealValue&quot;).textContent = value;
+    $(&quot;revealNote&quot;).textContent =
+      note || &quot;Copy this now. This credential will not be shown again.&quot;;
+    $(&quot;reveal&quot;).classList.add(&quot;show&quot;);
+
+    window.scrollTo({ top: 0, behavior: &quot;smooth&quot; });
+  }
+
+  function copyReveal() {
+    if (!currentReveal) return;
+
+    navigator.clipboard.writeText(currentReveal).then(function () {
+      var original = $(&quot;revealNote&quot;).textContent;
+      $(&quot;revealNote&quot;).textContent = &quot;Copied to clipboard.&quot;;
+      setTimeout(function () {
+        $(&quot;revealNote&quot;).textContent = original;
+      }, 1600);
+    }).catch(function () {
+      var value = $(&quot;revealValue&quot;);
+      var range = document.createRange();
+      range.selectNodeContents(value);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    });
+  }
+
+  function initials(name) {
+    return String(name || &quot;?&quot;)
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(function (part) { return part.charAt(0).toUpperCase(); })
+      .join(&quot;&quot;) || &quot;?&quot;;
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? &quot;&quot; : value)
+      .replace(/&amp;/g, &quot;&amp;amp;&quot;)
+      .replace(/&lt;/g, &quot;&amp;lt;&quot;)
+      .replace(/&gt;/g, &quot;&amp;gt;&quot;)
+      .replace(/&quot;/g, &quot;&amp;quot;&quot;)
+      .replace(/&#x27;/g, &quot;&amp;#039;&quot;);
+  }
+
+  function jsString(value) {
+    return String(value == null ? &quot;&quot; : value)
+      .replace(/\\/g, &quot;\\\\&quot;)
+      .replace(/&#x27;/g, &quot;\\&#x27;&quot;);
+  }
+
+  function refresh() {
+    setBusy(true, &quot;Refreshing…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (st) {
+        setBusy(false);
+        state = st || {};
+        render(state);
+      })
+      .withFailureHandler(fail)
+      .uiStatus();
+  }
+
+  function render(st) {
+    var admins = Array.isArray(st.admins) ? st.admins : [];
+    var viewers = Array.isArray(st.viewers) ? st.viewers : [];
+
+    var activeAdmins = admins.filter(function (a) { return a.active; }).length;
+    var activeViewers = viewers.filter(function (v) { return v.active; }).length;
+
+    $(&quot;statAdmins&quot;).innerHTML =
+      activeAdmins
+        ? &#x27;&lt;span class=&quot;good&quot;&gt;&#x27; + activeAdmins + &#x27; active&lt;/span&gt;&#x27;
+        : &#x27;&lt;span class=&quot;warn&quot;&gt;none&lt;/span&gt;&#x27;;
+
+    $(&quot;statViewers&quot;).innerHTML =
+      activeViewers
+        ? &#x27;&lt;span class=&quot;good&quot;&gt;&#x27; + activeViewers + &#x27; active&lt;/span&gt;&#x27;
+        : &#x27;&lt;span class=&quot;warn&quot;&gt;none&lt;/span&gt;&#x27;;
+
+    $(&quot;statToken&quot;).innerHTML =
+      st.entryToken
+        ? &#x27;&lt;span class=&quot;good&quot;&gt;ready&lt;/span&gt;&#x27;
+        : &#x27;&lt;span class=&quot;danger-text&quot;&gt;missing&lt;/span&gt;&#x27;;
+
+    $(&quot;statSetup&quot;).innerHTML =
+      st.entryToken &amp;&amp; activeAdmins &gt; 0
+        ? &#x27;&lt;span class=&quot;good&quot;&gt;ready&lt;/span&gt;&#x27;
+        : &#x27;&lt;span class=&quot;warn&quot;&gt;finish setup&lt;/span&gt;&#x27;;
+
+    $(&quot;statVersion&quot;).innerHTML =
+      &#x27;&lt;span class=&quot;good&quot;&gt;v&#x27; + escapeHtml(st.release || &quot;3.0.0&quot;) +
+      &#x27; · schema &#x27; + escapeHtml(st.schemaVersion || 3) + &#x27;&lt;/span&gt;&#x27;;
+
+    $(&quot;migrationNotice&quot;).style.display =
+      st.legacyAdminPresent &amp;&amp; activeAdmins === 0 ? &quot;block&quot; : &quot;none&quot;;
+
+    $(&quot;tokenPreview&quot;).textContent =
+      st.entryToken || &quot;No entry token is set.&quot;;
+
+    $(&quot;publicBaseUrl&quot;).value = st.publicSiteBaseUrl || &quot;&quot;;
+    $(&quot;supportEmail&quot;).value = st.supportEmail || &quot;&quot;;
+
+    if (st.entryPageUrl) {
+      $(&quot;entryUrlBox&quot;).style.display = &quot;block&quot;;
+      $(&quot;entryUrlPreview&quot;).textContent = st.entryPageUrl;
+    } else {
+      $(&quot;entryUrlBox&quot;).style.display = &quot;none&quot;;
+      $(&quot;entryUrlPreview&quot;).textContent = &quot;&quot;;
+    }
+
+    $(&quot;firstAdminCard&quot;).style.display =
+      activeAdmins === 0 ? &quot;block&quot; : &quot;none&quot;;
+
+    renderAdmins(admins);
+    renderViewers(viewers);
+  }
+
+  function renderAdmins(admins) {
+    if (!admins.length) {
+      $(&quot;admins&quot;).innerHTML =
+        &#x27;&lt;div class=&quot;empty&quot;&gt;No personal administrators have been created yet.&lt;/div&gt;&#x27;;
+      return;
+    }
+
+    $(&quot;admins&quot;).innerHTML = admins.map(function (a) {
+      var safeName = escapeHtml(a.name);
+      var safeId = jsString(a.id);
+
+      return (
+        &#x27;&lt;div class=&quot;person&#x27; + (a.active ? &#x27;&#x27; : &#x27; off&#x27;) + &#x27;&quot;&gt;&#x27; +
+          &#x27;&lt;div class=&quot;avatar admin&quot;&gt;&#x27; + escapeHtml(initials(a.name)) + &#x27;&lt;/div&gt;&#x27; +
+          &#x27;&lt;div class=&quot;person-main&quot;&gt;&#x27; +
+            &#x27;&lt;div class=&quot;person-name&quot;&gt;&#x27; + safeName + &#x27;&lt;/div&gt;&#x27; +
+            &#x27;&lt;div class=&quot;person-sub&quot;&gt;&#x27; +
+              (a.active
+                ? &#x27;&lt;span class=&quot;pill admin&quot;&gt;Admin + Reports&lt;/span&gt;&#x27;
+                : &#x27;&lt;span class=&quot;pill warn&quot;&gt;Disabled&lt;/span&gt;&#x27;) +
+            &#x27;&lt;/div&gt;&#x27; +
+            &#x27;&lt;div class=&quot;person-sub&quot;&gt;&#x27; +
+              (a.email ? escapeHtml(a.email) : &#x27;&lt;strong&gt;No email set&lt;/strong&gt;&#x27;) +
+            &#x27;&lt;/div&gt;&#x27; +
+          &#x27;&lt;/div&gt;&#x27; +
+          &#x27;&lt;div class=&quot;person-actions&quot;&gt;&#x27; +
+            &#x27;&lt;button class=&quot;btn-secondary btn-small&quot; onclick=&quot;regenerateAdmin(\&#x27;&#x27; + safeId + &#x27;\&#x27;, \&#x27;&#x27; + jsString(a.name) + &#x27;\&#x27;)&quot;&gt;New code&lt;/button&gt;&#x27; +
+            &#x27;&lt;button class=&quot;btn-secondary btn-small&quot; onclick=&quot;editAdminEmail(\&#x27;&#x27; + safeId + &#x27;\&#x27;, \&#x27;&#x27; + jsString(a.email || &quot;&quot;) + &#x27;\&#x27;)&quot;&gt;&#x27; +
+              (a.email ? &#x27;Edit email&#x27; : &#x27;Set email&#x27;) +
+            &#x27;&lt;/button&gt;&#x27; +
+            &#x27;&lt;button class=&quot;&#x27; + (a.active ? &#x27;btn-danger&#x27; : &#x27;btn-secondary&#x27;) + &#x27; btn-small&quot; &#x27; +
+              &#x27;onclick=&quot;setAdminActive(\&#x27;&#x27; + safeId + &#x27;\&#x27;, &#x27; + (!a.active) + &#x27;)&quot;&gt;&#x27; +
+              (a.active ? &#x27;Disable&#x27; : &#x27;Enable&#x27;) +
+            &#x27;&lt;/button&gt;&#x27; +
+          &#x27;&lt;/div&gt;&#x27; +
+        &#x27;&lt;/div&gt;&#x27;
+      );
+    }).join(&quot;&quot;);
+  }
+
+  function renderViewers(viewers) {
+    if (!viewers.length) {
+      $(&quot;viewers&quot;).innerHTML =
+        &#x27;&lt;div class=&quot;empty&quot;&gt;No report-only viewers have been added.&lt;/div&gt;&#x27;;
+      return;
+    }
+
+    $(&quot;viewers&quot;).innerHTML = viewers.map(function (v) {
+      var safeName = escapeHtml(v.name);
+      var safeCode = escapeHtml(v.code || &quot;&quot;);
+      var safeId = jsString(v.id || v.code || &quot;&quot;);
+
+      return (
+        &#x27;&lt;div class=&quot;person&#x27; + (v.active ? &#x27;&#x27; : &#x27; off&#x27;) + &#x27;&quot;&gt;&#x27; +
+          &#x27;&lt;div class=&quot;avatar&quot;&gt;&#x27; + escapeHtml(initials(v.name)) + &#x27;&lt;/div&gt;&#x27; +
+          &#x27;&lt;div class=&quot;person-main&quot;&gt;&#x27; +
+            &#x27;&lt;div class=&quot;person-name&quot;&gt;&#x27; + safeName + &#x27;&lt;/div&gt;&#x27; +
+            &#x27;&lt;div class=&quot;person-sub&quot;&gt;&#x27; +
+              (v.active
+                ? &#x27;&lt;span class=&quot;pill good&quot;&gt;Reports&lt;/span&gt; &lt;span class=&quot;mono&quot;&gt;&#x27; + safeCode + &#x27;&lt;/span&gt;&#x27;
+                : &#x27;&lt;span class=&quot;pill warn&quot;&gt;Disabled&lt;/span&gt; &lt;span class=&quot;mono&quot;&gt;&#x27; + safeCode + &#x27;&lt;/span&gt;&#x27;) +
+            &#x27;&lt;/div&gt;&#x27; +
+            &#x27;&lt;div class=&quot;person-sub&quot;&gt;&#x27; +
+              (v.email ? escapeHtml(v.email) : &#x27;&lt;strong&gt;No email set&lt;/strong&gt;&#x27;) +
+            &#x27;&lt;/div&gt;&#x27; +
+          &#x27;&lt;/div&gt;&#x27; +
+          &#x27;&lt;div class=&quot;person-actions&quot;&gt;&#x27; +
+            &#x27;&lt;button class=&quot;btn-secondary btn-small&quot; onclick=&quot;emailViewerCode(\&#x27;&#x27; + safeId + &#x27;\&#x27;)&quot;&gt;Email code&lt;/button&gt;&#x27; +
+            &#x27;&lt;button class=&quot;btn-secondary btn-small&quot; onclick=&quot;editViewerEmail(\&#x27;&#x27; + safeId + &#x27;\&#x27;, \&#x27;&#x27; + jsString(v.email || &quot;&quot;) + &#x27;\&#x27;)&quot;&gt;&#x27; +
+              (v.email ? &#x27;Edit email&#x27; : &#x27;Set email&#x27;) +
+            &#x27;&lt;/button&gt;&#x27; +
+            &#x27;&lt;button class=&quot;&#x27; + (v.active ? &#x27;btn-danger&#x27; : &#x27;btn-secondary&#x27;) + &#x27; btn-small&quot; &#x27; +
+              &#x27;onclick=&quot;setViewerActive(\&#x27;&#x27; + safeId + &#x27;\&#x27;, &#x27; + (!v.active) + &#x27;)&quot;&gt;&#x27; +
+              (v.active ? &#x27;Disable&#x27; : &#x27;Enable&#x27;) +
+            &#x27;&lt;/button&gt;&#x27; +
+          &#x27;&lt;/div&gt;&#x27; +
+        &#x27;&lt;/div&gt;&#x27;
+      );
+    }).join(&quot;&quot;);
+  }
+
+  function credentialNote(result, accessText) {
+    if (result &amp;&amp; result.emailSent) {
+      return &quot;The code was emailed to &quot; + result.email +
+        &quot;. The tracker cannot recover the plaintext code later.&quot;;
+    }
+
+    var problem = result &amp;&amp; result.emailError
+      ? &quot; Email delivery failed: &quot; + result.emailError
+      : &quot;&quot;;
+
+    return &quot;Save this code now. It grants &quot; + accessText +
+      &quot; and cannot be recovered from the tracker.&quot; + problem;
+  }
+
+  function createFirstAdmin() {
+    var name = $(&quot;firstAdminName&quot;).value.trim();
+    var email = $(&quot;firstAdminEmail&quot;).value.trim();
+    if (!name || !email) return;
+
+    setBusy(true, &quot;Creating administrator and sending email…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        setBusy(false);
+        $(&quot;firstAdminName&quot;).value = &quot;&quot;;
+        $(&quot;firstAdminEmail&quot;).value = &quot;&quot;;
+
+        reveal(
+          &quot;First administrator code&quot;,
+          result.code,
+          credentialNote(result, &quot;Admin and Reports access&quot;)
+        );
+
+        refresh();
+      })
+      .withFailureHandler(fail)
+      .uiCreateFirstAdmin(name, email);
+  }
+
+  function addAdmin() {
+    var name = $(&quot;newAdmin&quot;).value.trim();
+    var email = $(&quot;newAdminEmail&quot;).value.trim();
+    if (!name || !email) return;
+
+    setBusy(true, &quot;Adding administrator and sending email…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        setBusy(false);
+        $(&quot;newAdmin&quot;).value = &quot;&quot;;
+        $(&quot;newAdminEmail&quot;).value = &quot;&quot;;
+
+        reveal(
+          &quot;Admin code for &quot; + name,
+          result.code,
+          credentialNote(result, &quot;Admin and Reports access&quot;)
+        );
+
+        refresh();
+      })
+      .withFailureHandler(fail)
+      .uiAddAdmin(name, email);
+  }
+
+  function regenerateAdmin(id, name) {
+    if (!confirm(
+      &quot;Generate a new personal code for &quot; + name + &quot;? Their current admin/report code will stop working immediately.&quot;
+    )) return;
+
+    setBusy(true, &quot;Generating new admin code…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        setBusy(false);
+        reveal(
+          &quot;New admin code for &quot; + name,
+          result.code,
+          credentialNote(result, &quot;Admin and Reports access&quot;)
+        );
+        refresh();
+      })
+      .withFailureHandler(fail)
+      .uiRegenerateAdmin(id);
+  }
+
+  function setAdminActive(id, active) {
+    if (!confirm(
+      (active ? &quot;Enable&quot; : &quot;Disable&quot;) +
+      &quot; this administrator? &quot; +
+      (active
+        ? &quot;Their admin and report access will be restored.&quot;
+        : &quot;Their admin and report access will both stop.&quot;)
+    )) return;
+
+    setBusy(true, (active ? &quot;Enabling&quot; : &quot;Disabling&quot;) + &quot; administrator…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (st) {
+        setBusy(false);
+        state = st;
+        render(st);
+      })
+      .withFailureHandler(fail)
+      .uiSetAdminActive(id, active);
+  }
+
+  function addViewer() {
+    var name = $(&quot;newViewer&quot;).value.trim();
+    var email = $(&quot;newViewerEmail&quot;).value.trim();
+    if (!name || !email) return;
+
+    setBusy(true, &quot;Adding report viewer and sending email…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        setBusy(false);
+        $(&quot;newViewer&quot;).value = &quot;&quot;;
+        $(&quot;newViewerEmail&quot;).value = &quot;&quot;;
+
+        reveal(
+          &quot;Report code for &quot; + name,
+          result.code,
+          credentialNote(result, &quot;Reports access only&quot;)
+        );
+
+        refresh();
+      })
+      .withFailureHandler(fail)
+      .uiAddViewer(name, email);
+  }
+
+  function setViewerActive(id, active) {
+    setBusy(true, (active ? &quot;Enabling&quot; : &quot;Disabling&quot;) + &quot; viewer…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (st) {
+        setBusy(false);
+        state = st;
+        render(st);
+      })
+      .withFailureHandler(fail)
+      .uiSetViewerActive(id, active);
+  }
+
+  function editAdminEmail(id, currentEmail) {
+    var email = prompt(&quot;Administrator email address:&quot;, currentEmail || &quot;&quot;);
+    if (email === null) return;
+    email = email.trim();
+    if (!email) return;
+
+    setBusy(true, &quot;Updating administrator email…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (st) {
+        setBusy(false);
+        state = st;
+        render(st);
+      })
+      .withFailureHandler(fail)
+      .uiSetAdminEmail(id, email);
+  }
+
+  function editViewerEmail(id, currentEmail) {
+    var email = prompt(&quot;Report viewer email address:&quot;, currentEmail || &quot;&quot;);
+    if (email === null) return;
+    email = email.trim();
+    if (!email) return;
+
+    setBusy(true, &quot;Updating viewer email…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (st) {
+        setBusy(false);
+        state = st;
+        render(st);
+      })
+      .withFailureHandler(fail)
+      .uiSetViewerEmail(id, email);
+  }
+
+  function emailViewerCode(id) {
+    setBusy(true, &quot;Emailing report code…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        setBusy(false);
+        alert(&quot;Code emailed to &quot; + result.email + &quot;.&quot;);
+      })
+      .withFailureHandler(fail)
+      .uiEmailViewerCode(id);
+  }
+
+  function savePublicSettings() {
+    var baseUrl = $(&quot;publicBaseUrl&quot;).value.trim();
+    var supportEmail = $(&quot;supportEmail&quot;).value.trim();
+
+    setBusy(true, &quot;Saving website and support settings…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (st) {
+        setBusy(false);
+        state = st;
+        render(st);
+      })
+      .withFailureHandler(fail)
+      .uiSavePublicSiteSettings(baseUrl, supportEmail);
+  }
+
+  function rotateToken() {
+    if (!confirm(
+      &quot;Rotate the entry token?\n\nEvery printed QR code and saved entry link will stop working immediately. You will need to regenerate and reprint them.&quot;
+    )) return;
+
+    setBusy(true, &quot;Rotating entry token…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (token) {
+        setBusy(false);
+        reveal(
+          &quot;New entry token&quot;,
+          token,
+          &quot;The old QR/link token is now invalid. Regenerate the entry QR from Admin.&quot;
+        );
+        refresh();
+      })
+      .withFailureHandler(fail)
+      .uiRotateEntryToken();
+  }
+
+  function repairSetup() {
+    setBusy(true, &quot;Checking tracker setup…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function () {
+        setBusy(false);
+        refresh();
+      })
+      .withFailureHandler(fail)
+      .uiInitialSetup();
+  }
+
+  function createBreakGlass() {
+    if (!confirm(
+      &quot;Generate a new break-glass recovery code?\n\nThis is intended for emergency recovery. Personal administrator codes will continue working.&quot;
+    )) return;
+
+    setBusy(true, &quot;Generating recovery credential…&quot;);
+
+    google.script.run
+      .withSuccessHandler(function (password) {
+        setBusy(false);
+        reveal(
+          &quot;Break-glass recovery code&quot;,
+          password,
+          &quot;Store this securely. Only its one-way hash remains in the spreadsheet.&quot;
+        );
+        refresh();
+      })
+      .withFailureHandler(fail)
+      .uiCreateRecoveryCode();
+  }
+
+  refresh();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+    </section>
+</main>
+
+<script>
+async function copySidebarCode() {
+    const code = document.getElementById("sidebarCode").innerText;
+    const status = document.getElementById("copyStatus");
+    const btn = document.getElementById("copyBtn");
+
+    try {
+        await navigator.clipboard.writeText(code);
+
+        status.textContent = "Sidebar code copied. Paste it into the Apps Script HTML file named Sidebar.";
+        status.className = "mx-5 mt-4 rounded-lg border p-3 text-sm font-bold bg-green-50 border-green-200 text-green-900";
+        status.classList.remove("hidden");
+
+        btn.innerHTML =
+            '<span class="material-icons text-lg">check</span> Copied';
+
+        setTimeout(() => {
+            btn.innerHTML =
+                '<span class="material-icons text-lg">content_copy</span> Copy Sidebar Code';
+        }, 2200);
+
+    } catch (err) {
+        status.textContent =
+            "Automatic copy was blocked by the browser. Click inside the code block, press Ctrl+A / Cmd+A, then copy.";
+        status.className =
+            "mx-5 mt-4 rounded-lg border p-3 text-sm font-bold bg-amber-50 border-amber-200 text-amber-950";
+        status.classList.remove("hidden");
+    }
+}
+</script>
+
+</body>
+</html>
