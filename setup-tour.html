@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocational Tracker — 50 Second Setup Tour</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #172554;
+    --blue: #2563eb;
+    --blue2: #1d4ed8;
+    --soft: #dbeafe;
+    --text: #ffffff;
+    --muted: #bfdbfe;
+    --good: #22c55e;
+    --amber: #fbbf24;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+  }
+
+  .tour {
+    width: min(980px, 96vw);
+  }
+
+  .frame {
+    position: relative;
+    overflow: hidden;
+    min-height: 550px;
+    border-radius: 26px;
+    background:
+      radial-gradient(circle at 85% 10%, rgba(59,130,246,.28), transparent 28%),
+      linear-gradient(145deg, #0f172a 0%, #172554 55%, #1e3a8a 100%);
+    box-shadow: 0 24px 60px rgba(15,23,42,.20);
+    color: white;
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    padding: 18px 22px 12px;
+  }
+
+  .brand {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-weight: 900;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: white;
+    color: var(--blue2);
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+  }
+
+  .counter {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .progress {
+    height: 6px;
+    background: rgba(255,255,255,.14);
+    margin: 0 22px;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress > div {
+    height: 100%;
+    width: 0%;
+    background: var(--amber);
+    transition: width .2s linear;
+  }
+
+  .scene-wrap {
+    position: relative;
+    min-height: 430px;
+    padding: 30px 34px 20px;
+  }
+
+  .scene {
+    position: absolute;
+    inset: 30px 34px 20px;
+    opacity: 0;
+    transform: translateY(16px);
+    pointer-events: none;
+    transition: opacity .45s ease, transform .45s ease;
+  }
+
+  .scene.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .eyebrow {
+    color: var(--amber);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1, h2 {
+    margin: 0;
+    line-height: 1.04;
+    letter-spacing: -.035em;
+  }
+
+  h1 { font-size: clamp(38px, 6vw, 66px); }
+  h2 { font-size: clamp(30px, 4.4vw, 48px); }
+
+  .lead {
+    color: #dbeafe;
+    font-size: clamp(17px, 2.1vw, 22px);
+    line-height: 1.45;
+    max-width: 780px;
+    margin-top: 16px;
+  }
+
+  .visual {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 14px;
+  }
+
+  .card {
+    border: 1px solid rgba(255,255,255,.20);
+    background: rgba(255,255,255,.09);
+    backdrop-filter: blur(8px);
+    border-radius: 18px;
+    padding: 18px;
+    min-height: 128px;
+  }
+
+  .card .icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+
+  .card strong {
+    display: block;
+    font-size: 17px;
+    margin-bottom: 6px;
+  }
+
+  .card span {
+    color: #dbeafe;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .mock-window {
+    margin-top: 26px;
+    background: #f8fafc;
+    color: #0f172a;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 18px 44px rgba(0,0,0,.24);
+  }
+
+  .mock-title {
+    background: #e2e8f0;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #475569;
+  }
+
+  .dot {
+    width: 9px; height: 9px; border-radius: 50%; background: #94a3b8;
+  }
+
+  .mock-body {
+    padding: 18px;
+  }
+
+  .menu-row {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+
+  .highlight {
+    background: #dbeafe;
+    color: #1e3a8a;
+    border: 2px solid #60a5fa;
+    border-radius: 8px;
+    padding: 5px 8px;
+    font-weight: 900;
+  }
+
+  .file-list {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    min-height: 180px;
+  }
+
+  .files {
+    border-right: 1px solid #e2e8f0;
+    padding-right: 12px;
+  }
+
+  .file {
+    padding: 8px;
+    border-radius: 7px;
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+
+  .file.active {
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 800;
+  }
+
+  .code-lines {
+    padding-left: 16px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #475569;
+  }
+
+  .code-lines .blue { color: #1d4ed8; font-weight: 700; }
+
+  .flowline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+
+  .flowbox {
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 14px;
+    padding: 13px 16px;
+    font-weight: 800;
+  }
+
+  .arrow {
+    color: var(--amber);
+    font-size: 24px;
+    font-weight: 900;
+  }
+
+  .check-list {
+    margin-top: 25px;
+    display: grid;
+    gap: 10px;
+    max-width: 650px;
+  }
+
+  .check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: #e0f2fe;
+    font-size: 16px;
+  }
+
+  .check .tick {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #166534;
+    display: grid;
+    place-items: center;
+    flex: 0 0 25px;
+    font-weight: 900;
+  }
+
+  .caption {
+    min-height: 62px;
+    margin: 0 22px 16px;
+    padding: 13px 16px;
+    border-radius: 14px;
+    background: rgba(15,23,42,.62);
+    border: 1px solid rgba(255,255,255,.16);
+    color: #f8fafc;
+    font-size: 16px;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  button {
+    min-height: 44px;
+    border: 0;
+    border-radius: 11px;
+    padding: 10px 16px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .primary {
+    background: #1d4ed8;
+    color: white;
+  }
+
+  .secondary {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  .time {
+    margin-top: 10px;
+    color: #64748b;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  @media (max-width: 700px) {
+    body { padding: 10px; }
+    .frame { min-height: 650px; border-radius: 18px; }
+    .scene-wrap { min-height: 520px; padding: 24px 20px 16px; }
+    .scene { inset: 24px 20px 16px; }
+    .visual { grid-template-columns: 1fr; gap: 8px; }
+    .card { min-height: auto; padding: 13px; }
+    .file-list { grid-template-columns: 115px 1fr; }
+    .caption { font-size: 14px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scene { transition: none; transform: none; }
+    .progress > div { transition: none; }
+  }
+</style>
+</head>
+
+<body>
+<div class="tour">
+  <div class="frame">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark">✓</div>
+        <span>Vocational Tracker</span>
+      </div>
+      <div id="counter" class="counter">1 of 8</div>
+    </div>
+
+    <div class="progress"><div id="progressBar"></div></div>
+
+    <div class="scene-wrap">
+
+      <section class="scene active" data-seconds="6" data-caption="You do not need to be a programmer. Setup is mostly copying two files, clicking a few Google options, and letting Vocational Tracker do the rest.">
+        <div class="eyebrow">50-second setup tour</div>
+        <h1>You can set this up.</h1>
+        <p class="lead">
+          No coding experience required. You will make a school copy, add two prepared files,
+          create an administrator, and connect the website.
+        </p>
+        <div class="visual">
+          <div class="card"><div class="icon">📄</div><strong>Copy</strong><span>Make your school's private tracker spreadsheet.</span></div>
+          <div class="card"><div class="icon">⚙️</div><strong>Configure</strong><span>Paste the prepared Code.gs and Sidebar files.</span></div>
+          <div class="card"><div class="icon">✅</div><strong>Connect</strong><span>Deploy once, then create the secure job-site QR.</span></div>
+        </div>
+      </section>
+
+      <section class="scene" data-seconds="6" data-caption="Start by making a private copy of the Vocational Tracker spreadsheet for your school. Existing schools upgrading to version 3 should keep their current spreadsheet instead.">
+        <div class="eyebrow">Step 1</div>
+        <h2>Start with the Google Sheet.</h2>
+        <p class="lead">New school? Make a copy. Already using Vocational Tracker? Keep your existing spreadsheet.</p>
+        <div class="mock-window">
+          <div class="mock-title"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Google Sheets</div>
+          <div class="mock-body">
+            <div style="font-size:22px;font-weight:900;margin-bottom:8px;">Vocational Tracker — Your School</div>
+            <div style="color:#64748b;">Students · Entries · Sites · Tasks · Settings</div>
+            <div style="margin-top:18px;display:inline-block;background:#dcfce7;color:#166534;border:1px solid #86efac;padding:8px 12px;border-radius:9px;font-weight:900;">
+              Your data stays in this spreadsheet
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="scene" data-seconds="7" data-caption="Inside the Google Sheet, choose Extensions, then Apps Script. This means the Extensions menu in Google Sheets — not the extensions menu in your web browser.">
+        <div class="eyebrow">Step 2</div>
+        <h2>Open Apps Script from the Sheet.</h2>
+        <p class="lead">Use <strong>Google Sheets → Extensions → Apps Script</strong>.</p>
+        <div class="mock-window">
+          <div class="mock-title">Your Google Sheet</div>
+          <div class="mock-body">
+            <div class="menu-row">
+              <span>File</span><span>Edit</span><span>View</span><span>Insert</span><span>Format</span>
+              <span class="highlight">Extensions</span><span>Help</span>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div style="font-size:28px;">↳</div>
+              <div class="highlight">Apps Script</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="scene" data-seconds="8" data-caption="Apps Script needs two prepared files. Replace Code.gs with the provided code. Then click the plus beside Files, choose HTML, name it Sidebar, and paste the Sidebar code. Apps Script adds dot html automatically.">
+        <div class="eyebrow">Step 3</div>
+        <h2>Add the two prepared files.</h2>
+        <p class="lead"><strong>Code.gs</strong> is the backend. <strong>Sidebar.html</strong> gives you the easy setup controls inside the Sheet.</p>
+        <div class="mock-window">
+          <div class="mock-title">Apps Script editor</div>
+          <div class="mock-body file-list">
+            <div class="files">
+              <div style="font-weight:900;margin-bottom:8px;">Files &nbsp; ＋</div>
+              <div class="file active">Code.gs</div>
+              <div class="file">Sidebar.html</div>
+            </div>
+            <div class="code-lines">
+              <div><span class="blue">const</span> VT_API_VERSION = 3;</div>
+              <div><span class="blue">function</span> onOpen() &#123; ... &#125;</div>
+              <div><span class="blue">function</span> doPost(e) &#123; ... &#125;</div>
+              <div style="margin-top:12px;color:#166534;font-weight:900;">✓ Paste prepared code. You are not writing it yourself.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="scene" data-seconds="6" data-caption="Save Apps Script, return to the spreadsheet, and refresh. A Vocational Tracker menu appears. Open Setup and Credentials and create your first administrator using their name and school email.">
+        <div class="eyebrow">Step 4</div>
+        <h2>Create your first administrator.</h2>
+        <p class="lead">Refresh the Sheet, then choose <strong>Vocational Tracker → Setup & Credentials</strong>.</p>
+        <div class="flowline">
+          <div class="flowbox">Name</div><div class="arrow">→</div>
+          <div class="flowbox">School email</div><div class="arrow">→</div>
+          <div class="flowbox" style="border-color:#86efac;background:rgba(34,197,94,.13);">Personal Admin Code ✉</div>
+        </div>
+        <p class="lead" style="font-size:16px;">That same personal code works for both Admin and Reports.</p>
+      </section>
+
+      <section class="scene" data-seconds="7" data-caption="Now deploy the Apps Script as a Web app. Choose Deploy, New deployment, Web app. Set Execute as Me and Who has access to Anyone. Then copy the Web app URL ending in slash exec.">
+        <div class="eyebrow">Step 5</div>
+        <h2>Deploy the secure backend.</h2>
+        <p class="lead">This is the most technical-looking step. It is still just four choices.</p>
+        <div class="check-list">
+          <div class="check"><div class="tick">✓</div><div><strong>Deploy → New deployment → Web app</strong></div></div>
+          <div class="check"><div class="tick">✓</div><div>Execute as: <strong>Me</strong></div></div>
+          <div class="check"><div class="tick">✓</div><div>Who has access: <strong>Anyone</strong></div></div>
+          <div class="check"><div class="tick">✓</div><div>Copy the URL ending in <strong>/exec</strong></div></div>
+        </div>
+      </section>
+
+      <section class="scene" data-seconds="6" data-caption="Paste that slash exec URL into the Vocational Tracker setup page. The page checks that you are connected to version 3 before it lets the system go live.">
+        <div class="eyebrow">Step 6</div>
+        <h2>Connect the website.</h2>
+        <p class="lead">Paste the <strong>/exec</strong> URL into Setup and click <strong>Validate & Connect</strong>.</p>
+        <div class="mock-window">
+          <div class="mock-title">Vocational Tracker Setup</div>
+          <div class="mock-body">
+            <div style="font-size:13px;font-weight:900;color:#475569;margin-bottom:6px;">WEB APP URL</div>
+            <div style="border:1px solid #94a3b8;border-radius:9px;padding:11px;font-family:Consolas,monospace;font-size:12px;">https://script.google.com/macros/s/…/exec</div>
+            <div style="margin-top:12px;background:#1d4ed8;color:#fff;border-radius:9px;padding:11px;text-align:center;font-weight:900;">Validate & Connect</div>
+            <div style="margin-top:12px;color:#166534;font-weight:900;">✓ API v3 connected</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="scene" data-seconds="6" data-caption="Finally, sign into Admin and generate the job-site QR code. Evaluators scan that QR to enter data. They do not need to know that Admin or Reports even exist.">
+        <div class="eyebrow">Step 7</div>
+        <h2>Create the job-site QR.</h2>
+        <p class="lead">The QR is the only thing entry staff need.</p>
+        <div class="flowline">
+          <div class="flowbox">Admin</div><div class="arrow">→</div>
+          <div class="flowbox">Generate QR</div><div class="arrow">→</div>
+          <div class="flowbox">Print / post at job site</div><div class="arrow">→</div>
+          <div class="flowbox" style="border-color:#86efac;background:rgba(34,197,94,.13);">Evaluator scans ✓</div>
+        </div>
+      </section>
+
+      <section class="scene" data-seconds="4" data-caption="That's it. The guided setup page walks you through each of these steps and verifies the connection before you finish.">
+        <div class="eyebrow">You're ready</div>
+        <h1>Seven steps. No coding.</h1>
+        <p class="lead">The setup page walks you through each step and checks your work as you go.</p>
+        <div class="visual">
+          <div class="card"><div class="icon">🔒</div><strong>Private data</strong><span>Your school keeps its own spreadsheet.</span></div>
+          <div class="card"><div class="icon">✉️</div><strong>Personal access</strong><span>Admins and viewers get individual codes.</span></div>
+          <div class="card"><div class="icon">📱</div><strong>Simple entry</strong><span>Job-site staff just scan the QR.</span></div>
+        </div>
+      </section>
+
+    </div>
+
+    <div id="caption" class="caption" aria-live="polite"></div>
+  </div>
+
+  <div class="controls">
+    <button id="prevBtn" class="secondary" type="button">← Previous</button>
+    <button id="playBtn" class="primary" type="button">Pause</button>
+    <button id="nextBtn" class="secondary" type="button">Next →</button>
+    <button id="restartBtn" class="secondary" type="button">Restart</button>
+  </div>
+  <div id="timeLabel" class="time">About 50 seconds</div>
+</div>
+
+<script>
+(function () {
+  const scenes = Array.from(document.querySelectorAll(".scene"));
+  const counter = document.getElementById("counter");
+  const caption = document.getElementById("caption");
+  const progressBar = document.getElementById("progressBar");
+  const playBtn = document.getElementById("playBtn");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const restartBtn = document.getElementById("restartBtn");
+  const timeLabel = document.getElementById("timeLabel");
+
+  const totalSeconds = scenes.reduce((sum, s) => sum + Number(s.dataset.seconds || 5), 0);
+
+  let current = 0;
+  let playing = true;
+  let elapsedInScene = 0;
+  let totalElapsed = 0;
+  let lastTick = performance.now();
+  let raf = null;
+
+  function sceneDuration() {
+    return Number(scenes[current].dataset.seconds || 5);
+  }
+
+  function render() {
+    scenes.forEach((scene, i) => scene.classList.toggle("active", i === current));
+    counter.textContent = (current + 1) + " of " + scenes.length;
+    caption.textContent = scenes[current].dataset.caption || "";
+    const pct = Math.min(100, (totalElapsed / totalSeconds) * 100);
+    progressBar.style.width = pct + "%";
+    playBtn.textContent = playing ? "Pause" : "Play";
+    timeLabel.textContent = Math.max(0, Math.ceil(totalSeconds - totalElapsed)) + " seconds remaining";
+  }
+
+  function recalcElapsedBeforeCurrent() {
+    let sum = 0;
+    for (let i = 0; i < current; i++) {
+      sum += Number(scenes[i].dataset.seconds || 5);
+    }
+    return sum;
+  }
+
+  function goTo(index) {
+    current = Math.max(0, Math.min(scenes.length - 1, index));
+    elapsedInScene = 0;
+    totalElapsed = recalcElapsedBeforeCurrent();
+    lastTick = performance.now();
+    render();
+  }
+
+  function tick(now) {
+    const dt = Math.min(0.1, (now - lastTick) / 1000);
+    lastTick = now;
+
+    if (playing) {
+      elapsedInScene += dt;
+      totalElapsed += dt;
+
+      if (elapsedInScene >= sceneDuration()) {
+        if (current < scenes.length - 1) {
+          current++;
+          elapsedInScene = 0;
+        } else {
+          playing = false;
+          totalElapsed = totalSeconds;
+          elapsedInScene = sceneDuration();
+        }
+      }
+      render();
+    }
+
+    raf = requestAnimationFrame(tick);
+  }
+
+  playBtn.addEventListener("click", () => {
+    playing = !playing;
+    lastTick = performance.now();
+    render();
+  });
+
+  prevBtn.addEventListener("click", () => goTo(current - 1));
+  nextBtn.addEventListener("click", () => goTo(current + 1));
+  restartBtn.addEventListener("click", () => {
+    current = 0;
+    elapsedInScene = 0;
+    totalElapsed = 0;
+    playing = true;
+    lastTick = performance.now();
+    render();
+  });
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    playing = false;
+    timeLabel.textContent = "Use Previous and Next to view the setup tour.";
+  }
+
+  render();
+  raf = requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
