@@ -219,8 +219,201 @@
             </div>
         </div>
 
+        <div class="mt-4 text-center">
+            <button onclick="openUpgradeSteps()"
+                    class="inline-flex items-center gap-2 bg-amber-100 hover:bg-amber-200
+                           border border-amber-300 text-amber-950 font-bold px-5 py-3 rounded-xl
+                           transition-colors">
+                <span class="material-icons">system_update_alt</span>
+                Upgrade an Existing Tracker
+            </button>
+        </div>
+
     </div>
 </main>
+
+<!-- UPGRADE STEPS MODAL -->
+<div id="upgradeStepsModal"
+     class="hidden fixed inset-0 z-[70] bg-slate-900/75 backdrop-blur-sm px-4 py-6
+            items-center justify-center overflow-y-auto">
+
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden my-auto">
+
+        <div class="bg-blue-900 text-white px-6 py-5 flex items-start justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 text-blue-100 text-sm font-bold mb-1">
+                    <span class="material-icons text-yellow-300">system_update_alt</span>
+                    Vocational Tracker v3
+                </div>
+                <h2 class="text-2xl font-extrabold">Upgrade an Existing Tracker</h2>
+                <p class="text-blue-100 text-sm mt-1">
+                    Keep the existing spreadsheet and records. Upgrade the security model in place.
+                </p>
+            </div>
+
+            <button onclick="closeUpgradeSteps()"
+                    aria-label="Close upgrade steps"
+                    class="text-blue-100 hover:text-white">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+
+        <div class="p-6">
+
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-950 mb-5">
+                <strong>Do not create a new spreadsheet.</strong>
+                The upgrade preserves students, evaluations, job sites, tasks, and existing
+                report-viewer codes.
+            </div>
+
+            <ol class="space-y-4">
+
+                <li class="flex gap-3">
+                    <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold
+                                flex items-center justify-center">1</div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900">Open the existing school spreadsheet</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            Optional but recommended: make a backup copy first. Continue working in the
+                            original production spreadsheet.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="flex gap-3">
+                    <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold
+                                flex items-center justify-center">2</div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900">Replace the two Apps Script files</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            Go to <strong>Extensions → Apps Script</strong>. Replace the existing
+                            <strong>Code.gs</strong> with the v3 version and replace/create the HTML file
+                            named <strong>Sidebar</strong> using the v3 Sidebar code. Save the project.
+                        </p>
+
+                        <a href="https://docs.google.com/document/d/1vMnXz8BGH7F3YdOxEJMIZ0sgB5ea-WAC9rqGL8nMGIE/edit?tab=t.0"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="inline-flex items-center gap-1 mt-2 text-sm font-bold text-blue-700 hover:underline">
+                            <span class="material-icons text-base">description</span>
+                            Open the current Code.gs copy/paste document
+                        </a>
+                    </div>
+                </li>
+
+                <li class="flex gap-3">
+                    <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold
+                                flex items-center justify-center">3</div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900">Refresh the spreadsheet</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            Refresh or reopen the Sheet. V3 automatically migrates the security tables,
+                            keeps existing data, and rotates the job-site entry token.
+                        </p>
+                        <p class="text-sm text-red-700 font-bold mt-1">
+                            Old job-site QR codes stop working at this point.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="flex gap-3">
+                    <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold
+                                flex items-center justify-center">4</div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900">Create the first personal administrator</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            In the Sheet choose <strong>Vocational Tracker → Setup &amp; Credentials</strong>.
+                            Add the administrator's name and school email. Their personal code is emailed
+                            and works for both <strong>Admin</strong> and <strong>Reports</strong>.
+                        </p>
+                        <p class="text-sm text-slate-600 mt-1">
+                            Once a personal admin exists, the old shared Admin password is permanently retired.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="flex gap-3">
+                    <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold
+                                flex items-center justify-center">5</div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900">Approve email permission if Google asks</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            V3 can email admin and report-viewer codes. The spreadsheet owner may be asked
+                            to authorize Apps Script to send email the first time.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="flex gap-3">
+                    <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold
+                                flex items-center justify-center">6</div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900">Update the existing Web App deployment</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            Go to <strong>Deploy → Manage deployments → Edit</strong> and choose
+                            <strong>New version</strong>. Keep <strong>Execute as: Me</strong> and
+                            <strong>Who has access: Anyone</strong>.
+                        </p>
+                        <p class="text-sm text-blue-800 font-bold mt-1">
+                            Do not create a new deployment. Keep the same <code>/exec</code> URL.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="flex gap-3">
+                    <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold
+                                flex items-center justify-center">7</div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900">Verify the upgrade</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            Use the guided upgrade page to confirm the existing deployment reports
+                            <strong>API v3</strong> and <strong>schema v3</strong>.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="flex gap-3">
+                    <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold
+                                flex items-center justify-center">8</div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900">Generate and replace the entry QR</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            Sign into Admin with a personal admin code, generate the new job-site QR,
+                            and replace every old printed QR. Shared devices scan the new QR once.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="flex gap-3">
+                    <div class="w-8 h-8 shrink-0 rounded-full bg-blue-100 text-blue-900 font-extrabold
+                                flex items-center justify-center">9</div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900">Run one quick cutover test</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            Submit a test entry, confirm a report-only code opens Reports but not Admin,
+                            and confirm an admin code opens both Admin and Reports.
+                        </p>
+                    </div>
+                </li>
+
+            </ol>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-7">
+                <button onclick="closeUpgradeSteps()"
+                        class="border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl">
+                    Close
+                </button>
+
+                <a href="setup.html?mode=upgrade"
+                   class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl
+                          text-center flex items-center justify-center gap-2">
+                    <span class="material-icons text-lg">arrow_forward</span>
+                    Start Guided Upgrade
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- ENTRY ACCESS MODAL -->
 <div id="entryModal"
@@ -283,6 +476,20 @@ function setStatus(type, message) {
 }
 
 let BACKEND_COMPATIBLE = false;
+
+function openUpgradeSteps() {
+    const modal = document.getElementById("upgradeStepsModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    document.body.classList.add("overflow-hidden");
+}
+
+function closeUpgradeSteps() {
+    const modal = document.getElementById("upgradeStepsModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    document.body.classList.remove("overflow-hidden");
+}
 
 function openEntry(event) {
     if (!BACKEND_COMPATIBLE) {
@@ -366,6 +573,13 @@ async function checkConnection() {
         setStatus("offline", "Offline");
     }
 }
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+        closeUpgradeSteps();
+        closeEntryModal();
+    }
+});
 
 checkConnection();
 </script>
