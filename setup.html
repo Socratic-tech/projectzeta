@@ -264,7 +264,9 @@
                         <p class="text-slate-600 mt-1">
                             In <strong>Google Sheets</strong> (not your web browser's Extensions menu), choose
                             <strong>Extensions → Apps Script</strong>. Replace the entire contents of
-                            <strong>Code.gs</strong>, then replace/add the HTML file named <strong>Sidebar</strong>.
+                            <strong>Code.gs</strong>. Then, in the Apps Script Files list, click the <strong>+</strong>
+                            beside Files → <strong>HTML</strong>, name it exactly <strong>Sidebar</strong>, and paste
+                            the complete Sidebar source. If Sidebar.html already exists, open it and replace all of its code.
                         </p>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
@@ -275,15 +277,17 @@
                                 Open v3 Code.gs Copy/Paste Document
                             </a>
 
-                            <a href="Sidebar.html"
+                            <a href="sidebar-code.html"
+                               target="_blank"
                                class="border border-blue-300 bg-blue-50 text-blue-900 rounded-lg p-3 font-bold text-center">
-                                Open v3 Sidebar.html
+                                Open &amp; Copy Sidebar Code
                             </a>
                         </div>
 
                         <div class="mt-3 text-sm text-slate-500">
-                            The Code.gs button opens the maintained Google Doc containing the current copy/paste code.
-                            Save the Apps Script project after replacing the code. Do not create a new spreadsheet or new production deployment URL.
+                            <strong>Code.gs</strong> opens the maintained Google Doc with copy/paste code.
+                            <strong>Sidebar</strong> opens a dedicated source-code page with a Copy button; it does not render the Sidebar UI.
+                            Save the Apps Script project after replacing both files. Do not create a new spreadsheet or new production deployment URL.
                         </div>
                     </div>
                 </div>
