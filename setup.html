@@ -71,6 +71,41 @@
 
 <main class="max-w-4xl mx-auto px-4 py-8">
 
+    <section class="bg-gradient-to-br from-blue-900 to-blue-700 text-white rounded-2xl shadow-sm p-6 mb-7">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 shrink-0 rounded-xl bg-white/15 border border-white/20
+                            flex items-center justify-center">
+                    <span class="material-icons text-yellow-300 text-3xl">play_circle</span>
+                </div>
+
+                <div>
+                    <div class="text-blue-200 text-xs font-extrabold uppercase tracking-wider mb-1">
+                        New to Apps Script?
+                    </div>
+                    <h2 class="text-2xl font-extrabold">Watch the 50-second setup tour first</h2>
+                    <p class="text-blue-100 mt-2 max-w-2xl leading-relaxed">
+                        See the entire setup before you touch anything: Google Sheet → Apps Script →
+                        Code.gs + Sidebar → administrator → deployment → website connection → job-site QR.
+                    </p>
+                </div>
+            </div>
+
+            <a href="setup-tour.html"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="shrink-0 inline-flex items-center justify-center gap-2 bg-white text-blue-900
+                      hover:bg-blue-50 font-extrabold px-5 py-3 rounded-xl">
+                <span class="material-icons">play_arrow</span>
+                Watch Setup Tour
+            </a>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-white/15 text-sm text-blue-100">
+            No coding experience is expected. The tour shows exactly what each step looks like before you begin.
+        </div>
+    </section>
+
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-2 mb-7 grid grid-cols-1 sm:grid-cols-2 gap-2">
         <button id="newBtn"
                 onclick="showMode('new')"
@@ -166,6 +201,13 @@
                     <div class="step-num">4</div>
                     <div>
                         <h3 class="font-extrabold text-lg">Deploy the Apps Script web app</h3>
+                        <a href="setup-tour.html"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="inline-flex items-center gap-1 mt-2 mb-1 text-sm font-bold text-blue-700 hover:underline">
+                            <span class="material-icons text-base">ondemand_video</span>
+                            Need a quick walkthrough? Replay the 50-second setup tour.
+                        </a>
                         <ol class="list-decimal list-inside text-slate-600 mt-2 space-y-1">
                             <li>In <strong>Google Sheets</strong> (not your web browser's Extensions menu), choose <strong>Extensions → Apps Script</strong></li>
                             <li>Deploy → New deployment</li>
@@ -261,6 +303,13 @@
                     <div class="step-num">2</div>
                     <div class="flex-1">
                         <h3 class="font-extrabold text-lg">Replace the bound Apps Script files</h3>
+                        <a href="setup-tour.html"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="inline-flex items-center gap-1 mt-2 mb-1 text-sm font-bold text-blue-700 hover:underline">
+                            <span class="material-icons text-base">ondemand_video</span>
+                            Not comfortable in Apps Script yet? Watch the 50-second setup tour.
+                        </a>
                         <p class="text-slate-600 mt-1">
                             In <strong>Google Sheets</strong> (not your web browser's Extensions menu), choose
                             <strong>Extensions → Apps Script</strong>. Replace the entire contents of
