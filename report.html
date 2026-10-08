@@ -163,6 +163,7 @@
         return VT_ENV ? VT_ENV + ":" + name : name;
     }
     </script>
+    <script src="tracker-switcher.js"></script>
 </head>
 
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen">
@@ -365,6 +366,10 @@
                     <p class="text-slate-700">
                         <span class="font-semibold">Job site:</span>
                         <span id="reportSite">All job sites</span>
+                    </p>
+                    <p id="reportTrackerLine" class="hidden text-slate-700">
+                        <span class="font-semibold">Program:</span>
+                        <span id="reportTracker"></span>
                     </p>
                 </div>
 
@@ -1067,6 +1072,10 @@ function renderReport() {
     document.getElementById("reportPeriod").textContent = reportPeriodText(entries);
     document.getElementById("reportSite").textContent =
         document.getElementById("siteFilter").value || "All job sites";
+
+    const trackerName = (!DEMO_MODE && window.VTTrackers) ? window.VTTrackers.currentName() : "";
+    document.getElementById("reportTracker").textContent = trackerName;
+    document.getElementById("reportTrackerLine").classList.toggle("hidden", !trackerName);
 
     const allScores = entries.flatMap(scoreValues);
     const avg = average(allScores);
