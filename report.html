@@ -10,6 +10,91 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <style>
+        /* Score colors print as shown on screen */
+        body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Report building blocks */
+        .tile-grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: .75rem;
+        }
+        @media (min-width: 640px)  { .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (min-width: 1024px) { .tile-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+        .cover-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+        @media (min-width: 1024px) { .cover-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+        .sn-grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 1rem;
+        }
+        @media (min-width: 768px) { .sn-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+        .scale-strip {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: .375rem;
+        }
+
+        .score-tile {
+            border: 1px solid;
+            border-radius: .75rem;
+            padding: .75rem .875rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: .5rem;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        .score-tile-name  { font-weight: 700; font-size: .875rem; line-height: 1.25; color: #0f172a; }
+        .score-tile-foot  { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+        .score-tile-value { font-size: 1.375rem; font-weight: 800; line-height: 1; }
+        .score-tile-count { font-size: .75rem; color: #64748b; }
+
+        .score-pill {
+            display: inline-block;
+            min-width: 3.25rem;
+            text-align: center;
+            padding: .125rem .5rem;
+            border-radius: 9999px;
+            font-weight: 800;
+            font-size: .8125rem;
+            border: 1px solid;
+        }
+
+        .band-dot {
+            display: inline-block;
+            width: .75rem;
+            height: .75rem;
+            border-radius: 9999px;
+            vertical-align: -1px;
+        }
+
+        .sig-grid {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            column-gap: 2rem;
+            row-gap: 2.75rem;
+            margin-top: 2.5rem;
+        }
+        .sig-line  { border-bottom: 1.5px solid #334155; height: 2rem; }
+        .sig-label { font-size: .75rem; color: #475569; margin-top: .375rem; font-weight: 600; }
+
+        @page {
+            size: letter;
+            margin: 0.5in;
+        }
+
         @media print {
             .no-print,
             nav,
@@ -21,6 +106,11 @@
             body {
                 background: white !important;
                 color: black !important;
+            }
+
+            main {
+                padding: 0 !important;
+                max-width: none !important;
             }
 
             #reportContent {
@@ -39,9 +129,29 @@
                 page-break-before: always;
             }
 
-            canvas {
-                max-height: 260px !important;
-            }
+            /* Keep full desktop layouts on paper */
+            .tile-grid  { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: .5rem !important; }
+            .cover-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+            .sn-grid    { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+
+            .score-tile       { padding: .5rem .625rem; }
+            .score-tile-name  { font-size: .75rem; }
+            .score-tile-value { font-size: 1.125rem; }
+
+            #progressChartWrap { height: 240px !important; }
+
+            /* Fit the cover on one page */
+            #coverCard { padding: 1rem 1.25rem !important; }
+            #coverCard .cover-grid > div { padding: .5rem .75rem !important; }
+            #coverCard .cover-grid .text-3xl { font-size: 1.5rem !important; }
+            #strengthsNeeds { gap: .5rem !important; }
+            #strengthsNeeds > div { padding: .5rem .75rem !important; }
+            #strengthsNeeds ul > li { font-size: .75rem !important; margin-top: .25rem !important; }
+
+            /* Fit behavior chart + tiles on one page */
+            .score-tile { padding: .375rem .5rem !important; gap: .25rem !important; }
+            .score-tile-name  { font-size: .6875rem !important; }
+            .score-tile-value { font-size: 1rem !important; }
         }
     </style>
 
@@ -152,6 +262,14 @@
     </div>
 </div>
 
+<!-- DEMO MODE BANNER (prints too, so a demo printout can't pass as real) -->
+<div id="demoBanner" class="hidden bg-amber-100 border-b border-amber-300 text-amber-900 text-sm">
+    <div class="max-w-7xl mx-auto px-4 py-2 flex items-center gap-2">
+        <span class="material-icons text-base">science</span>
+        <span><strong>Demo mode:</strong> sample students and scores only. Nothing is loaded from or sent to a tracker.</span>
+    </div>
+</div>
+
 <main id="reportContent" class="hidden max-w-7xl mx-auto px-4 py-8">
 
     <div class="no-print bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
@@ -233,12 +351,21 @@
     <!-- ACTUAL REPORT -->
     <div id="studentReport" class="hidden space-y-6">
 
-        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <!-- PAGE 1: COVER -->
+        <section id="coverCard" class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <div class="flex flex-wrap justify-between items-start gap-4 border-b border-slate-200 pb-4 mb-5">
                 <div>
                     <div class="text-sm uppercase tracking-wider font-bold text-slate-500">Vocational Tracker Report</div>
                     <h2 id="reportStudentName" class="text-3xl font-extrabold text-slate-900 mt-1"></h2>
                     <p id="reportStudentMeta" class="text-slate-600 mt-1"></p>
+                    <p class="text-slate-700 mt-2">
+                        <span class="font-semibold">Report period:</span>
+                        <span id="reportPeriod">—</span>
+                    </p>
+                    <p class="text-slate-700">
+                        <span class="font-semibold">Job site:</span>
+                        <span id="reportSite">All job sites</span>
+                    </p>
                 </div>
 
                 <div class="text-sm text-slate-500 text-right">
@@ -247,62 +374,99 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <div class="text-xs uppercase font-bold text-blue-800">Evaluations</div>
-                    <div id="summaryEntries" class="text-3xl font-extrabold text-blue-900 mt-1">0</div>
+            <div class="cover-grid">
+                <div id="averageTile" class="rounded-xl p-4 border" style="background:#f8fafc;border-color:#e2e8f0">
+                    <div class="text-xs uppercase font-bold text-slate-600">Average Score</div>
+                    <div class="flex items-baseline gap-1 mt-1">
+                        <span id="summaryAverage" class="text-3xl font-extrabold text-slate-900">—</span>
+                        <span class="text-sm font-bold text-slate-500">/ 4</span>
+                    </div>
+                    <div id="summaryAverageBand" class="text-sm font-bold mt-1"></div>
+                    <div id="summaryAverageSplit" class="text-xs text-slate-600 mt-1"></div>
                 </div>
 
-                <div class="bg-violet-50 border border-violet-200 rounded-xl p-4">
-                    <div class="text-xs uppercase font-bold text-violet-800">Average Score</div>
-                    <div id="summaryAverage" class="text-3xl font-extrabold text-violet-900 mt-1">—</div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <div class="text-xs uppercase font-bold text-slate-600">Evaluations</div>
+                    <div id="summaryEntries" class="text-3xl font-extrabold text-slate-900 mt-1">0</div>
                 </div>
 
-                <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-                    <div class="text-xs uppercase font-bold text-green-800">Independent+</div>
-                    <div id="summaryIndependent" class="text-3xl font-extrabold text-green-900 mt-1">—</div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <div class="text-xs uppercase font-bold text-slate-600">Scored 3 or 4</div>
+                    <div id="summaryIndependent" class="text-3xl font-extrabold text-slate-900 mt-1">—</div>
+                    <div class="text-xs text-slate-500 mt-1">of all individual scores</div>
                 </div>
 
-                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                    <div class="text-xs uppercase font-bold text-amber-800">Most Recent</div>
-                    <div id="summaryLatest" class="text-lg font-extrabold text-amber-900 mt-2">—</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="print-break-before grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <span class="material-icons text-blue-700">trending_up</span>
-                    Progress Over Time
-                </h3>
-                <div class="h-72">
-                    <canvas id="progressChart"></canvas>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <div class="text-xs uppercase font-bold text-slate-600">Most Recent</div>
+                    <div id="summaryLatest" class="text-lg font-extrabold text-slate-900 mt-2">—</div>
                 </div>
             </div>
 
-            <div class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <span class="material-icons text-violet-700">bar_chart</span>
-                    Behavioral Skill Averages
-                </h3>
-                <div class="h-72">
-                    <canvas id="skillChart"></canvas>
-                </div>
+            <!-- SCORING SCALE -->
+            <div class="mt-5">
+                <h3 class="font-bold text-slate-900 text-sm mb-2">Scoring scale (0–4)</h3>
+                <div id="scaleStrip" class="scale-strip"></div>
+                <p id="bandLegend" class="text-xs text-slate-600 mt-2 flex flex-wrap gap-x-4 gap-y-1"></p>
             </div>
-        </section>
 
-        <section class="print-break-before print-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-200">
+            <!-- RELATIVE STRENGTHS & NEEDS -->
+            <div class="mt-6 border-t border-slate-200 pt-5">
                 <h3 class="font-bold text-slate-900 flex items-center gap-2">
-                    <span class="material-icons text-orange-600">work</span>
-                    Job Task Averages
+                    <span class="material-icons text-blue-700">balance</span>
+                    Relative Strengths and Needs
                 </h3>
+                <p class="text-xs text-slate-500 mt-1 mb-4">
+                    Highest and lowest averages compared with this student's own scores for the period.
+                    A relative need can still be in the green range.
+                </p>
+                <div id="strengthsNeeds" class="sn-grid"></div>
             </div>
-            <div id="taskAverages" class="p-5"></div>
         </section>
 
-        <section class="print-break-before print-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <!-- PAGE 2: BEHAVIORAL SKILLS -->
+        <section class="print-break-before print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <span class="material-icons text-violet-700">psychology</span>
+                Behavioral Skills Performance
+            </h3>
+            <p class="text-xs text-slate-500 mb-4">Average score for each skill across the report period.</p>
+
+            <div id="skillChartWrap" class="relative">
+                <canvas id="skillChart"></canvas>
+            </div>
+            <p id="skillEmpty" class="hidden text-slate-500 text-sm">No behavioral skill scores are present for this selection.</p>
+
+            <div id="skillTiles" class="tile-grid mt-5"></div>
+        </section>
+
+        <!-- PAGE 3: JOB TASKS -->
+        <section class="print-break-before print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <span class="material-icons text-orange-600">work</span>
+                Job Task Performance
+            </h3>
+            <p class="text-xs text-slate-500 mb-4">Average score for each job task. Tasks marked N/A are not counted.</p>
+
+            <div id="taskChartWrap" class="relative">
+                <canvas id="taskChart"></canvas>
+            </div>
+            <p id="taskEmpty" class="hidden text-slate-500 text-sm">No scored job tasks are present for this selection.</p>
+
+            <div id="taskTiles" class="tile-grid mt-5"></div>
+        </section>
+
+        <!-- PAGE 4: PROGRESS, HISTORY, SIGNATURES -->
+        <section class="print-break-before print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <span class="material-icons text-blue-700">trending_up</span>
+                Progress Over Time
+            </h3>
+            <div id="progressChartWrap" class="h-72">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </section>
+
+        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-200 flex justify-between items-center">
                 <h3 class="font-bold text-slate-900 flex items-center gap-2">
                     <span class="material-icons text-slate-600">history</span>
@@ -315,15 +479,49 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
                         <tr>
-                            <th class="px-4 py-3 text-left">Date</th>
-                            <th class="px-4 py-3 text-left">Site</th>
-                            <th class="px-4 py-3 text-left">Evaluator</th>
-                            <th class="px-4 py-3 text-left">Average</th>
+                            <th class="px-4 py-3 text-left" data-sort="date" aria-sort="none">
+                                <button type="button" onclick="setHistorySort('date')"
+                                        class="uppercase font-bold inline-flex items-center gap-1 hover:text-slate-900">
+                                    Date<span class="sort-icon material-icons no-print text-sm"></span>
+                                </button>
+                            </th>
+                            <th class="px-4 py-3 text-left" data-sort="site" aria-sort="none">
+                                <button type="button" onclick="setHistorySort('site')"
+                                        class="uppercase font-bold inline-flex items-center gap-1 hover:text-slate-900">
+                                    Site<span class="sort-icon material-icons no-print text-sm"></span>
+                                </button>
+                            </th>
+                            <th class="px-4 py-3 text-left" data-sort="evaluator" aria-sort="none">
+                                <button type="button" onclick="setHistorySort('evaluator')"
+                                        class="uppercase font-bold inline-flex items-center gap-1 hover:text-slate-900">
+                                    Evaluator<span class="sort-icon material-icons no-print text-sm"></span>
+                                </button>
+                            </th>
+                            <th class="px-4 py-3 text-left" data-sort="average" aria-sort="none">
+                                <button type="button" onclick="setHistorySort('average')"
+                                        class="uppercase font-bold inline-flex items-center gap-1 hover:text-slate-900">
+                                    Average<span class="sort-icon material-icons no-print text-sm"></span>
+                                </button>
+                            </th>
                             <th class="px-4 py-3 text-left">Notes</th>
                         </tr>
                     </thead>
                     <tbody id="historyBody"></tbody>
                 </table>
+            </div>
+        </section>
+
+        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-icons text-slate-600">draw</span>
+                Signatures
+            </h3>
+
+            <div class="sig-grid">
+                <div><div class="sig-line"></div><div class="sig-label">Student signature</div></div>
+                <div><div class="sig-line"></div><div class="sig-label">Date</div></div>
+                <div><div class="sig-line"></div><div class="sig-label">Employer signature</div></div>
+                <div><div class="sig-line"></div><div class="sig-label">Date</div></div>
             </div>
         </section>
 
@@ -340,6 +538,7 @@ let allStudents = [];
 let allTasks = [];
 let progressChart = null;
 let skillChart = null;
+let taskChart = null;
 
 const CORE_SKILLS = [
     "Punctual",
@@ -398,6 +597,100 @@ function showUpgrade() {
     document.getElementById("authModal").classList.remove("flex");
     document.getElementById("upgradeModal").classList.remove("hidden");
     document.getElementById("upgradeModal").classList.add("flex");
+}
+
+/* ---------- Demo mode ----------
+   Open report.html?demo=1 to explore the report with made-up data.
+   Demo mode never calls the backend and never reads or stores access codes;
+   it only renders sample data in this browser tab. */
+const DEMO_MODE = (typeof FORCE_DEMO !== "undefined" && FORCE_DEMO) ||
+    new URLSearchParams(location.search).get("demo") === "1";
+
+function demoRandom(seed) {
+    let t = seed >>> 0;
+    return () => {
+        t += 0x6D2B79F5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
+function buildDemoData() {
+    const rand = demoRandom(20261008);
+    const pick = list => list[Math.floor(rand() * list.length)];
+    const clamp = n => Math.max(0, Math.min(4, n));
+
+    const sites = {
+        "Riverside Cafe":  ["Wipe tables", "Restock napkins", "Run dishwasher"],
+        "Goodwill Store":  ["Hang clothing", "Sort donations", "Price items"],
+        "ACE Hardware":    ["Stock shelves", "Face products", "Sort recycling"]
+    };
+    const evaluators = ["M. Lopez", "D. Carter", "S. Nguyen"];
+    const notes = ["", "", "Good shift.", "Needed a reminder after break.", "Helped a new student with setup.", "Arrived early."];
+
+    const students = [
+        { student_id: "DEMO1", name: "Jordan Reyes (sample)", grade: "11", active: true },
+        { student_id: "DEMO2", name: "Taylor Brooks (sample)", grade: "12", active: true },
+        { student_id: "DEMO3", name: "Casey Morgan (sample)", grade: "10", active: false }
+    ];
+
+    const entries = [];
+    const today = new Date();
+
+    students.forEach((student, sIndex) => {
+        const skillBase = {};
+        CORE_SKILLS.forEach(skill => skillBase[skill] = pick([1, 2, 2, 3, 3, 3, 4]));
+        const taskBase = {};
+        Object.values(sites).flat().forEach(task => taskBase[task] = pick([1, 2, 3, 3, 4]));
+
+        const visits = 12 - sIndex * 3;
+        for (let i = 0; i < visits; i++) {
+            const site = Object.keys(sites)[i % 3];
+            const date = new Date(today);
+            date.setDate(today.getDate() - (visits - i) * 4);
+
+            const growth = i / visits;              // scores drift up over time
+            const scores = {};
+            CORE_SKILLS.forEach(skill => {
+                scores[skill] = clamp(Math.round(skillBase[skill] + growth + (rand() - 0.5) * 1.6));
+            });
+            sites[site].forEach(task => {
+                if (rand() < 0.85) {
+                    scores["task:" + task] = clamp(Math.round(taskBase[task] + growth + (rand() - 0.5) * 1.6));
+                }
+            });
+
+            entries.push({
+                student_id: student.student_id,
+                date: date.toISOString(),
+                job_site: site,
+                evaluator: pick(evaluators),
+                comments: pick(notes),
+                scores
+            });
+        }
+    });
+
+    return { students, entries };
+}
+
+function startDemo() {
+    const demo = buildDemoData();
+    allStudents = demo.students;
+    allEntries = demo.entries;
+    allTasks = [];
+
+    document.getElementById("demoBanner").classList.remove("hidden");
+    document.getElementById("viewerName").textContent = "Demo viewer";
+    document.getElementById("viewerRoleBadge").textContent = "Demo";
+
+    buildStudentOptions();
+    buildSiteOptions();
+    document.getElementById("reportContent").classList.remove("hidden");
+
+    document.getElementById("studentFilter").value = "DEMO1";
+    renderReport();
 }
 
 async function startReports() {
@@ -615,6 +908,131 @@ function filteredEntriesForStudent(studentId) {
         });
 }
 
+/* ---------- Score bands (single source of truth for color coding) ---------- */
+// Averages are rounded to 2 decimals before banding so the number shown
+// always matches its color (0.996 shows as 1.00 and is yellow).
+const SCORE_BANDS = [
+    { key: "green",  min: 3, label: "Independent",          range: "3.0–4.0", fill: "#16a34a", bg: "#f0fdf4", border: "#86efac", text: "#166534" },
+    { key: "yellow", min: 1, label: "Needs prompting",      range: "1.0–2.9", fill: "#eab308", bg: "#fefce8", border: "#fde047", text: "#854d0e" },
+    { key: "red",    min: 0, label: "Not yet performing",   range: "0–0.9",   fill: "#dc2626", bg: "#fef2f2", border: "#fca5a5", text: "#991b1b" }
+];
+
+const SCALE_LEVELS = [
+    { score: 0, name: "Not at All" },
+    { score: 1, name: "Direct Prompting" },
+    { score: 2, name: "Indirect Prompting" },
+    { score: 3, name: "Independent" },
+    { score: 4, name: "Helping / Teaching" }
+];
+
+function round2(n) {
+    return Math.round(n * 100) / 100;
+}
+
+function bandFor(avg) {
+    if (avg === null || avg === undefined || !Number.isFinite(avg)) return null;
+    const v = round2(avg);
+    return SCORE_BANDS.find(b => v >= b.min) || SCORE_BANDS[SCORE_BANDS.length - 1];
+}
+
+function scorePill(avg) {
+    const b = bandFor(avg);
+    if (!b) return '<span class="text-slate-400">—</span>';
+    return `<span class="score-pill" style="background:${b.bg};border-color:${b.border};color:${b.text}">${avg.toFixed(2)}</span>`;
+}
+
+function scoreTile(row) {
+    const b = bandFor(row.average);
+    return `
+        <div class="score-tile" style="background:${b.bg};border-color:${b.border}">
+            <div class="score-tile-name">${escapeHTML(row.name)}</div>
+            <div class="score-tile-foot">
+                <span class="score-tile-value" style="color:${b.text}">${row.average.toFixed(2)}</span>
+                <span class="score-tile-count">${row.count} score${row.count === 1 ? "" : "s"}</span>
+            </div>
+        </div>`;
+}
+
+function renderScaleKey() {
+    document.getElementById("scaleStrip").innerHTML = SCALE_LEVELS.map(level => {
+        const b = bandFor(level.score);
+        return `
+            <div class="rounded-lg border px-2 py-2 text-center" style="background:${b.bg};border-color:${b.border}">
+                <div class="text-lg font-extrabold leading-none" style="color:${b.text}">${level.score}</div>
+                <div class="text-[11px] leading-tight mt-1 text-slate-800">${level.name}</div>
+            </div>`;
+    }).join("");
+
+    document.getElementById("bandLegend").innerHTML = SCORE_BANDS.map(b => `
+        <span><span class="band-dot" style="background:${b.fill}"></span>
+        <strong>${b.range}</strong> ${b.label}</span>`).join("");
+}
+
+/* ---------- Data shaping ---------- */
+
+function behaviorRows(entries) {
+    return CORE_SKILLS.map(skill => {
+        const values = [];
+        entries.forEach(entry => {
+            const value = Number((entry.scores || {})[skill]);
+            if (Number.isFinite(value)) values.push(value);
+        });
+        const avg = average(values);
+        return avg === null ? null : { name: skill, average: avg, count: values.length };
+    }).filter(Boolean);
+}
+
+function taskRows(entries) {
+    const taskValues = new Map();
+
+    entries.forEach(entry => {
+        Object.entries(entry.scores || {}).forEach(([key, value]) => {
+            if (!key.startsWith("task:")) return;
+            const number = Number(value);
+            if (!Number.isFinite(number)) return;
+            const name = key.slice(5);
+            if (!taskValues.has(name)) taskValues.set(name, []);
+            taskValues.get(name).push(number);
+        });
+    });
+
+    return [...taskValues.entries()]
+        .map(([name, values]) => ({ name, average: average(values), count: values.length }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function valuesWhere(entries, keyTest) {
+    return entries.flatMap(entry =>
+        Object.entries(entry.scores || {})
+            .filter(([key]) => keyTest(key))
+            .map(([, v]) => Number(v))
+            .filter(n => Number.isFinite(n))
+    );
+}
+
+function localDateFromInput(value) {
+    const [y, m, d] = value.split("-").map(Number);
+    return new Date(y, m - 1, d);
+}
+
+function reportPeriodText(entries) {
+    const from = document.getElementById("fromDate").value;
+    const to = document.getElementById("toDate").value;
+
+    // entries are sorted newest first
+    const oldest = entries.length ? entries[entries.length - 1].date : null;
+    const newest = entries.length ? entries[0].date : null;
+
+    const start = from ? formatDate(localDateFromInput(from)) : (oldest ? formatDate(oldest) : "");
+    const end = to ? formatDate(localDateFromInput(to)) : (newest ? formatDate(newest) : "");
+
+    if (!start && !end) return "No evaluations in this selection";
+    if (start && end) return start === end ? start : `${start} – ${end}`;
+    return start ? `From ${start}` : `Through ${end}`;
+}
+
+/* ---------- Render ---------- */
+
 function renderReport() {
     const studentId = document.getElementById("studentFilter").value;
 
@@ -646,6 +1064,10 @@ function renderReport() {
     document.getElementById("generatedDate").textContent =
         new Date().toLocaleDateString();
 
+    document.getElementById("reportPeriod").textContent = reportPeriodText(entries);
+    document.getElementById("reportSite").textContent =
+        document.getElementById("siteFilter").value || "All job sites";
+
     const allScores = entries.flatMap(scoreValues);
     const avg = average(allScores);
 
@@ -655,17 +1077,211 @@ function renderReport() {
         : null;
 
     document.getElementById("summaryEntries").textContent = entries.length;
-    document.getElementById("summaryAverage").textContent =
-        avg === null ? "—" : avg.toFixed(2);
     document.getElementById("summaryIndependent").textContent =
         independentRate === null ? "—" : independentRate + "%";
     document.getElementById("summaryLatest").textContent =
         entries.length ? formatDate(entries[0].date) : "—";
 
+    renderAverageTile(entries, avg);
+
+    const skills = behaviorRows(entries);
+    const tasks = taskRows(entries);
+
+    renderStrengthsNeeds(skills, tasks);
+    skillChart = renderBarChart(skillChart, "skillChart", "skillChartWrap", "skillEmpty", skills);
+    taskChart = renderBarChart(taskChart, "taskChart", "taskChartWrap", "taskEmpty", tasks);
+    renderTiles("skillTiles", skills);
+    renderTiles("taskTiles", tasks);
     renderProgressChart(entries);
-    renderSkillChart(entries);
-    renderTaskAverages(entries);
     renderHistory(entries);
+}
+
+function renderAverageTile(entries, avg) {
+    const tile = document.getElementById("averageTile");
+    const value = document.getElementById("summaryAverage");
+    const bandEl = document.getElementById("summaryAverageBand");
+    const splitEl = document.getElementById("summaryAverageSplit");
+    const b = bandFor(avg);
+
+    value.textContent = avg === null ? "—" : avg.toFixed(2);
+
+    if (!b) {
+        tile.style.background = "#f8fafc";
+        tile.style.borderColor = "#e2e8f0";
+        value.style.color = "";
+        bandEl.textContent = "";
+        splitEl.textContent = "";
+        return;
+    }
+
+    tile.style.background = b.bg;
+    tile.style.borderColor = b.border;
+    value.style.color = b.text;
+    bandEl.style.color = b.text;
+    bandEl.textContent = b.label;
+
+    const behaviorAvg = average(valuesWhere(entries, k => !k.startsWith("task:")));
+    const taskAvg = average(valuesWhere(entries, k => k.startsWith("task:")));
+    const parts = [];
+    if (behaviorAvg !== null) parts.push("Behavior " + behaviorAvg.toFixed(2));
+    if (taskAvg !== null) parts.push("Job tasks " + taskAvg.toFixed(2));
+    splitEl.textContent = parts.join("  |  ");
+}
+
+function strengthsAndNeeds(rows, n = 3) {
+    if (rows.length < 2) return { status: "few" };
+
+    const sorted = rows.slice().sort(
+        (a, b) => b.average - a.average || a.name.localeCompare(b.name)
+    );
+
+    if (round2(sorted[0].average) === round2(sorted[sorted.length - 1].average)) {
+        return { status: "even" };
+    }
+
+    const k = Math.min(n, Math.floor(sorted.length / 2));
+    return {
+        status: "ok",
+        strengths: sorted.slice(0, k),
+        needs: sorted.slice(-k).reverse()
+    };
+}
+
+function snList(title, icon, iconColor, rows) {
+    return `
+        <div class="border border-slate-200 rounded-xl p-4">
+            <div class="font-bold text-slate-900 text-sm flex items-center gap-1 mb-2">
+                <span class="material-icons text-base" style="color:${iconColor}">${icon}</span>
+                ${title}
+            </div>
+            <ul class="space-y-2">
+                ${rows.map(r => `
+                    <li class="flex justify-between items-start gap-3 text-sm">
+                        <span class="text-slate-800">${escapeHTML(r.name)}</span>
+                        ${scorePill(r.average)}
+                    </li>`).join("")}
+            </ul>
+        </div>`;
+}
+
+function snMessage(title, text) {
+    return `
+        <div class="border border-slate-200 rounded-xl p-4">
+            <div class="font-bold text-slate-900 text-sm mb-2">${title}</div>
+            <p class="text-sm text-slate-500">${text}</p>
+        </div>`;
+}
+
+function snBlock(label, rows) {
+    const result = strengthsAndNeeds(rows);
+
+    if (result.status === "few") {
+        const text = rows.length
+            ? `Only one ${label.toLowerCase()} item was scored, so there is nothing to compare yet.`
+            : `No ${label.toLowerCase()} scores in this selection.`;
+        return snMessage(`${label} strengths`, text) + snMessage(`${label} needs`, text);
+    }
+
+    if (result.status === "even") {
+        const text = "Every item has the same average, so no relative strength or need stands out.";
+        return snMessage(`${label} strengths`, text) + snMessage(`${label} needs`, text);
+    }
+
+    return snList(`${label} strengths`, "arrow_upward", "#16a34a", result.strengths) +
+           snList(`${label} needs`, "arrow_downward", "#dc2626", result.needs);
+}
+
+function renderStrengthsNeeds(skills, tasks) {
+    document.getElementById("strengthsNeeds").innerHTML =
+        snBlock("Behavioral", skills) + snBlock("Job task", tasks);
+}
+
+// Break long skill names onto multiple lines for chart axis labels
+function wrapLabel(text, max = 34) {
+    const words = String(text).split(/\s+/);
+    const lines = [];
+    let line = "";
+    words.forEach(word => {
+        if ((line + " " + word).trim().length > max && line) {
+            lines.push(line);
+            line = word;
+        } else {
+            line = (line + " " + word).trim();
+        }
+    });
+    if (line) lines.push(line);
+    return lines;
+}
+
+function barChartHeight(count) {
+    return Math.max(140, count * 32 + 50);
+}
+
+function renderBarChart(existing, canvasId, wrapId, emptyId, rows) {
+    if (existing) existing.destroy();
+
+    const wrap = document.getElementById(wrapId);
+    const empty = document.getElementById(emptyId);
+
+    if (!rows.length) {
+        wrap.classList.add("hidden");
+        empty.classList.remove("hidden");
+        return null;
+    }
+
+    wrap.classList.remove("hidden");
+    empty.classList.add("hidden");
+    wrap.style.height = barChartHeight(rows.length) + "px";
+
+    const colors = rows.map(r => bandFor(r.average).fill);
+
+    return new Chart(document.getElementById(canvasId), {
+        type: "bar",
+        data: {
+            labels: rows.map(r => wrapLabel(r.name)),
+            datasets: [{
+                label: "Average",
+                data: rows.map(r => round2(r.average)),
+                backgroundColor: colors,
+                borderColor: colors,
+                borderWidth: 1,
+                barPercentage: 0.8,
+                categoryPercentage: 0.85
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "y",
+            animation: false,
+            scales: {
+                x: {
+                    min: 0,
+                    max: 4,
+                    ticks: { stepSize: 1 }
+                },
+                y: {
+                    ticks: { autoSkip: false, font: { size: 11 } }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: items => rows[items[0].dataIndex].name,
+                        label: item => {
+                            const r = rows[item.dataIndex];
+                            return `${r.average.toFixed(2)} / 4 (${bandFor(r.average).label})`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderTiles(containerId, rows) {
+    document.getElementById(containerId).innerHTML = rows.map(scoreTile).join("");
 }
 
 function renderProgressChart(entries) {
@@ -674,7 +1290,7 @@ function renderProgressChart(entries) {
     const labels = chronological.map(e => formatDate(e.date));
     const values = chronological.map(e => {
         const avg = average(scoreValues(e));
-        return avg === null ? null : Number(avg.toFixed(2));
+        return avg === null ? null : round2(avg);
     });
 
     if (progressChart) progressChart.destroy();
@@ -688,14 +1304,18 @@ function renderProgressChart(entries) {
                 datasets: [{
                     label: "Average score",
                     data: values,
+                    borderColor: "#334155",
                     borderWidth: 3,
                     tension: .25,
-                    pointRadius: 4
+                    pointRadius: 5,
+                    pointBackgroundColor: values.map(v => v === null ? "#94a3b8" : bandFor(v).fill),
+                    pointBorderColor: values.map(v => v === null ? "#94a3b8" : bandFor(v).fill)
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: false,
                 scales: {
                     y: {
                         min: 0,
@@ -711,106 +1331,103 @@ function renderProgressChart(entries) {
     );
 }
 
-function renderSkillChart(entries) {
-    const labels = [];
-    const data = [];
+/* Charts are sized for the screen; resize them to the printed page width so
+   they don't overflow or squash when printing (Chart.js recommended approach). */
+const PRINT_CHART_WIDTH = 640;
 
-    CORE_SKILLS.forEach(skill => {
-        const values = [];
-
-        entries.forEach(entry => {
-            const value = Number((entry.scores || {})[skill]);
-            if (Number.isFinite(value)) values.push(value);
-        });
-
-        const avg = average(values);
-
-        if (avg !== null) {
-            labels.push(skill);
-            data.push(Number(avg.toFixed(2)));
-        }
-    });
-
-    if (skillChart) skillChart.destroy();
-
-    skillChart = new Chart(
-        document.getElementById("skillChart"),
-        {
-            type: "bar",
-            data: {
-                labels,
-                datasets: [{
-                    label: "Average",
-                    data,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                indexAxis: "y",
-                scales: {
-                    x: {
-                        min: 0,
-                        max: 4,
-                        ticks: { stepSize: 1 }
-                    }
-                },
-                plugins: {
-                    legend: { display: false }
-                }
-            }
-        }
-    );
+function printBarHeight(count) {
+    return Math.max(120, count * 30 + 40);
 }
 
-function renderTaskAverages(entries) {
-    const taskValues = new Map();
-
-    entries.forEach(entry => {
-        Object.entries(entry.scores || {}).forEach(([key, value]) => {
-            if (!key.startsWith("task:")) return;
-
-            const name = key.slice(5);
-            const number = Number(value);
-            if (!Number.isFinite(number)) return;
-
-            if (!taskValues.has(name)) taskValues.set(name, []);
-            taskValues.get(name).push(number);
-        });
+function resizeChartsForPrint() {
+    [skillChart, taskChart].forEach(chart => {
+        if (!chart) return;
+        const height = printBarHeight(chart.data.labels.length);
+        chart.canvas.parentElement.style.height = height + "px";
+        chart.resize(PRINT_CHART_WIDTH, height);
     });
+    if (progressChart) progressChart.resize(PRINT_CHART_WIDTH, 240);
+}
 
-    const container = document.getElementById("taskAverages");
+function restoreChartsAfterPrint() {
+    [skillChart, taskChart].forEach(chart => {
+        if (!chart) return;
+        chart.canvas.parentElement.style.height = barChartHeight(chart.data.labels.length) + "px";
+        chart.resize();
+    });
+    if (progressChart) progressChart.resize();
+}
 
-    if (!taskValues.size) {
-        container.innerHTML =
-            '<p class="text-slate-500 text-sm">No scored job tasks are present for this selection.</p>';
-        return;
+window.addEventListener("beforeprint", resizeChartsForPrint);
+window.addEventListener("afterprint", restoreChartsAfterPrint);
+
+/* ---------- Evaluation history (sortable) ---------- */
+// Click a column header to sort; click again to reverse. Ties fall back to
+// newest date first, so sorting by site keeps each site's visits in order.
+let historyEntries = [];
+let historySort = { key: "date", dir: "desc" };
+
+function setHistorySort(key) {
+    if (historySort.key === key) {
+        historySort.dir = historySort.dir === "asc" ? "desc" : "asc";
+    } else {
+        historySort = { key, dir: (key === "date" || key === "average") ? "desc" : "asc" };
     }
+    renderHistory(historyEntries);
+}
 
-    const rows = [...taskValues.entries()]
-        .map(([name, values]) => ({
-            name,
-            average: average(values),
-            count: values.length
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name));
+function entryTime(entry) {
+    const d = parseDate(entry.date);
+    return d ? d.getTime() : 0;
+}
 
-    container.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            ${rows.map(row => `
-                <div class="border border-slate-200 rounded-xl p-4">
-                    <div class="font-bold text-slate-900">${escapeHTML(row.name)}</div>
-                    <div class="mt-2 flex justify-between text-sm">
-                        <span class="text-slate-500">${row.count} scored evaluation${row.count === 1 ? "" : "s"}</span>
-                        <strong>${row.average.toFixed(2)} / 4</strong>
-                    </div>
-                </div>
-            `).join("")}
-        </div>`;
+function sortHistory(entries) {
+    const { key, dir } = historySort;
+    const sign = dir === "asc" ? 1 : -1;
+
+    const valueOf = entry => {
+        if (key === "site") return String(entry.job_site || "").trim();
+        if (key === "evaluator") return String(entry.evaluator || "").trim();
+        if (key === "average") return average(scoreValues(entry));
+        return entryTime(entry);
+    };
+
+    return entries.slice().sort((a, b) => {
+        const av = valueOf(a);
+        const bv = valueOf(b);
+        const aEmpty = av === null || av === "";
+        const bEmpty = bv === null || bv === "";
+
+        let result = 0;
+        if (aEmpty && bEmpty) result = 0;
+        else if (aEmpty) return 1;          // blanks always last
+        else if (bEmpty) return -1;
+        else if (typeof av === "string") {
+            result = sign * av.localeCompare(bv, undefined, { sensitivity: "base", numeric: true });
+        } else {
+            result = sign * (av - bv);
+        }
+
+        return result || (entryTime(b) - entryTime(a));
+    });
+}
+
+function updateSortHeaders() {
+    document.querySelectorAll("th[data-sort]").forEach(th => {
+        const active = th.dataset.sort === historySort.key;
+        th.setAttribute("aria-sort", active ? (historySort.dir === "asc" ? "ascending" : "descending") : "none");
+        const icon = th.querySelector(".sort-icon");
+        icon.textContent = active
+            ? (historySort.dir === "asc" ? "arrow_upward" : "arrow_downward")
+            : "unfold_more";
+        icon.style.opacity = active ? "1" : ".4";
+    });
 }
 
 function renderHistory(entries) {
+    historyEntries = entries;
+    updateSortHeaders();
+
     const tbody = document.getElementById("historyBody");
     document.getElementById("historyCount").textContent =
         entries.length + " evaluation" + (entries.length === 1 ? "" : "s");
@@ -825,7 +1442,7 @@ function renderHistory(entries) {
         return;
     }
 
-    tbody.innerHTML = entries.map(entry => {
+    tbody.innerHTML = sortHistory(entries).map(entry => {
         const avg = average(scoreValues(entry));
 
         return `
@@ -858,6 +1475,13 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("keydown", event => {
         if (event.key === "Enter") verifyAccess();
     });
+
+    renderScaleKey();
+
+    if (DEMO_MODE) {
+        startDemo();
+        return;
+    }
 
     startReports();
 });
