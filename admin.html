@@ -125,6 +125,9 @@ if (VT_ENV) {
 <!-- MAIN CONTENT -->
 <main id="adminContent" class="hidden max-w-7xl mx-auto py-10 px-4">
 
+    <!-- BACKEND UPDATE NOTICE (filled by checkForBackendUpdate) -->
+    <section id="updateNotice" class="hidden rounded-xl border p-5 mb-8" aria-live="polite"></section>
+
     <!-- CONNECTION STATUS -->
     <div class="bg-white rounded-xl shadow-sm border p-4 mb-8">
         <div class="flex flex-wrap justify-between items-center gap-3">
@@ -451,6 +454,7 @@ if (VT_ENV) {
 const REQUIRED_API_VERSION = 3;
 const url = localStorage.getItem(vtKey("vocational_backend_url"));
 let backendReady = false;
+let backendRelease = "";
 
 // The admin code is never fetched to the client any more. The old
 // getAdminConfig route returned it in cleartext to any anonymous caller,
@@ -521,6 +525,7 @@ async function startAdmin() {
         }
 
         backendReady = true;
+        backendRelease = String(health.release || "");
 
         document.getElementById("authModal").classList.remove("hidden");
         document.getElementById("authModal").classList.add("flex");
@@ -754,6 +759,7 @@ async function verifyAdminCode(silent = false) {
 
     if (input) input.value = "";
 
+    checkForBackendUpdate();
     await Promise.all([loadStudents(), loadSites()]);
     return true;
 }
@@ -763,6 +769,242 @@ function signOutAdmin() {
     sessionStorage.removeItem(vtKey("vt_admin_code"));
     sessionStorage.removeItem(vtKey("vt_admin_pass"));
     location.reload();
+}
+
+/************************************************************
+ * BACKEND UPDATE NOTICE
+ *
+ * The website updates for every school when the repo is pushed, but each
+ * school's Code.gs does not. release.json (in this repo) names the latest
+ * backend release; this compares it with what this school's backend
+ * reports and walks the admin through updating. See RELEASING.md.
+ ************************************************************/
+const SNOOZE_DAYS = 3;
+
+function compareVersions(a, b) {
+    const pa = String(a || "0").split(".").map(n => parseInt(n, 10) || 0);
+    const pb = String(b || "0").split(".").map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        const d = (pa[i] || 0) - (pb[i] || 0);
+        if (d) return d < 0 ? -1 : 1;
+    }
+    return 0;
+}
+
+function safeLink(href) {
+    // Only allow https links or pages in this site.
+    try {
+        const u = new URL(href, window.location.href);
+        if (u.protocol === "https:" || u.origin === window.location.origin) return u.href;
+    } catch (e) { /* ignore */ }
+    return "";
+}
+
+function snoozeKey(latest) {
+    return vtKey("vt_update_snooze:") + url + ":" + latest;
+}
+
+async function fetchRelease() {
+    const res = await fetch("release.json?_=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return res.json();
+}
+
+async function refreshBackendRelease() {
+    const health = await readJsonWithRetry({ method: "GET", cache: "no-store" });
+    backendRelease = String(health.release || "");
+}
+
+async function checkForBackendUpdate(manual = false) {
+    const box = document.getElementById("updateNotice");
+    let release;
+
+    try {
+        release = await fetchRelease();
+        if (manual) await refreshBackendRelease();
+    } catch (err) {
+        // The notice is a convenience; never block Admin over it.
+        console.warn("Update check skipped:", err);
+        if (manual) renderUpdateMessage(box, "Couldn't check right now. Try again in a minute.", "slate");
+        return;
+    }
+
+    const latest = String(release.latest || "");
+    if (!latest || compareVersions(backendRelease, latest) >= 0) {
+        if (manual) {
+            renderUpdateMessage(box, "This school's tracker is up to date (version " + backendRelease + ").", "green");
+        } else {
+            box.classList.add("hidden");
+        }
+        return;
+    }
+
+    const urgent = release.urgent === true;
+    if (!urgent && !manual) {
+        try {
+            const until = Number(localStorage.getItem(snoozeKey(latest)) || 0);
+            if (until > Date.now()) return;
+        } catch (e) { /* ignore */ }
+    }
+
+    renderUpdateNotice(box, release, urgent);
+}
+
+function renderUpdateMessage(box, text, tone) {
+    const tones = {
+        green: ["#f0fdf4", "#86efac", "#166534"],
+        slate: ["#f8fafc", "#cbd5e1", "#334155"]
+    }[tone];
+    clearChildren(box);
+    box.style.background = tones[0];
+    box.style.borderColor = tones[1];
+    box.style.color = tones[2];
+    const p = document.createElement("p");
+    p.className = "font-bold text-sm";
+    p.textContent = text;
+    box.appendChild(p);
+    box.classList.remove("hidden");
+}
+
+function renderUpdateNotice(box, release, urgent) {
+    const latest = String(release.latest);
+    const colors = urgent
+        ? { bg: "#fef2f2", border: "#fca5a5", text: "#7f1d1d", btn: "#b91c1c" }
+        : { bg: "#fffbeb", border: "#fcd34d", text: "#78350f", btn: "#92400e" };
+
+    clearChildren(box);
+    box.style.background = colors.bg;
+    box.style.borderColor = colors.border;
+    box.style.color = colors.text;
+
+    const head = document.createElement("div");
+    head.className = "flex items-start gap-3";
+    head.appendChild(makeIcon(urgent ? "priority_high" : "system_update_alt", "text-2xl"));
+
+    const body = document.createElement("div");
+    body.className = "flex-1";
+
+    const title = document.createElement("h2");
+    title.className = "font-extrabold text-lg";
+    title.textContent = urgent ? "Important update for this school's tracker" : "Update available for this school's tracker";
+    body.appendChild(title);
+
+    const ver = document.createElement("p");
+    ver.className = "text-sm mt-1";
+    ver.textContent = "This school is on version " + (backendRelease || "unknown") +
+        ". The latest is " + latest + (release.released ? " (" + release.released + ")" : "") +
+        ". Updating takes about 5 minutes and keeps all students, scores and codes.";
+    body.appendChild(ver);
+
+    if (release.summary) {
+        const sum = document.createElement("p");
+        sum.className = "text-sm mt-2 font-semibold";
+        sum.textContent = release.summary;
+        body.appendChild(sum);
+    }
+
+    if (Array.isArray(release.changes) && release.changes.length) {
+        const ul = document.createElement("ul");
+        ul.className = "list-disc ml-5 mt-1 text-sm";
+        release.changes.slice(0, 8).forEach(c => {
+            const li = document.createElement("li");
+            li.textContent = String(c);
+            ul.appendChild(li);
+        });
+        body.appendChild(ul);
+    }
+
+    // Steps
+    const steps = document.createElement("ol");
+    steps.className = "hidden list-decimal ml-5 mt-4 space-y-2 text-sm bg-white/70 rounded-lg p-4 pl-8 border";
+    steps.style.borderColor = colors.border;
+
+    const replace = Array.isArray(release.replace) && release.replace.length ? release.replace : ["Code.gs"];
+    const codeUrl = safeLink(release.codeGsUrl || "");
+    const sidebarUrl = safeLink(release.sidebarUrl || "");
+
+    const addStep = (parts) => {
+        const li = document.createElement("li");
+        parts.forEach(part => {
+            if (typeof part === "string") {
+                li.appendChild(document.createTextNode(part));
+            } else if (part.link) {
+                if (!part.href) return;
+                const a = document.createElement("a");
+                a.href = part.href;
+                a.target = "_blank";
+                a.rel = "noopener";
+                a.className = "font-bold underline";
+                a.textContent = part.link;
+                li.appendChild(a);
+            } else if (part.strong) {
+                const b = document.createElement("strong");
+                b.textContent = part.strong;
+                li.appendChild(b);
+            }
+        });
+        steps.appendChild(li);
+    };
+
+    addStep(["Optional: in this school's spreadsheet, choose ", { strong: "File → Make a copy" }, " as a backup."]);
+    addStep(["In the spreadsheet, choose ", { strong: "Extensions → Apps Script" }, "."]);
+    addStep(["Open ", { strong: "Code.gs" }, ", select all, and replace it with the ",
+             { link: "latest Code.gs", href: codeUrl }, ". Save."]);
+    if (replace.indexOf("Sidebar") !== -1) {
+        addStep(["Open ", { strong: "Sidebar.html" }, ", select all, and replace it with the ",
+                 { link: "latest Sidebar code", href: sidebarUrl }, ". Save."]);
+    }
+    addStep(["Choose ", { strong: "Deploy → Manage deployments" }, ", select the pencil (Edit) on the existing Web app, set Version to ",
+             { strong: "New version" }, ", and select ", { strong: "Deploy" }, "."]);
+    addStep(["Do not use ", { strong: "New deployment" }, ". That creates a new web address and breaks this school's QR codes and saved links."]);
+    addStep(["Come back here and select ", { strong: "Check again" }, "."]);
+    body.appendChild(steps);
+
+    // Buttons
+    const actions = document.createElement("div");
+    actions.className = "flex flex-wrap gap-2 mt-4";
+
+    const show = document.createElement("button");
+    show.type = "button";
+    show.className = "text-white font-bold px-4 py-2 rounded-lg text-sm";
+    show.style.background = colors.btn;
+    show.textContent = "Show update steps";
+    show.addEventListener("click", () => {
+        const open = steps.classList.toggle("hidden") === false;
+        show.textContent = open ? "Hide update steps" : "Show update steps";
+    });
+    actions.appendChild(show);
+
+    const check = document.createElement("button");
+    check.type = "button";
+    check.className = "bg-white border font-bold px-4 py-2 rounded-lg text-sm";
+    check.style.borderColor = colors.border;
+    check.textContent = "Check again";
+    check.addEventListener("click", async () => {
+        check.disabled = true;
+        check.textContent = "Checking…";
+        await checkForBackendUpdate(true);
+    });
+    actions.appendChild(check);
+
+    if (!urgent) {
+        const later = document.createElement("button");
+        later.type = "button";
+        later.className = "font-bold px-4 py-2 rounded-lg text-sm underline";
+        later.textContent = "Remind me in " + SNOOZE_DAYS + " days";
+        later.addEventListener("click", () => {
+            try {
+                localStorage.setItem(snoozeKey(latest), String(Date.now() + SNOOZE_DAYS * 86400000));
+            } catch (e) { /* ignore */ }
+            box.classList.add("hidden");
+        });
+        actions.appendChild(later);
+    }
+
+    body.appendChild(actions);
+    head.appendChild(body);
+    box.appendChild(head);
+    box.classList.remove("hidden");
 }
 
 /************************************************************

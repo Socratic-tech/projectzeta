@@ -1,0 +1,10 @@
+{
+  "latest": "3.0.1",
+  "released": "2026-10-08",
+  "urgent": false,
+  "summary": "Current release.",
+  "changes": [],
+  "replace": ["Code.gs"],
+  "codeGsUrl": "https://docs.google.com/document/d/1vMnXz8BGH7F3YdOxEJMIZ0sgB5ea-WAC9rqGL8nMGIE/edit?tab=t.0",
+  "sidebarUrl": "sidebar-code.html"
+}
