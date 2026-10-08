@@ -1,9 +1,14 @@
 {
-  "latest": "3.0.1",
+  "latest": "3.1.0",
   "released": "2026-10-08",
   "urgent": false,
-  "summary": "Current release.",
-  "changes": [],
+  "summary": "Shared report layouts: arrange the student report your way and add your own charts and tables.",
+  "changes": [
+    "Reports has a new Customize button: reorder, hide and rename report sections",
+    "Add your own charts and tables from any of a student's scores, plus text, evaluator notes and page breaks",
+    "Administrators can save layouts for the whole school and choose which one opens first",
+    "Student data, codes and QR links are not affected"
+  ],
   "replace": ["Code.gs"],
   "codeGsUrl": "https://docs.google.com/document/d/1vMnXz8BGH7F3YdOxEJMIZ0sgB5ea-WAC9rqGL8nMGIE/edit?tab=t.0",
   "sidebarUrl": "sidebar-code.html"
