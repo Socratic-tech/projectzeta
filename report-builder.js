@@ -1044,22 +1044,35 @@ const ReportBuilder = (function () {
 
     /* ---------------- Backend calls ---------------- */
 
-    async function call(payload, write) {
+    async function call(payload, write, code) {
         if (state.demo) return demoCall(payload);
         // Writes are sent once; reads retry once (see fetchJson in report.html).
         return fetchJson({
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(Object.assign({ code: reportCodeValue }, payload))
+            body: JSON.stringify(Object.assign({ code: code || reportCodeValue }, payload))
         }, write ? 1 : 2);
     }
 
+    /** Never throws: layouts are optional, so a failure just means Standard. */
+    async function fetchLayouts(code) {
+        try {
+            return await call({ action: "listLayouts" }, false, code);
+        } catch (err) {
+            console.warn("Layouts unavailable:", err);
+            return null;
+        }
+    }
+
     async function loadLayouts() {
+        applyLayouts(await fetchLayouts());
+    }
+
+    function applyLayouts(json) {
         state.supported = false;
         state.canEdit = false;
         state.layouts = [];
         try {
-            const json = await call({ action: "listLayouts" });
             if (json && json.status === "success" && Array.isArray(json.layouts)) {
                 state.supported = true;
                 state.canEdit = json.canEdit === true && viewerRole === "admin";
@@ -1076,7 +1089,7 @@ const ReportBuilder = (function () {
             }
             // Older backends answer "Unknown action": layouts simply aren't saved there yet.
         } catch (err) {
-            console.warn("Layouts unavailable:", err);
+            console.warn("Layouts couldn't be read:", err);
         }
         const def = state.layouts.find(l => l.isDefault);
         state.currentId = def ? def.id : "";
@@ -1238,6 +1251,8 @@ const ReportBuilder = (function () {
     return {
         render,
         loadLayouts,
+        fetchLayouts,
+        applyLayouts,
         initDemo,
         sanitizeLayout,        // exposed for tests
         _state: state
