@@ -349,12 +349,18 @@
         <p class="text-slate-500 mt-1">Select a student above to build their report.</p>
     </section>
 
-    <!-- ACTUAL REPORT -->
-    <div id="studentReport" class="hidden space-y-6">
+    <!-- ACTUAL REPORT
+         The report is a list of blocks. report-builder.js reads the active
+         layout and stamps out the templates below in that order. -->
+    <div id="studentReport" class="hidden">
+        <div id="layoutBar" class="no-print mb-4"></div>
+        <div id="reportBlocks" class="space-y-6"></div>
+    </div>
 
-        <!-- PAGE 1: COVER -->
-        <section id="coverCard" class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div class="flex flex-wrap justify-between items-start gap-4 border-b border-slate-200 pb-4 mb-5">
+    <!-- BLOCK TEMPLATES (one per built-in block) -->
+    <template id="tpl-header">
+        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-6 rb-cover">
+            <div class="flex flex-wrap justify-between items-start gap-4 ">
                 <div>
                     <div class="text-sm uppercase tracking-wider font-bold text-slate-500">Vocational Tracker Report</div>
                     <h2 id="reportStudentName" class="text-3xl font-extrabold text-slate-900 mt-1"></h2>
@@ -379,6 +385,12 @@
                 </div>
             </div>
 
+
+        </section>
+    </template>
+
+    <template id="tpl-summary">
+        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5 rb-cover">
             <div class="cover-grid">
                 <div id="averageTile" class="rounded-xl p-4 border" style="background:#f8fafc;border-color:#e2e8f0">
                     <div class="text-xs uppercase font-bold text-slate-600">Average Score</div>
@@ -407,18 +419,28 @@
                 </div>
             </div>
 
-            <!-- SCORING SCALE -->
-            <div class="mt-5">
-                <h3 class="font-bold text-slate-900 text-sm mb-2">Scoring scale (0–4)</h3>
+
+        </section>
+    </template>
+
+    <template id="tpl-scale">
+        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5 rb-cover">
+            <div>
+                <h3 class="font-bold text-slate-900 text-sm mb-2"><span data-title>Scoring scale (0–4)</span></h3>
                 <div id="scaleStrip" class="scale-strip"></div>
                 <p id="bandLegend" class="text-xs text-slate-600 mt-2 flex flex-wrap gap-x-4 gap-y-1"></p>
             </div>
 
-            <!-- RELATIVE STRENGTHS & NEEDS -->
-            <div class="mt-6 border-t border-slate-200 pt-5">
+
+        </section>
+    </template>
+
+    <template id="tpl-strengths">
+        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5 rb-cover">
+            <div>
                 <h3 class="font-bold text-slate-900 flex items-center gap-2">
                     <span class="material-icons text-blue-700">balance</span>
-                    Relative Strengths and Needs
+                    <span data-title>Relative Strengths and Needs</span>
                 </h3>
                 <p class="text-xs text-slate-500 mt-1 mb-4">
                     Highest and lowest averages compared with this student's own scores for the period.
@@ -426,66 +448,77 @@
                 </p>
                 <div id="strengthsNeeds" class="sn-grid"></div>
             </div>
-        </section>
 
-        <!-- PAGE 2: BEHAVIORAL SKILLS -->
-        <section class="print-break-before print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+        </section>
+    </template>
+
+    <template id="tpl-behavior">
+        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
             <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-2">
                 <span class="material-icons text-violet-700">psychology</span>
-                Behavioral Skills Performance
+                <span data-title>Behavioral Skills Performance</span>
             </h3>
             <p class="text-xs text-slate-500 mb-4">Average score for each skill across the report period.</p>
 
+            <div data-part="chart">
             <div id="skillChartWrap" class="relative">
                 <canvas id="skillChart"></canvas>
             </div>
             <p id="skillEmpty" class="hidden text-slate-500 text-sm">No behavioral skill scores are present for this selection.</p>
+            </div>
 
-            <div id="skillTiles" class="tile-grid mt-5"></div>
+            <div id="skillTiles" data-part="tiles" class="tile-grid mt-5"></div>
         </section>
+    </template>
 
-        <!-- PAGE 3: JOB TASKS -->
-        <section class="print-break-before print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+    <template id="tpl-tasks">
+        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
             <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-2">
                 <span class="material-icons text-orange-600">work</span>
-                Job Task Performance
+                <span data-title>Job Task Performance</span>
             </h3>
             <p class="text-xs text-slate-500 mb-4">Average score for each job task. Tasks marked N/A are not counted.</p>
 
+            <div data-part="chart">
             <div id="taskChartWrap" class="relative">
                 <canvas id="taskChart"></canvas>
             </div>
             <p id="taskEmpty" class="hidden text-slate-500 text-sm">No scored job tasks are present for this selection.</p>
+            </div>
 
-            <div id="taskTiles" class="tile-grid mt-5"></div>
+            <div id="taskTiles" data-part="tiles" class="tile-grid mt-5"></div>
         </section>
+    </template>
 
-        <!-- JOB SITE AVERAGES -->
+    <template id="tpl-sites">
         <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
             <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-2">
                 <span class="material-icons text-blue-700">storefront</span>
-                Job Site Averages
+                <span data-title>Job Site Averages</span>
             </h3>
             <p class="text-xs text-slate-500 mb-4">Average of all scores (behavioral and job task) recorded at each job site.</p>
             <div id="siteTiles" class="tile-grid"></div>
         </section>
+    </template>
 
-        <!-- PAGE 4: PROGRESS, HISTORY, SIGNATURES -->
-        <section class="print-break-before print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+    <template id="tpl-progress">
+        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
             <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
                 <span class="material-icons text-blue-700">trending_up</span>
-                Progress Over Time
+                <span data-title>Progress Over Time</span>
             </h3>
-            <div id="progressChartWrap" class="h-72">
+            <div id="progressChartWrap" style="height:288px">
                 <canvas id="progressChart"></canvas>
             </div>
         </section>
+    </template>
 
+    <template id="tpl-history">
         <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-200 flex justify-between items-center">
                 <h3 class="font-bold text-slate-900 flex items-center gap-2">
                     <span class="material-icons text-slate-600">history</span>
-                    Evaluation History
+                    <span data-title>Evaluation History</span>
                 </h3>
                 <span id="historyCount" class="text-xs text-slate-500"></span>
             </div>
@@ -525,11 +558,13 @@
                 </table>
             </div>
         </section>
+    </template>
 
+    <template id="tpl-signatures">
         <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <h3 class="font-bold text-slate-900 flex items-center gap-2">
                 <span class="material-icons text-slate-600">draw</span>
-                Signatures
+                <span data-title>Signatures</span>
             </h3>
 
             <div class="sig-grid">
@@ -539,8 +574,8 @@
                 <div><div class="sig-line"></div><div class="sig-label">Date</div></div>
             </div>
         </section>
+    </template>
 
-    </div>
 </main>
 
 <script>
@@ -732,6 +767,7 @@ function startDemo() {
 
     buildStudentOptions();
     buildSiteOptions();
+    ReportBuilder.initDemo();
     document.getElementById("reportContent").classList.remove("hidden");
 
     document.getElementById("studentFilter").value = "DEMO1";
@@ -878,6 +914,9 @@ async function loadData() {
 
     buildStudentOptions();
     buildSiteOptions();
+
+    // Shared layouts (Code.gs 3.1.0+). Older backends just use the Standard report.
+    await ReportBuilder.loadLayouts();
 }
 
 function buildStudentOptions() {
@@ -1105,59 +1144,102 @@ function renderReport() {
     );
 
     const entries = filteredEntriesForStudent(studentId);
+    const allScores = entries.flatMap(scoreValues);
+
+    const ctx = {
+        studentId,
+        student,
+        entries,
+        allScores,
+        avg: average(allScores),
+        skills: behaviorRows(entries),
+        tasks: taskRows(entries)
+    };
 
     document.getElementById("selectStudentState").classList.add("hidden");
     document.getElementById("studentReport").classList.remove("hidden");
 
-    document.getElementById("reportStudentName").textContent =
-        student ? student.name : studentId;
-
-    const meta = [];
-    if (student && student.grade) meta.push("Grade " + student.grade);
-    if (student && student.active === false) meta.push("Inactive roster status");
-
-    document.getElementById("reportStudentMeta").textContent =
-        meta.join(" · ") || "Vocational skills progress";
-
-    document.getElementById("generatedDate").textContent =
-        new Date().toLocaleDateString();
-
-    document.getElementById("reportPeriod").textContent = reportPeriodText(entries);
-    document.getElementById("reportSite").textContent =
-        document.getElementById("siteFilter").value || "All job sites";
-
-    const trackerName = (!DEMO_MODE && window.VTTrackers) ? window.VTTrackers.currentName() : "";
-    document.getElementById("reportTracker").textContent = trackerName;
-    document.getElementById("reportTrackerLine").classList.toggle("hidden", !trackerName);
-
-    const allScores = entries.flatMap(scoreValues);
-    const avg = average(allScores);
-
-    const independentCount = allScores.filter(v => v >= 3).length;
-    const independentRate = allScores.length
-        ? Math.round((independentCount / allScores.length) * 100)
-        : null;
-
-    document.getElementById("summaryEntries").textContent = entries.length;
-    document.getElementById("summaryIndependent").textContent =
-        independentRate === null ? "—" : independentRate + "%";
-    document.getElementById("summaryLatest").textContent =
-        entries.length ? formatDate(entries[0].date) : "—";
-
-    renderAverageTile(entries, avg);
-
-    const skills = behaviorRows(entries);
-    const tasks = taskRows(entries);
-
-    renderStrengthsNeeds(skills, tasks);
-    skillChart = renderBarChart(skillChart, "skillChart", "skillChartWrap", "skillEmpty", skills);
-    taskChart = renderBarChart(taskChart, "taskChart", "taskChartWrap", "taskEmpty", tasks);
-    renderTiles("skillTiles", skills);
-    renderTiles("taskTiles", tasks);
-    renderSiteAverages(entries);
-    renderProgressChart(entries);
-    renderHistory(entries);
+    destroyAllCharts();
+    ReportBuilder.render(ctx);    // stamps out blocks, then calls BLOCK_FILLERS
 }
+
+/* Each built-in block's filler. Runs only when that block is in the layout. */
+const BLOCK_FILLERS = {
+    header(ctx) {
+        const student = ctx.student;
+        document.getElementById("reportStudentName").textContent =
+            student ? student.name : ctx.studentId;
+
+        const meta = [];
+        if (student && student.grade) meta.push("Grade " + student.grade);
+        if (student && student.active === false) meta.push("Inactive roster status");
+
+        document.getElementById("reportStudentMeta").textContent =
+            meta.join(" · ") || "Vocational skills progress";
+
+        document.getElementById("generatedDate").textContent =
+            new Date().toLocaleDateString();
+
+        document.getElementById("reportPeriod").textContent = reportPeriodText(ctx.entries);
+        document.getElementById("reportSite").textContent =
+            document.getElementById("siteFilter").value || "All job sites";
+
+        const trackerName = (!DEMO_MODE && window.VTTrackers) ? window.VTTrackers.currentName() : "";
+        document.getElementById("reportTracker").textContent = trackerName;
+        document.getElementById("reportTrackerLine").classList.toggle("hidden", !trackerName);
+    },
+
+    summary(ctx) {
+        const independentCount = ctx.allScores.filter(v => v >= 3).length;
+        const independentRate = ctx.allScores.length
+            ? Math.round((independentCount / ctx.allScores.length) * 100)
+            : null;
+
+        document.getElementById("summaryEntries").textContent = ctx.entries.length;
+        document.getElementById("summaryIndependent").textContent =
+            independentRate === null ? "—" : independentRate + "%";
+        document.getElementById("summaryLatest").textContent =
+            ctx.entries.length ? formatDate(ctx.entries[0].date) : "—";
+
+        renderAverageTile(ctx.entries, ctx.avg);
+    },
+
+    scale() {
+        renderScaleKey();
+    },
+
+    strengths(ctx) {
+        renderStrengthsNeeds(ctx.skills, ctx.tasks);
+    },
+
+    behavior(ctx, block) {
+        if (block.options.showChart !== false) {
+            skillChart = renderBarChart(null, "skillChart", "skillChartWrap", "skillEmpty", ctx.skills);
+        }
+        renderTiles("skillTiles", ctx.skills);
+    },
+
+    tasks(ctx, block) {
+        if (block.options.showChart !== false) {
+            taskChart = renderBarChart(null, "taskChart", "taskChartWrap", "taskEmpty", ctx.tasks);
+        }
+        renderTiles("taskTiles", ctx.tasks);
+    },
+
+    sites(ctx) {
+        renderSiteAverages(ctx.entries);
+    },
+
+    progress(ctx) {
+        renderProgressChart(ctx.entries);
+    },
+
+    history(ctx) {
+        renderHistory(ctx.entries);
+    },
+
+    signatures() { /* static */ }
+};
 
 function renderAverageTile(entries, avg) {
     const tile = document.getElementById("averageTile");
@@ -1280,7 +1362,7 @@ function barChartHeight(count) {
     return Math.max(140, count * 32 + 50);
 }
 
-function renderBarChart(existing, canvasId, wrapId, emptyId, rows) {
+function drawBarChart(existing, canvasId, wrapId, emptyId, rows) {
     if (existing) existing.destroy();
 
     const wrap = document.getElementById(wrapId);
@@ -1438,33 +1520,53 @@ function renderProgressChart(entries) {
             }
         }
     );
+    progressChart.$vtScreenHeight = 288;
+    progressChart.$vtPrintHeight = 240;
+}
+
+function renderBarChart(existing, canvasId, wrapId, emptyId, rows) {
+    const chart = drawBarChart(existing, canvasId, wrapId, emptyId, rows);
+    if (chart) {
+        chart.$vtScreenHeight = barChartHeight(rows.length);
+        chart.$vtPrintHeight = printBarHeight(rows.length);
+    }
+    return chart;
 }
 
 /* Charts are sized for the screen; resize them to the printed page width so
    they don't overflow or squash when printing (Chart.js recommended approach). */
 const PRINT_CHART_WIDTH = 640;
+let customCharts = [];          // charts drawn by custom chart blocks
 
 function printBarHeight(count) {
     return Math.max(120, count * 30 + 40);
 }
 
+function allCharts() {
+    return [skillChart, taskChart, progressChart, ...customCharts].filter(Boolean);
+}
+
+function destroyAllCharts() {
+    allCharts().forEach(chart => chart.destroy());
+    skillChart = taskChart = progressChart = null;
+    customCharts = [];
+}
+
+// Every chart records its screen and print heights when it is created
+// (chart.$vtScreenHeight / chart.$vtPrintHeight).
 function resizeChartsForPrint() {
-    [skillChart, taskChart].forEach(chart => {
-        if (!chart) return;
-        const height = printBarHeight(chart.data.labels.length);
+    allCharts().forEach(chart => {
+        const height = chart.$vtPrintHeight || 240;
         chart.canvas.parentElement.style.height = height + "px";
         chart.resize(PRINT_CHART_WIDTH, height);
     });
-    if (progressChart) progressChart.resize(PRINT_CHART_WIDTH, 240);
 }
 
 function restoreChartsAfterPrint() {
-    [skillChart, taskChart].forEach(chart => {
-        if (!chart) return;
-        chart.canvas.parentElement.style.height = barChartHeight(chart.data.labels.length) + "px";
+    allCharts().forEach(chart => {
+        if (chart.$vtScreenHeight) chart.canvas.parentElement.style.height = chart.$vtScreenHeight + "px";
         chart.resize();
     });
-    if (progressChart) progressChart.resize();
 }
 
 window.addEventListener("beforeprint", resizeChartsForPrint);
@@ -1586,8 +1688,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event.key === "Enter") verifyAccess();
     });
 
-    renderScaleKey();
-
     if (DEMO_MODE) {
         startDemo();
         return;
@@ -1597,5 +1697,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+<script src="report-builder.js"></script>
 </body>
 </html>
