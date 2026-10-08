@@ -123,6 +123,12 @@ if (VT_ENV) {
 </div>
 
 <!-- MAIN CONTENT -->
+<!-- Shown while a saved code opens Admin, so the page isn't blank -->
+<div id="adminLoading" class="hidden max-w-7xl mx-auto px-4 py-16 text-center text-slate-600" role="status">
+    <div class="inline-block w-8 h-8 border-4 border-slate-300 border-t-blue-700 rounded-full animate-spin"></div>
+    <p class="mt-3 font-semibold">Opening Admin…</p>
+</div>
+
 <main id="adminContent" class="hidden max-w-7xl mx-auto py-10 px-4">
 
     <!-- BACKEND UPDATE NOTICE (filled by checkForBackendUpdate) -->
@@ -514,35 +520,28 @@ async function startAdmin() {
         return;
     }
 
-    try {
-        const health = await readJsonWithRetry({ method: "GET", cache: "no-store" });
+    // No separate "is it online" request: the sign-in reply carries the
+    // backend version and release, and fails clearly if the tracker
+    // can't be reached.
+    backendReady = true;
 
-        if (health.status !== "online" ||
-            Number(health.apiVersion || 0) < REQUIRED_API_VERSION) {
-            document.getElementById("upgradeModal").classList.remove("hidden");
-            document.getElementById("upgradeModal").classList.add("flex");
-            return;
-        }
-
-        backendReady = true;
-        backendRelease = String(health.release || "");
-
-        document.getElementById("authModal").classList.remove("hidden");
-        document.getElementById("authModal").classList.add("flex");
-
-        if (adminCode()) {
-            verifyAdminCode(true);
-        }
-
-    } catch (err) {
-        console.error("Backend check failed:", err);
-        document.getElementById("authModal").classList.remove("hidden");
-        document.getElementById("authModal").classList.add("flex");
-
-        const authError = document.getElementById("authError");
-        authError.textContent = "Can't reach the tracker backend.";
-        authError.classList.remove("hidden");
+    if (adminCode()) {
+        document.getElementById("adminLoading").classList.remove("hidden");
+        const ok = await verifyAdminCode(true);
+        document.getElementById("adminLoading").classList.add("hidden");
+        if (ok) return;
     }
+
+    if (!document.getElementById("upgradeModal").classList.contains("hidden")) return;
+    document.getElementById("authModal").classList.remove("hidden");
+    document.getElementById("authModal").classList.add("flex");
+}
+
+function showUpgradeRequired() {
+    document.getElementById("authModal").classList.add("hidden");
+    document.getElementById("authModal").classList.remove("flex");
+    document.getElementById("upgradeModal").classList.remove("hidden");
+    document.getElementById("upgradeModal").classList.add("flex");
 }
 
 /************************************************************
@@ -712,12 +711,21 @@ async function verifyAdminCode(silent = false) {
 
     let json;
 
+    let boot = null;
+
     try {
-        json = await readJsonWithRetry({
+        // The code check and the school's data load together (both are
+        // read-only, so a retry is safe). The data is used only if the
+        // code check succeeds.
+        const send = action => readJsonWithRetry({
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ action: "verifyAdmin", code: typed })
+            body: JSON.stringify({ action, code: typed })
         });
+        [json, boot] = await Promise.all([
+            send("verifyAdmin"),
+            send("adminBootstrap").catch(() => null)
+        ]);
 
     } catch (fetchErr) {
         console.warn("Couldn't reach the spreadsheet:", fetchErr);
@@ -727,6 +735,13 @@ async function verifyAdminCode(silent = false) {
     if (json.status !== "success") {
         return showError(json.message || "Code not recognized.", json.code === "denied");
     }
+
+    if (Number(json.apiVersion || 0) < REQUIRED_API_VERSION) {
+        showUpgradeRequired();
+        return false;
+    }
+    backendRelease = String(json.release || backendRelease || "");
+    if (!boot || boot.status !== "success") boot = null;
 
     sessionStorage.setItem(vtKey("vt_admin_code"), typed);
     sessionStorage.removeItem(vtKey("vt_admin_pass"));
@@ -745,13 +760,11 @@ async function verifyAdminCode(silent = false) {
     // Keep the spreadsheet Settings tab useful without asking the admin
     // to manually type the public page links. The backend derives and
     // stores dashboard/entry/report/admin/setup/help URLs from this folder.
-    try {
-        await postAction({
-            action: "savePublicSiteSettings",
-            baseUrl: currentSiteBaseUrl()
-        });
-    } catch (linkErr) {
-        console.warn("Could not save public website links:", linkErr);
+    // Only rewrite them when they've changed, and don't make the admin wait.
+    const siteBase = currentSiteBaseUrl();
+    if (!boot || boot.publicSiteBaseUrl !== siteBase) {
+        postAction({ action: "savePublicSiteSettings", baseUrl: siteBase })
+            .catch(linkErr => console.warn("Could not save public website links:", linkErr));
     }
 
     document.getElementById("authModal").classList.add("hidden");
@@ -760,7 +773,7 @@ async function verifyAdminCode(silent = false) {
     if (input) input.value = "";
 
     checkForBackendUpdate();
-    await Promise.all([loadStudents(), loadSites()]);
+    await Promise.all([loadStudents(boot), loadSites("", boot)]);
     return true;
 }
 
@@ -1010,9 +1023,9 @@ function renderUpdateNotice(box, release, urgent) {
 /************************************************************
  * STUDENTS
  ************************************************************/
-async function loadStudents() {
+async function loadStudents(prefetched) {
     try {
-        const boot = await postAction({ action: "adminBootstrap" });
+        const boot = (prefetched && prefetched.students) ? prefetched : await postAction({ action: "adminBootstrap" });
         const tbody = document.getElementById("studentTableBody");
         tbody.innerHTML = "";
 
@@ -1226,13 +1239,13 @@ async function submitFeatureRequest() {
 /************************************************************
  * SITES + TASKS
  ************************************************************/
-async function loadSites(openSiteName = "") {
+async function loadSites(openSiteName = "", prefetched = null) {
     if (!url) return;
 
     try {
         showSitesMessage("Loading sites…");
 
-        const boot = await postAction({ action: "adminBootstrap" });
+        const boot = (prefetched && prefetched.sites) ? prefetched : await postAction({ action: "adminBootstrap" });
 
         currentAdminEmail = boot.adminEmail || currentAdminEmail || "";
         currentSupportEmail = boot.supportEmail || "";
