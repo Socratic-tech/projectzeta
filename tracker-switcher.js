@@ -17,7 +17,10 @@
  *    codes for the old tracker are set aside and only the new
  *    tracker's codes (if any) are restored. A code is never sent to
  *    a different school's backend.
- *  - Codes stay in sessionStorage as before: close the tab, lose them.
+ *  - Codes stay in sessionStorage by default: close the tab, lose them.
+ *  - "Remember me on this device" is opt-in, per tracker, and expires
+ *    after REMEMBER_DAYS. It is cleared on sign-out, on Remove, and
+ *    whenever that school's backend rejects the saved code.
  *  - Trackers are only added after the setup page or a QR link has
  *    validated the URL. This file never accepts a typed URL.
  *  - Saved names are local to this browser and always rendered as
@@ -35,6 +38,8 @@
     var OWNER_KEY = key("vt_codes_for");
     var CODE_KEYS = [key("vt_report_code"), key("vt_admin_code"), key("vt_admin_pass")];
     var MAX_NAME = 40;
+    var REMEMBER_DAYS = 30;
+    var REMEMBER_MS = REMEMBER_DAYS * 24 * 60 * 60 * 1000;
 
     function stashKey(url) {
         return key("vt_codes:") + url;
@@ -107,6 +112,105 @@
         try { CODE_KEYS.forEach(function (k) { sessionStorage.removeItem(k); }); } catch (e2) { /* ignore */ }
     }
 
+    // ---- 2b. Opt-in "remember me" per tracker ---------------------------
+    function rememberKey(url) {
+        return key("vt_remember:") + url;
+    }
+
+    function readRemembered(url) {
+        if (!url) return null;
+        try {
+            var data = JSON.parse(localStorage.getItem(rememberKey(url)) || "null");
+            if (!data || typeof data.codes !== "object" || !(data.expires > Date.now())) {
+                localStorage.removeItem(rememberKey(url));
+                return null;
+            }
+            return data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function forget(url) {
+        url = url || currentUrl;
+        if (!url) return;
+        try { localStorage.removeItem(rememberKey(url)); } catch (e) { /* ignore */ }
+    }
+
+    // A new tab (or a reopened browser) starts with no session codes.
+    // If this tracker was remembered, put its codes back for this tab.
+    try {
+        var haveCodes = CODE_KEYS.some(function (k) { return sessionStorage.getItem(k); });
+        var remembered = readRemembered(currentUrl);
+        if (!haveCodes && remembered) {
+            CODE_KEYS.forEach(function (k) {
+                if (typeof remembered.codes[k] === "string") sessionStorage.setItem(k, remembered.codes[k]);
+            });
+            sessionStorage.setItem(OWNER_KEY, currentUrl);
+        }
+    } catch (e) { /* ignore */ }
+
+    function rememberChecked() {
+        var box = document.getElementById("vtRememberMe");
+        return !!(box && box.checked);
+    }
+
+    // Pages call this right after a successful sign-in.
+    function afterSignIn() {
+        if (!currentUrl) return;
+        if (!rememberChecked()) {
+            // Signing in without the box ticked means "don't keep me signed in".
+            if (document.getElementById("vtRememberMe")) forget(currentUrl);
+            return;
+        }
+        var codes = {};
+        CODE_KEYS.forEach(function (k) {
+            var v = sessionStorage.getItem(k);
+            if (v) codes[k] = v;
+        });
+        try {
+            localStorage.setItem(rememberKey(currentUrl), JSON.stringify({
+                codes: codes,
+                expires: Date.now() + REMEMBER_MS
+            }));
+        } catch (e) { /* storage full or blocked */ }
+    }
+
+    // Keep a remembered entry in step with this tab's codes: drops codes
+    // the school rejected, keeps the ones that still work. Does nothing
+    // unless the person already chose to be remembered for this tracker.
+    function resave() {
+        if (!currentUrl || !readRemembered(currentUrl)) return;
+        var codes = {};
+        CODE_KEYS.forEach(function (k) {
+            var v = sessionStorage.getItem(k);
+            if (v) codes[k] = v;
+        });
+        if (!Object.keys(codes).length) { forget(currentUrl); return; }
+        var data = readRemembered(currentUrl);
+        try {
+            localStorage.setItem(rememberKey(currentUrl), JSON.stringify({ codes: codes, expires: data.expires }));
+        } catch (e) { /* ignore */ }
+    }
+
+    function injectRememberBox() {
+        var input = document.getElementById("adminCodeInput") || document.getElementById("reportCodeInput");
+        if (!input || document.getElementById("vtRememberMe")) return;
+
+        var wrap = el("label", {
+            "for": "vtRememberMe",
+            style: "display:flex;gap:8px;align-items:flex-start;text-align:left;font:13px/1.35 ui-sans-serif,system-ui,sans-serif;color:#334155;margin:0 0 12px;cursor:pointer"
+        });
+        var box = el("input", { type: "checkbox", id: "vtRememberMe", style: "margin-top:2px;width:16px;height:16px;flex:none" });
+        box.checked = !!readRemembered(currentUrl);
+        var text = el("span", {});
+        text.appendChild(el("strong", {}, "Keep me signed in on this device for " + REMEMBER_DAYS + " days."));
+        text.appendChild(document.createTextNode(" Only on your own computer, never a shared one."));
+        wrap.appendChild(box);
+        wrap.appendChild(text);
+        input.parentNode.insertBefore(wrap, input.nextSibling);
+    }
+
     // ---- Public helpers -------------------------------------------------
     function currentName() {
         var t = readList().filter(function (x) { return x.url === currentUrl; })[0];
@@ -123,7 +227,10 @@
     window.VTTrackers = {
         currentUrl: function () { return currentUrl; },
         currentName: currentName,
-        count: function () { return readList().length; }
+        count: function () { return readList().length; },
+        afterSignIn: afterSignIn,
+        resave: resave,
+        forget: function () { forget(currentUrl); }
     };
 
     // ---- 3. Switcher bar + manage dialog ------------------------------
@@ -192,6 +299,7 @@
                 if (!confirm("Remove \"" + label(t, i) + "\" from this browser? Its data is not affected.")) return;
                 writeList(readList().filter(function (x) { return x.url !== t.url; }));
                 try { sessionStorage.removeItem(stashKey(t.url)); } catch (e) { /* ignore */ }
+                forget(t.url);
                 dlg.remove();
                 openManage();
             });
@@ -258,9 +366,14 @@
         else document.body.prepend(bar);
     }
 
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", renderBar);
-    } else {
+    function onReady() {
         renderBar();
+        injectRememberBox();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", onReady);
+    } else {
+        onReady();
     }
 })();

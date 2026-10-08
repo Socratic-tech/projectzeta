@@ -511,10 +511,7 @@ async function startAdmin() {
     }
 
     try {
-        const res = await fetch(url, { method: "GET", cache: "no-store" });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-
-        const health = await res.json();
+        const health = await readJsonWithRetry({ method: "GET", cache: "no-store" });
 
         if (health.status !== "online" ||
             Number(health.apiVersion || 0) < REQUIRED_API_VERSION) {
@@ -568,6 +565,27 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * For READ-ONLY requests (health check, code check). Apps Script
+ * sometimes fails a request or returns an HTML error page; one quiet
+ * retry stops that from looking like a wrong code. Never use this for
+ * writes -- a retried write could add a student twice.
+ */
+async function readJsonWithRetry(options, attempts = 2) {
+    let lastErr;
+    for (let i = 0; i < attempts; i++) {
+        try {
+            const res = await fetch(url, options);
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            return await res.json();
+        } catch (err) {
+            lastErr = err;
+            if (i < attempts - 1) await delay(1500);
+        }
+    }
+    throw lastErr;
+}
+
 
 function currentSiteBaseUrl() {
     return new URL("./", window.location.href).href;
@@ -599,6 +617,7 @@ async function postAction(payload) {
 
     if (json.status !== "success") {
         if (json.code === "denied") {
+            if (window.VTTrackers) window.VTTrackers.forget();
             sessionStorage.removeItem(vtKey("vt_admin_code"));
             sessionStorage.removeItem(vtKey("vt_admin_pass"));
             alert("Your admin session is no longer valid. Please sign in again.");
@@ -665,14 +684,23 @@ async function verifyAdminCode(silent = false) {
         err.classList.add("hidden");
     }
 
-    const showError = message => {
+    // `rejected` = the school's backend said this code is wrong. Only then
+    // is a saved code thrown away; a connection hiccup keeps it.
+    const showError = (message, rejected) => {
         if (!silent) {
             btn.disabled = false;
             btn.textContent = originalLabel;
             err.classList.remove("hidden");
             err.textContent = message;
+        } else if (rejected) {
+            // Drop every saved copy of the rejected code (Reports may hold one too).
+            ["vt_admin_code", "vt_admin_pass", "vt_report_code"].forEach(name => {
+                if (sessionStorage.getItem(vtKey(name)) === typed) sessionStorage.removeItem(vtKey(name));
+            });
+            if (window.VTTrackers) window.VTTrackers.resave();
         } else {
-            sessionStorage.removeItem(vtKey("vt_admin_code"));
+            err.classList.remove("hidden");
+            err.textContent = message;
         }
         return false;
     };
@@ -680,25 +708,24 @@ async function verifyAdminCode(silent = false) {
     let json;
 
     try {
-        const res = await fetch(url, {
+        json = await readJsonWithRetry({
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({ action: "verifyAdmin", code: typed })
         });
 
-        json = await res.json();
-
     } catch (fetchErr) {
         console.warn("Couldn't reach the spreadsheet:", fetchErr);
-        return showError("Can't reach the spreadsheet. Check your connection.");
+        return showError("Can't reach the spreadsheet right now. Check your connection and try again.", false);
     }
 
     if (json.status !== "success") {
-        return showError(json.message || "Code not recognized.");
+        return showError(json.message || "Code not recognized.", json.code === "denied");
     }
 
     sessionStorage.setItem(vtKey("vt_admin_code"), typed);
     sessionStorage.removeItem(vtKey("vt_admin_pass"));
+    if (!silent && window.VTTrackers) window.VTTrackers.afterSignIn();
 
     entryToken = json.entryToken || "";
     currentAdminEmail = json.adminEmail || "";
@@ -732,6 +759,7 @@ async function verifyAdminCode(silent = false) {
 }
 
 function signOutAdmin() {
+    if (window.VTTrackers) window.VTTrackers.forget();
     sessionStorage.removeItem(vtKey("vt_admin_code"));
     sessionStorage.removeItem(vtKey("vt_admin_pass"));
     location.reload();

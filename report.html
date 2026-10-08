@@ -584,20 +584,50 @@ function escapeHTML(value) {
     }[c]));
 }
 
-function candidateCode() {
-    return sessionStorage.getItem(vtKey("vt_report_code")) ||
-           sessionStorage.getItem(vtKey("vt_admin_code")) ||
-           "";
+function savedCodes() {
+    const codes = [
+        sessionStorage.getItem(vtKey("vt_report_code")),
+        sessionStorage.getItem(vtKey("vt_admin_code"))
+    ].filter(Boolean);
+    return [...new Set(codes)];
+}
+
+// Remove a saved code ONLY after the backend has explicitly rejected it.
+function dropRejectedCode(code) {
+    ["vt_report_code", "vt_admin_code"].forEach(name => {
+        if (sessionStorage.getItem(vtKey(name)) === code) {
+            sessionStorage.removeItem(vtKey(name));
+        }
+    });
+}
+
+// Apps Script sometimes fails a request outright or answers with an HTML
+// error page (cold starts, brief Google outages). Every call this page
+// makes is a read, so one quiet retry is safe.
+async function fetchJson(options, attempts = 2) {
+    let lastErr;
+    for (let i = 0; i < attempts; i++) {
+        try {
+            const res = await fetch(API_URL, options);
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            return await res.json();
+        } catch (err) {
+            lastErr = err;
+            if (i < attempts - 1) await new Promise(r => setTimeout(r, 1500));
+        }
+    }
+    const e = new Error("Can't reach the tracker right now. Check your connection and try again.");
+    e.network = true;
+    e.cause = lastErr;
+    throw e;
 }
 
 async function post(payload) {
-    const res = await fetch(API_URL, {
+    const json = await fetchJson({
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
     });
-
-    const json = await res.json();
 
     if (Number(json.apiVersion || 0) < REQUIRED_API_VERSION) {
         showUpgrade();
@@ -715,10 +745,7 @@ async function startReports() {
     }
 
     try {
-        const res = await fetch(API_URL, { method: "GET", cache: "no-store" });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-
-        const health = await res.json();
+        const health = await fetchJson({ method: "GET", cache: "no-store" });
 
         if (health.status !== "online" ||
             Number(health.apiVersion || 0) < REQUIRED_API_VERSION) {
@@ -726,10 +753,10 @@ async function startReports() {
             return;
         }
 
-        const existing = candidateCode();
-
-        if (existing) {
-            reportCodeValue = existing;
+        // Try every code saved in this tab (Reports code, then admin code)
+        // before asking. A stale viewer code must not hide a valid admin code.
+        for (const code of savedCodes()) {
+            reportCodeValue = code;
             const success = await verifyAccess(true);
             if (success) return;
         }
@@ -769,7 +796,9 @@ async function verifyAccess(silent = false) {
         });
 
         if (verify.status !== "success") {
-            throw new Error(verify.message || "Code not recognized.");
+            const rejected = new Error(verify.message || "Code not recognized.");
+            rejected.denied = true;
+            throw rejected;
         }
 
         reportCodeValue = typed;
@@ -779,6 +808,11 @@ async function verifyAccess(silent = false) {
 
         if (viewerRole === "admin") {
             sessionStorage.setItem(vtKey("vt_admin_code"), typed);
+        }
+
+        if (window.VTTrackers) {
+            if (silent) window.VTTrackers.resave();
+            else window.VTTrackers.afterSignIn();
         }
 
         document.getElementById("viewerName").textContent = verify.viewer || "Viewer";
@@ -803,7 +837,16 @@ async function verifyAccess(silent = false) {
         console.error(error);
 
         if (silent) {
-            sessionStorage.removeItem(vtKey("vt_report_code"));
+            if (error.denied) {
+                // The school says this code is no longer valid: drop it for good.
+                dropRejectedCode(typed);
+                if (window.VTTrackers) window.VTTrackers.resave();
+            } else if (error.network) {
+                // Keep the saved code; the person can just try again.
+                const el = document.getElementById("authError");
+                el.textContent = error.message;
+                el.classList.remove("hidden");
+            }
             return false;
         }
 
@@ -1530,6 +1573,7 @@ function clearFilters() {
 }
 
 function signOut() {
+    if (window.VTTrackers) window.VTTrackers.forget();
     sessionStorage.removeItem(vtKey("vt_report_code"));
     sessionStorage.removeItem(vtKey("vt_admin_code"));
     location.reload();
