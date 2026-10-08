@@ -89,6 +89,11 @@ if (VT_ENV) {
 </div>
 
 <!-- MAIN FORM -->
+<div id="entryLoading" class="hidden max-w-xl mx-auto mt-16 px-6 text-center text-slate-600" role="status">
+    <div class="inline-block w-8 h-8 border-4 border-slate-300 border-t-blue-700 rounded-full animate-spin"></div>
+    <p class="mt-3 font-semibold">Loading the entry form…</p>
+</div>
+
 <div id="mainForm" class="hidden max-w-3xl mx-auto px-4 py-6">
 
     <!-- DB source badge -->
@@ -315,41 +320,32 @@ function showLinkExpired(msg, title) {
     document.getElementById("mainForm").classList.add("hidden");
 }
 
-async function requireV3Backend() {
-    try {
-        const res = await fetch(API_URL, { method: "GET", cache: "no-store" });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-
-        const json = await res.json();
-
-        if (json.status !== "online") {
-            throw new Error("Unexpected backend response");
+/**
+ * Students, sites and tasks for this job site. Read-only, so one quiet
+ * retry is safe (job-site phones often have weak signal). Never used for
+ * saving an evaluation: a retried save could record it twice.
+ */
+async function fetchEntryData() {
+    let lastErr;
+    for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+            return await postAction("entryBootstrap", { token: ENTRY_TOKEN });
+        } catch (err) {
+            lastErr = err;
+            if (attempt === 0) await new Promise(r => setTimeout(r, 1500));
         }
-
-        if (Number(json.apiVersion || 0) < REQUIRED_API_VERSION) {
-            showLinkExpired(
-                "This school's Vocational Tracker needs a security update before job-site entries can be accepted. Please contact your program coordinator.",
-                "System Update Required"
-            );
-            return false;
-        }
-
-        return true;
-
-    } catch (err) {
-        console.error("Backend version check failed:", err);
-        showLinkExpired(
-            "The entry system could not connect right now. Check your internet connection or contact your program coordinator.",
-            "Entry System Unavailable"
-        );
-        return false;
     }
+    throw lastErr;
+}
+
+function setEntryLoading(on) {
+    document.getElementById("entryLoading").classList.toggle("hidden", !on);
 }
 
 /************************************************************
  * INIT
  ************************************************************/
-window.onload = async () => {
+async function startEntry() {
     API_URL = resolveApiUrl();
 
     if (!API_URL) {
@@ -359,16 +355,44 @@ window.onload = async () => {
         );
     }
 
-    if (!(await requireV3Backend())) {
-        return;
-    }
-
     ENTRY_TOKEN = resolveEntryToken();
 
     if (!ENTRY_TOKEN) {
         return showLinkExpired(
             "This device does not have a valid entry code. Scan the current job-site QR code provided by your program coordinator.",
             "Secure Entry Link Required"
+        );
+    }
+
+    // One request: it checks the QR link, reports the backend version,
+    // and returns the students, sites and tasks.
+    setEntryLoading(true);
+    let boot;
+    try {
+        boot = await fetchEntryData();
+    } catch (err) {
+        console.error("Entry data load failed:", err);
+        setEntryLoading(false);
+        return showLinkExpired(
+            "The entry system could not connect right now. Check your internet connection or contact your program coordinator.",
+            "Entry System Unavailable"
+        );
+    }
+    setEntryLoading(false);
+
+    if (Number(boot.apiVersion || 0) < REQUIRED_API_VERSION) {
+        return showLinkExpired(
+            "This school's Vocational Tracker needs a security update before job-site entries can be accepted. Please contact your program coordinator.",
+            "System Update Required"
+        );
+    }
+
+    if (boot.status !== "success") {
+        localStorage.removeItem(vtKey("vt_entry_token"));
+        ENTRY_TOKEN = null;
+        return showLinkExpired(
+            boot.message || "This entry link is no longer valid. Scan the current job-site QR code.",
+            "Entry Link Expired"
         );
     }
 
@@ -386,8 +410,14 @@ window.onload = async () => {
     }
 
     renderSkills();
-    loadDropdowns();
-};
+    fillDropdowns(boot);
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startEntry);
+} else {
+    startEntry();
+}
 
 /************************************************************
  * SHARED SCORE GROUP RENDERER
@@ -496,53 +526,36 @@ function updateButtons(key) {
 /************************************************************
  * DROPDOWNS
  ************************************************************/
-async function loadDropdowns() {
-    try {
-        const boot = await postAction("entryBootstrap", { token: ENTRY_TOKEN });
-
-        if (boot.status !== "success") {
-            localStorage.removeItem(vtKey("vt_entry_token"));
-            ENTRY_TOKEN = null;
-            return showLinkExpired(
-                boot.message || "This entry link is no longer valid. Scan the current job-site QR code.",
-                "Entry Link Expired"
-            );
-        }
-
-        const sJson = { data: boot.students };
-        const jJson = { data: boot.sites };
-        const tJson = { data: boot.tasks };
-
-        // Students
-        const sSel = document.getElementById("studentSelect");
-        sSel.innerHTML = `<option value="">Select Student…</option>`;
-        (sJson.data || [])
-            .filter(s => s.active !== false && String(s.active).toLowerCase() !== "false")
-            .forEach(s => {
-                const option = document.createElement("option");
-                option.value = s.student_id;
-                option.textContent = s.name;
-                sSel.appendChild(option);
-            });
-
-        // Sites
-        const siteSel = document.getElementById("siteSelect");
-        siteSel.innerHTML = `<option value="">Select Site…</option>`;
-        jJson.data.forEach(site => {
-            siteSel.innerHTML += `<option value="${site}">${site}</option>`;
+function fillDropdowns(boot) {
+    // Students
+    const sSel = document.getElementById("studentSelect");
+    sSel.innerHTML = `<option value="">Select Student…</option>`;
+    (boot.students || [])
+        .filter(s => s.active !== false && String(s.active).toLowerCase() !== "false")
+        .forEach(s => {
+            const option = document.createElement("option");
+            option.value = s.student_id;
+            option.textContent = s.name;
+            sSel.appendChild(option);
         });
 
-        // Task lookup by site
-        allTasks = {};
-        (tJson.data || []).forEach(t => {
-            if (!allTasks[t.site_name]) allTasks[t.site_name] = [];
-            allTasks[t.site_name].push(t.task_name);
-        });
+    // Sites -- built as elements so names with quotes or < > stay intact
+    // (pasting them into HTML cut off names like Joe's "Diner").
+    const siteSel = document.getElementById("siteSelect");
+    siteSel.innerHTML = `<option value="">Select Site…</option>`;
+    (boot.sites || []).forEach(site => {
+        const option = document.createElement("option");
+        option.value = String(site);
+        option.textContent = String(site);
+        siteSel.appendChild(option);
+    });
 
-    } catch (err) {
-        console.error("Dropdown load error:", err);
-        alert("Connected but failed to load data. Check the script URL.");
-    }
+    // Task lookup by site
+    allTasks = {};
+    (boot.tasks || []).forEach(t => {
+        if (!allTasks[t.site_name]) allTasks[t.site_name] = [];
+        allTasks[t.site_name].push(t.task_name);
+    });
 }
 
 function handleSiteChange() {

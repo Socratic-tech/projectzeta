@@ -521,7 +521,8 @@ function setStatus(type, message) {
     }
 }
 
-let BACKEND_COMPATIBLE = false;
+// true = confirmed OK, false = confirmed needs upgrade / not set up, null = not known yet
+let BACKEND_COMPATIBLE = null;
 
 function openUpgradeSteps() {
     const modal = document.getElementById("upgradeStepsModal");
@@ -538,7 +539,8 @@ function closeUpgradeSteps() {
 }
 
 function openEntry(event) {
-    if (!BACKEND_COMPATIBLE) {
+    // Block only on a confirmed problem, not while the check is still running.
+    if (!API_URL || BACKEND_COMPATIBLE === false) {
         event.preventDefault();
 
         if (API_URL) {
@@ -590,6 +592,12 @@ async function checkConnection() {
         return;
     }
 
+    // The buttons work right away. Each page checks the tracker itself and
+    // explains any problem, so there's no need to wait for this check. Only
+    // a tracker that definitely needs the upgrade disables them below.
+    setCardsEnabled(true);
+    setStatus("checking", "Checking…");
+
     try {
         const res = await fetch(API_URL, { method: "GET", cache: "no-store" });
         if (!res.ok) throw new Error("HTTP " + res.status);
@@ -614,9 +622,9 @@ async function checkConnection() {
 
     } catch (err) {
         console.error(err);
-        BACKEND_COMPATIBLE = false;
-        setCardsEnabled(false);
-        setStatus("offline", "Offline");
+        // Often just a slow first request; leave the buttons usable.
+        BACKEND_COMPATIBLE = null;
+        setStatus("offline", "Can't reach tracker");
     }
 }
 
