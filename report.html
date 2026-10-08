@@ -460,6 +460,16 @@
             <div id="taskTiles" class="tile-grid mt-5"></div>
         </section>
 
+        <!-- JOB SITE AVERAGES -->
+        <section class="print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <span class="material-icons text-blue-700">storefront</span>
+                Job Site Averages
+            </h3>
+            <p class="text-xs text-slate-500 mb-4">Average of all scores (behavioral and job task) recorded at each job site.</p>
+            <div id="siteTiles" class="tile-grid"></div>
+        </section>
+
         <!-- PAGE 4: PROGRESS, HISTORY, SIGNATURES -->
         <section class="print-break-before print-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
             <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
@@ -1101,6 +1111,7 @@ function renderReport() {
     taskChart = renderBarChart(taskChart, "taskChart", "taskChartWrap", "taskEmpty", tasks);
     renderTiles("skillTiles", skills);
     renderTiles("taskTiles", tasks);
+    renderSiteAverages(entries);
     renderProgressChart(entries);
     renderHistory(entries);
 }
@@ -1287,6 +1298,52 @@ function renderBarChart(existing, canvasId, wrapId, emptyId, rows) {
             }
         }
     });
+}
+
+function siteRows(entries) {
+    const bySite = new Map();
+    entries.forEach(entry => {
+        const site = String(entry.job_site || "").trim() || "No site recorded";
+        if (!bySite.has(site)) bySite.set(site, []);
+        bySite.get(site).push(entry);
+    });
+
+    return [...bySite.entries()]
+        .map(([name, list]) => ({
+            name,
+            visits: list.length,
+            average: average(list.flatMap(scoreValues)),
+            behavior: average(valuesWhere(list, k => !k.startsWith("task:"))),
+            tasks: average(valuesWhere(list, k => k.startsWith("task:")))
+        }))
+        .filter(r => r.average !== null)
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true }));
+}
+
+function renderSiteAverages(entries) {
+    const rows = siteRows(entries);
+    const container = document.getElementById("siteTiles");
+
+    if (!rows.length) {
+        container.innerHTML = '<p class="text-slate-500 text-sm">No scored evaluations for this selection.</p>';
+        return;
+    }
+
+    container.innerHTML = rows.map(row => {
+        const b = bandFor(row.average);
+        const split = [];
+        if (row.behavior !== null) split.push("Behavior " + row.behavior.toFixed(2));
+        if (row.tasks !== null) split.push("Tasks " + row.tasks.toFixed(2));
+        return `
+            <div class="score-tile" style="background:${b.bg};border-color:${b.border}">
+                <div class="score-tile-name">${escapeHTML(row.name)}</div>
+                <div class="score-tile-foot">
+                    <span class="score-tile-value" style="color:${b.text}">${row.average.toFixed(2)}</span>
+                    <span class="score-tile-count">${row.visits} evaluation${row.visits === 1 ? "" : "s"}</span>
+                </div>
+                <div class="score-tile-count">${split.join("  |  ")}</div>
+            </div>`;
+    }).join("");
 }
 
 function renderTiles(containerId, rows) {
