@@ -1047,15 +1047,15 @@ async function loadStudents(prefetched) {
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex justify-end flex-wrap gap-2">
-                            <button onclick="editStudent('${s.student_id}')"
+                            <button data-student-action="edit" data-student-id="${escapeHTML(s.student_id)}"
                                     class="text-xs font-bold text-blue-700 hover:underline">
                                 Edit
                             </button>
-                            <button onclick="setStudentActiveAdmin('${s.student_id}', ${!active})"
+                            <button data-student-action="toggle" data-student-id="${escapeHTML(s.student_id)}" data-active="${!active}"
                                     class="text-xs font-bold ${active ? "text-amber-700" : "text-green-700"} hover:underline">
                                 ${active ? "Deactivate" : "Activate"}
                             </button>
-                            <button onclick="deleteStudentAdmin('${s.student_id}')"
+                            <button data-student-action="delete" data-student-id="${escapeHTML(s.student_id)}"
                                     class="text-xs font-bold text-red-700 hover:underline">
                                 Delete
                             </button>
@@ -1077,6 +1077,18 @@ async function loadStudents(prefetched) {
         console.error("Error loading students:", err);
     }
 }
+
+// Row buttons carry the id in data attributes rather than inline onclick
+// JS: an id containing a quote would otherwise break out of the handler.
+document.getElementById("studentTableBody").addEventListener("click", event => {
+    const button = event.target.closest("button[data-student-action]");
+    if (!button) return;
+    const studentId = button.dataset.studentId;
+    const action = button.dataset.studentAction;
+    if (action === "edit") editStudent(studentId);
+    else if (action === "toggle") setStudentActiveAdmin(studentId, button.dataset.active === "true");
+    else if (action === "delete") deleteStudentAdmin(studentId);
+});
 
 async function editStudent(studentId) {
     const student = currentStudents.find(s => String(s.student_id) === String(studentId));
