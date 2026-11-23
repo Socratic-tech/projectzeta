@@ -256,8 +256,9 @@ const ReportBuilder = (function () {
                 Object.entries(entry.scores || {}).forEach(([k, v]) => {
                     const isTask = k.startsWith("task:");
                     if ((dim === "task") !== isTask) return;
-                    const name = isTask ? k.slice(5) : k;
-                    const order = isTask ? name.toLowerCase() : (CORE_SKILLS.indexOf(name) + 1 || 999);
+                    const stored = isTask ? k.slice(5) : k;
+                    const name = isTask ? stored : (typeof skillLabel === "function" ? skillLabel(stored) : stored);
+                    const order = isTask ? name.toLowerCase() : (CORE_SKILLS.indexOf(stored) + 1 || 999);
                     add(k, name, order, t, numbers([v]));
                 });
                 return;
@@ -887,7 +888,7 @@ const ReportBuilder = (function () {
             ["overall", "Overall average", "Averages"],
             ["behavior", "Behavioral skills average", "Averages"],
             ["tasks", "Job tasks average", "Averages"],
-            ...items.skills.map(n => ["skill:" + n, n, "One behavioral skill"]),
+            ...items.skills.map(n => ["skill:" + n, (typeof skillLabel === "function" ? skillLabel(n) : n), "One behavioral skill"]),
             ...items.tasks.map(n => ["task:" + n, n, "One job task"])
         ];
     }

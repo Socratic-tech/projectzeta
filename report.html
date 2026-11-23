@@ -655,6 +655,16 @@ const CORE_SKILLS = [
 const SKILL_GROUPS = VT_SKILL_GROUPS;
 const SKILL_ORDER = SKILL_GROUPS.flatMap(g => g.skills);
 
+/* Name shown to people. New rubric: the designer's rubric row name(s) (Appearance, Task Initiation,
+   Respect & Conversation Skills ...). Original rubric, tasks and anything unknown: the stored name.
+   Display only; scores are always read and saved under the stored name. */
+function skillLabel(name) {
+    if (rubricTab === "original") return name;
+    const r = VT_SKILL_RUBRICS[name];
+    if (!r) return name;
+    return (Array.isArray(r) ? r : [r]).map(row => row.title).join(" & ");
+}
+
 function skillGroupTitle(name) {
     const g = SKILL_GROUPS.find(group => group.skills.includes(name));
     return g ? g.title : "Other";
@@ -1167,7 +1177,7 @@ function scoreTile(row) {
     const b = bandFor(row.average);
     return `
         <div class="score-tile" style="background:${b.bg};border-color:${b.border}">
-            <div class="score-tile-name">${escapeHTML(row.name)}</div>
+            <div class="score-tile-name">${escapeHTML(row.skill ? skillLabel(row.name) : row.name)}</div>
             <div class="score-tile-foot">
                 <span class="score-tile-value" style="color:${b.text}">${row.average.toFixed(2)}</span>
                 <span class="score-tile-count">${row.count} score${row.count === 1 ? "" : "s"}</span>
@@ -1215,9 +1225,10 @@ function renderRubricGuide(isNew) {
                     if (!r) return "";
                     const rows = Array.isArray(r) ? r : [r];
                     return `<div class="guide-skill">
-                        <div class="font-bold text-slate-900 text-sm mt-2">${escapeHTML(skill)}</div>
+                        <div class="font-bold text-slate-900 text-sm mt-2">${escapeHTML(skillLabel(skill))}</div>
+                        ${skillLabel(skill) !== skill ? `<div class="text-[11px] text-slate-500">${escapeHTML(skill)}</div>` : ""}
                         ${rows.map(row => `
-                            ${rows.length > 1 || row.title !== skill ? `<div class="text-xs font-bold text-slate-600 mt-1">${escapeHTML(row.title)}</div>` : ""}
+                            ${rows.length > 1 ? `<div class="text-xs font-bold text-slate-600 mt-1">${escapeHTML(row.title)}</div>` : ""}
                             ${VT_LEVELS.map(L => `
                                 <div class="guide-level">
                                     <div class="font-bold" style="color:${levelColor[L.n]}">${L.n} · ${escapeHTML(L.name)}</div>
@@ -1241,7 +1252,7 @@ function behaviorRows(entries) {
             if (Number.isFinite(value)) values.push(value);
         });
         const avg = average(values);
-        return avg === null ? null : { name: skill, average: avg, count: values.length };
+        return avg === null ? null : { name: skill, average: avg, count: values.length, skill: true };
     }).filter(Boolean).sort((a, b) => {
         // Same order as the entry form's groups (a skill outside the groups goes last).
         const ia = SKILL_ORDER.indexOf(a.name), ib = SKILL_ORDER.indexOf(b.name);
@@ -1472,7 +1483,7 @@ function snList(title, icon, iconColor, rows) {
             <ul class="space-y-2">
                 ${rows.map(r => `
                     <li class="flex justify-between items-start gap-3 text-sm">
-                        <span class="text-slate-800">${escapeHTML(r.name)}${SKILL_ORDER.includes(r.name)
+                        <span class="text-slate-800">${escapeHTML(r.skill ? skillLabel(r.name) : r.name)}${SKILL_ORDER.includes(r.name)
                             ? `<span class="block text-[11px] font-semibold text-slate-500">${escapeHTML(skillGroupTitle(r.name))}</span>` : ""}</span>
                         ${scorePill(r.average)}
                     </li>`).join("")}
@@ -1566,7 +1577,7 @@ function drawBarChart(existing, canvasId, wrapId, emptyId, rows) {
     return new Chart(document.getElementById(canvasId), {
         type: "bar",
         data: {
-            labels: rows.map(r => r.header ? [r.name.toUpperCase()] : wrapLabel(r.name)),
+            labels: rows.map(r => r.header ? [r.name.toUpperCase()] : wrapLabel(r.skill ? skillLabel(r.name) : r.name)),
             datasets: [{
                 label: "Average",
                 data: rows.map(r => r.header ? null : round2(r.average)),
@@ -1601,7 +1612,7 @@ function drawBarChart(existing, canvasId, wrapId, emptyId, rows) {
                 tooltip: {
                     filter: item => !rows[item.dataIndex].header,
                     callbacks: {
-                        title: items => rows[items[0].dataIndex].name,
+                        title: items => { const r = rows[items[0].dataIndex]; return r.skill ? skillLabel(r.name) : r.name; },
                         label: item => {
                             const r = rows[item.dataIndex];
                             return `${r.average.toFixed(2)} / 4 (${bandFor(r.average).label})`;
