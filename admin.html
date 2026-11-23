@@ -40,7 +40,10 @@ if (VT_ENV) {
     });
 }
 </script>
+    <script src="demo-backend.js"></script>
+    <script src="complexity.js"></script>
     <script src="tracker-switcher.js"></script>
+<script src="accessibility.js"></script>
 </head>
 
 <body class="bg-slate-100 font-sans">
@@ -351,33 +354,36 @@ if (VT_ENV) {
 
                 <div class="space-y-2 text-sm">
                     <div class="rounded-lg border border-red-200 bg-red-50 p-3">
-                        <strong class="text-red-800">0 · Not at All</strong>
-                        <div class="text-slate-700 mt-1">Student did not perform the skill.</div>
+                        <strong class="text-red-800">0 · Incomplete</strong>
+                        <div class="text-slate-700 mt-1">Does not perform the skill or requires full assistance.</div>
                     </div>
 
                     <div class="rounded-lg border border-orange-200 bg-orange-50 p-3">
-                        <strong class="text-orange-800">1 · Direct Prompting</strong>
-                        <div class="text-slate-700 mt-1">Required direct or step-by-step prompting.</div>
+                        <strong class="text-orange-800">1 · Direct Support</strong>
+                        <div class="text-slate-700 mt-1">Requires directives, modeling, or frequent oversight.</div>
                     </div>
 
                     <div class="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                        <strong class="text-amber-800">2 · Indirect Prompting</strong>
-                        <div class="text-slate-700 mt-1">Needed a reminder, cue, or gesture.</div>
+                        <strong class="text-amber-800">2 · Minimal Support</strong>
+                        <div class="text-slate-700 mt-1">Requires cues, reminders, or occasional oversight.</div>
                     </div>
 
                     <div class="rounded-lg border border-blue-200 bg-blue-50 p-3">
                         <strong class="text-blue-800">3 · Independent</strong>
-                        <div class="text-slate-700 mt-1">Performed without prompting.</div>
+                        <div class="text-slate-700 mt-1">Performs the skill without support.</div>
                     </div>
 
                     <div class="rounded-lg border border-green-200 bg-green-50 p-3">
-                        <strong class="text-green-800">4 · Helping / Teaching</strong>
-                        <div class="text-slate-700 mt-1">Performed independently and helped or modeled for others.</div>
+                        <strong class="text-green-800">4 · Advanced</strong>
+                        <div class="text-slate-700 mt-1">Performs the skill beyond expectation.</div>
                     </div>
                 </div>
 
                 <p class="text-xs text-slate-500 mt-4">
                     Job tasks may be marked N/A when the task did not occur during the shift.
+                    <br><br>
+                    This is the new rubric, used for entries dated November 23, 2026 and later. Earlier entries stay on the original scale and
+                    appear under the Original rubric tab in Reports.
                 </p>
             </div>
         </details>
@@ -1285,6 +1291,11 @@ async function loadSites(openSiteName = "", prefetched = null) {
             .sort((a, b) => a.localeCompare(b));
 
         allTasks = Object.create(null);
+        siteComplexity = Object.create(null);
+        Object.keys(boot.siteComplexity || {}).forEach(name => {
+            const rating = VTComplexity.normalize(boot.siteComplexity[name]);
+            if (rating) siteComplexity[name] = rating;
+        });
 
         (taskJson.data || []).forEach(t => {
             const siteName = asText(t.site_name);
@@ -1361,7 +1372,28 @@ function createSiteCard(siteName, tasks, startOpen = false) {
         deleteSite(siteName);
     });
 
+    const rateButton = document.createElement("button");
+    rateButton.type = "button";
+    rateButton.className = "inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-bold ml-2";
+    function paintRate() {
+        const rating = siteComplexity[siteName];
+        if (rating) {
+            rateButton.className = "inline-flex items-center rounded-full px-0.5 py-0.5 text-[11px] font-bold ml-2";
+            rateButton.innerHTML = VTComplexity.badge(rating);
+        } else {
+            rateButton.className = "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ml-2 border border-dashed border-slate-300 text-slate-500 hover:bg-white";
+            rateButton.textContent = "Rate complexity";
+        }
+    }
+    paintRate();
+    rateButton.title = "Rate this job site's complexity";
+    rateButton.addEventListener("click", event => {
+        event.stopPropagation();
+        openComplexityEditor(siteName, paintRate);
+    });
+
     header.appendChild(toggleButton);
+    header.appendChild(rateButton);
     header.appendChild(deleteButton);
 
     const panel = document.createElement("div");
@@ -1452,6 +1484,144 @@ function renderTaskList(taskList, siteName, countLabel) {
         li.appendChild(deleteButton);
 
         taskList.appendChild(li);
+    });
+}
+
+let siteComplexity = Object.create(null);
+
+/************************************************************
+ * JOB COMPLEXITY EDITOR
+ * One rubric per job site: a 0-4 rating on each of five rows. The site's
+ * overall level is their average. Saved with the site.
+ ************************************************************/
+function openComplexityEditor(siteName, onSaved) {
+    const existing = siteComplexity[siteName] || {};
+    const chosen = Object.assign({}, existing);
+
+    const overlay = document.createElement("div");
+    overlay.className = "fixed inset-0 z-50 bg-black/50 flex items-start justify-center overflow-y-auto p-4";
+
+    const box = document.createElement("div");
+    box.className = "bg-white rounded-2xl shadow-xl w-full max-w-5xl my-4";
+
+    const head = document.createElement("div");
+    head.className = "px-5 py-4 border-b flex items-start justify-between gap-3";
+    head.innerHTML = `
+        <div>
+            <h3 class="font-bold text-slate-900">Job Complexity</h3>
+            <p class="text-xs text-slate-500 mt-0.5">${VTComplexity.esc(siteName)}.
+            Pick the description that best fits this job site on each row. The skills combine into one complexity level for the site.</p>
+        </div>`;
+    const summary = document.createElement("div");
+    summary.className = "text-sm font-semibold shrink-0";
+    head.appendChild(summary);
+
+    const body = document.createElement("div");
+    body.className = "px-5 py-4 overflow-x-auto";
+
+    const table = document.createElement("table");
+    table.className = "w-full text-xs border-separate border-spacing-1";
+    let thead = '<thead><tr><th class="w-28"></th>';
+    VTComplexity.LEVELS.forEach(L => {
+        thead += `<th class="rounded p-2 text-center" style="background:${L.bg};color:${L.fg}">${L.n} – ${L.name}</th>`;
+    });
+    table.innerHTML = thead + "</tr></thead>";
+    const tbody = document.createElement("tbody");
+
+    const cells = {};
+    function refresh() {
+        VTComplexity.ROWS.forEach(row => {
+            VTComplexity.LEVELS.forEach(L => {
+                const cell = cells[row.key + L.n];
+                const on = chosen[row.key] === L.n;
+                cell.style.outline = on ? "3px solid #1e293b" : "none";
+                cell.style.opacity = (chosen[row.key] === undefined || on) ? "1" : "0.55";
+            });
+        });
+        const lvl = VTComplexity.overall(chosen);
+        summary.innerHTML = lvl === null
+            ? '<span class="text-slate-400">Not rated yet</span>'
+            : "Overall: " + VTComplexity.badge(chosen);
+    }
+
+    VTComplexity.ROWS.forEach(row => {
+        const tr = document.createElement("tr");
+        const th = document.createElement("th");
+        th.className = "bg-slate-900 text-white rounded p-2 text-left align-middle";
+        th.textContent = row.label;
+        tr.appendChild(th);
+        row.levels.forEach((text, i) => {
+            const L = VTComplexity.LEVELS[i];
+            const td = document.createElement("td");
+            td.className = "align-top";
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "w-full h-full text-left rounded p-2 leading-snug";
+            btn.style.background = L.bg;
+            btn.style.color = "#1e293b";
+            btn.textContent = text;
+            btn.addEventListener("click", () => {
+                if (chosen[row.key] === i) delete chosen[row.key]; else chosen[row.key] = i;
+                refresh();
+            });
+            cells[row.key + i] = btn;
+            td.appendChild(btn);
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    body.appendChild(table);
+
+    const foot = document.createElement("div");
+    foot.className = "px-5 py-3 border-t flex items-center justify-between gap-3";
+    const hint = document.createElement("span");
+    hint.className = "text-xs text-slate-500";
+    hint.textContent = "Click a selected box again to clear that row. The overall level is the average of the rows you rate.";
+    const buttons = document.createElement("div");
+    buttons.className = "flex gap-2";
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.className = "px-4 py-2 rounded-lg border text-sm font-semibold";
+    cancel.textContent = "Cancel";
+    const save = document.createElement("button");
+    save.type = "button";
+    save.className = "px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold";
+    save.textContent = "Save rating";
+    buttons.appendChild(cancel);
+    buttons.appendChild(save);
+    foot.appendChild(hint);
+    foot.appendChild(buttons);
+
+    box.appendChild(head);
+    box.appendChild(body);
+    box.appendChild(foot);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    refresh();
+
+    const close = () => overlay.remove();
+    cancel.addEventListener("click", close);
+    overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+
+    save.addEventListener("click", async () => {
+        save.disabled = true;
+        save.textContent = "Saving…";
+        try {
+            await postAction({
+                action: "setSiteComplexity",
+                site_name: siteName,
+                complexity: chosen
+            });
+            if (Object.keys(chosen).length) siteComplexity[siteName] = chosen; else delete siteComplexity[siteName];
+            if (onSaved) onSaved();
+            close();
+        } catch (err) {
+            save.disabled = false;
+            save.textContent = "Save rating";
+            alert("Could not save the rating: " + err.message +
+                "\n\nIf this says the action is unknown, this school's Code.gs needs the job-complexity update.");
+        }
     });
 }
 

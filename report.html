@@ -163,7 +163,10 @@
         return VT_ENV ? VT_ENV + ":" + name : name;
     }
     </script>
+    <script src="demo-backend.js"></script>
+    <script src="complexity.js"></script>
     <script src="tracker-switcher.js"></script>
+<script src="accessibility.js"></script>
 </head>
 
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen">
@@ -302,6 +305,18 @@
 
     <!-- FILTERS -->
     <section class="no-print bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
+        <!-- Rubric tabs: split entries at RUBRIC_CUTOFF (see script) -->
+        <div id="rubricTabs" role="tablist" aria-label="Scoring rubric version" class="flex flex-wrap gap-2 mb-4">
+            <button type="button" role="tab" data-tab="original" onclick="setRubricTab('original')"
+                    class="rubric-tab px-4 py-2 rounded-lg border text-sm font-bold text-left">
+                Original rubric <span class="block text-xs font-normal rubric-tab-sub" id="rubricTabSubOriginal"></span>
+            </button>
+            <button type="button" role="tab" data-tab="new" onclick="setRubricTab('new')"
+                    class="rubric-tab px-4 py-2 rounded-lg border text-sm font-bold text-left">
+                New rubric <span class="block text-xs font-normal rubric-tab-sub" id="rubricTabSubNew"></span>
+            </button>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
             <div class="md:col-span-2">
@@ -504,6 +519,7 @@
             </h3>
             <p class="text-xs text-slate-500 mb-4">Average of all scores (behavioral and job task) recorded at each job site.</p>
             <div id="siteTiles" class="tile-grid"></div>
+            <div id="siteComplexity" class="mt-5"></div>
         </section>
     </template>
 
@@ -592,6 +608,7 @@ let viewerRole = "viewer";
 let allEntries = [];
 let allStudents = [];
 let allTasks = [];
+let siteComplexityMap = {};
 let progressChart = null;
 let skillChart = null;
 let taskChart = null;
@@ -730,11 +747,14 @@ function buildDemoData() {
         const taskBase = {};
         Object.values(sites).flat().forEach(task => taskBase[task] = pick([1, 2, 3, 3, 4]));
 
+        // Dates straddle RUBRIC_CUTOFF (about half before, half on/after, every 4 days)
+        // so both rubric tabs have sample data no matter what day the demo is opened.
         const visits = 12 - sIndex * 3;
+        const before = Math.ceil(visits / 2);
+        const [cy, cm, cd] = RUBRIC_CUTOFF.split("-").map(Number);
         for (let i = 0; i < visits; i++) {
             const site = Object.keys(sites)[i % 3];
-            const date = new Date(today);
-            date.setDate(today.getDate() - (visits - i) * 4);
+            const date = new Date(Date.UTC(cy, cm - 1, cd + (i - before) * 4 + 1, 12));
 
             const growth = i / visits;              // scores drift up over time
             const scores = {};
@@ -927,6 +947,7 @@ function applyEntries(json) {
     allEntries = Array.isArray(json.data) ? json.data : [];
     allStudents = Array.isArray(json.students) ? json.students : [];
     allTasks = Array.isArray(json.tasks) ? json.tasks : [];
+    siteComplexityMap = (json.siteComplexity && typeof json.siteComplexity === "object") ? json.siteComplexity : {};
 
     buildStudentOptions();
     buildSiteOptions();
@@ -966,11 +987,16 @@ function buildSiteOptions() {
 
 function parseDate(value) {
     if (!value) return null;
+    // Plain YYYY-MM-DD = that calendar day in local time (new Date() would read it as UTC).
+    const m = typeof value === "string" && value.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3], 12);
     const date = new Date(value);
     return isNaN(date.getTime()) ? null : date;
 }
 
 function dateKey(value) {
+    // Plain YYYY-MM-DD text (what Code.gs now returns) is used as-is, no time zone shift.
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.trim())) return value.trim();
     const d = parseDate(value);
     if (!d) return "";
     return d.toISOString().slice(0, 10);
@@ -1011,6 +1037,7 @@ function filteredEntriesForStudent(studentId) {
             if (to && key && key > to) return false;
             return true;
         })
+        .filter(rubricMatches)
         .sort((a, b) => {
             const ad = parseDate(a.date);
             const bd = parseDate(b.date);
@@ -1027,13 +1054,64 @@ const SCORE_BANDS = [
     { key: "red",    min: 0, label: "Not yet performing",   range: "0–0.9",   fill: "#dc2626", bg: "#fef2f2", border: "#fca5a5", text: "#991b1b" }
 ];
 
-const SCALE_LEVELS = [
+/* Rubric versions. Scores are the same 0-4 numbers under the same skill names in both;
+   only the wording of the levels differs. Entries are split by their date (the date
+   chosen on the entry form): before RUBRIC_CUTOFF = original rubric, on/after = new.
+   Set RUBRIC_CUTOFF to the day the new entry form actually went live for teachers. */
+const RUBRIC_CUTOFF = "2026-11-23";   // YYYY-MM-DD
+
+const SCALE_ORIGINAL = [
     { score: 0, name: "Not at All" },
     { score: 1, name: "Direct Prompting" },
     { score: 2, name: "Indirect Prompting" },
     { score: 3, name: "Independent" },
     { score: 4, name: "Helping / Teaching" }
 ];
+const SCALE_NEW = [
+    { score: 0, name: "Incomplete" },
+    { score: 1, name: "Direct Support" },
+    { score: 2, name: "Minimal Support" },
+    { score: 3, name: "Independent" },
+    { score: 4, name: "Advanced" }
+];
+
+let rubricTab = "new";   // "original" | "new"
+
+function rubricMatches(entry) {
+    const key = dateKey(entry.date);
+    if (!key) return rubricTab === "original";    // undated entries are legacy: show under Original
+    return rubricTab === "original" ? key < RUBRIC_CUTOFF : key >= RUBRIC_CUTOFF;
+}
+
+function rubricCutoffText() {
+    const [y, m, d] = RUBRIC_CUTOFF.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
+function paintRubricTabs() {
+    const bar = document.getElementById("rubricTabs");
+    if (!bar) return;
+    document.getElementById("rubricTabSubOriginal").textContent = "before " + rubricCutoffText();
+    document.getElementById("rubricTabSubNew").textContent = rubricCutoffText() + " on";
+    bar.querySelectorAll(".rubric-tab").forEach(btn => {
+        const on = btn.dataset.tab === rubricTab;
+        btn.setAttribute("aria-selected", on ? "true" : "false");
+        btn.className = "rubric-tab px-4 py-2 rounded-lg border text-sm font-bold text-left " +
+            (on ? "bg-blue-600 text-white border-blue-700" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50");
+    });
+}
+
+function setRubricTab(tab) {
+    rubricTab = tab;
+    paintRubricTabs();
+    renderReport();
+}
+
+function rubricSuffix() {
+    return rubricTab === "original"
+        ? ` · Original rubric (before ${rubricCutoffText()})`
+        : ` · New rubric (${rubricCutoffText()} on)`;
+}
 
 function round2(n) {
     return Math.round(n * 100) / 100;
@@ -1064,7 +1142,8 @@ function scoreTile(row) {
 }
 
 function renderScaleKey() {
-    document.getElementById("scaleStrip").innerHTML = SCALE_LEVELS.map(level => {
+    const levels = rubricTab === "original" ? SCALE_ORIGINAL : SCALE_NEW;
+    document.getElementById("scaleStrip").innerHTML = levels.map(level => {
         const b = bandFor(level.score);
         return `
             <div class="rounded-lg border px-2 py-2 text-center" style="background:${b.bg};border-color:${b.border}">
@@ -1193,7 +1272,7 @@ const BLOCK_FILLERS = {
         document.getElementById("generatedDate").textContent =
             new Date().toLocaleDateString();
 
-        document.getElementById("reportPeriod").textContent = reportPeriodText(ctx.entries);
+        document.getElementById("reportPeriod").textContent = reportPeriodText(ctx.entries) + rubricSuffix();
         document.getElementById("reportSite").textContent =
             document.getElementById("siteFilter").value || "All job sites";
 
@@ -1475,6 +1554,7 @@ function renderSiteAverages(entries) {
         return `
             <div class="score-tile" style="background:${b.bg};border-color:${b.border}">
                 <div class="score-tile-name">${escapeHTML(row.name)}</div>
+                <div>${VTComplexity.badge(siteComplexityMap[row.name], true)}</div>
                 <div class="score-tile-foot">
                     <span class="score-tile-value" style="color:${b.text}">${row.average.toFixed(2)}</span>
                     <span class="score-tile-count">${row.visits} evaluation${row.visits === 1 ? "" : "s"}</span>
@@ -1482,6 +1562,42 @@ function renderSiteAverages(entries) {
                 <div class="score-tile-count">${split.join("  |  ")}</div>
             </div>`;
     }).join("");
+
+    renderSiteComplexity(rows);
+}
+
+/** Job complexity of the sites in this report (one rubric per site, set by admins; blank if none are rated). */
+function renderSiteComplexity(rows) {
+    const el = document.getElementById("siteComplexity");
+    if (!el) return;
+
+    const rated = rows
+        .map(row => ({ name: row.name, c: VTComplexity.normalize(siteComplexityMap[row.name]) }))
+        .filter(r => r.c);
+
+    if (!rated.length) { el.innerHTML = ""; return; }
+
+    const head = VTComplexity.ROWS.map(r =>
+        '<th class="px-2 py-1 text-left font-semibold">' + VTComplexity.esc(r.label) + "</th>").join("");
+    const body = rated.map(r => {
+        const cells = VTComplexity.ROWS.map(row => {
+            const v = r.c[row.key];
+            if (v === undefined) return '<td class="px-2 py-1 text-slate-300">–</td>';
+            const L = VTComplexity.LEVELS[v];
+            return '<td class="px-2 py-1"><span style="display:inline-block;min-width:1.5rem;text-align:center;border-radius:4px;font-weight:700;' +
+                "background:" + L.bg + ";color:" + L.fg + ';-webkit-print-color-adjust:exact;print-color-adjust:exact" title="' +
+                VTComplexity.esc(L.name) + '">' + v + "</span></td>";
+        }).join("");
+        return '<tr class="border-t border-slate-100"><td class="px-2 py-1 font-medium text-slate-800">' +
+            VTComplexity.esc(r.name) + '</td><td class="px-2 py-1">' + VTComplexity.badge(r.c) + "</td>" + cells + "</tr>";
+    }).join("");
+
+    el.innerHTML =
+        '<h4 class="font-semibold text-slate-800 text-sm mb-1">Job complexity</h4>' +
+        '<p class="text-xs text-slate-500 mb-2">How demanding each job site is (0 Supported – 4 Advanced). The overall level is the average of the five rows.</p>' +
+        '<div class="overflow-x-auto"><table class="w-full text-xs"><thead class="text-slate-500"><tr>' +
+        '<th class="px-2 py-1 text-left font-semibold">Job site</th><th class="px-2 py-1 text-left font-semibold">Overall</th>' +
+        head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
 }
 
 function renderTiles(containerId, rows) {
@@ -1684,8 +1800,12 @@ function clearFilters() {
     document.getElementById("fromDate").value = "";
     document.getElementById("toDate").value = "";
     document.getElementById("siteFilter").value = "";
+    rubricTab = "new";
+    paintRubricTabs();
     renderReport();
 }
+
+paintRubricTabs();
 
 function signOut() {
     if (window.VTTrackers) window.VTTrackers.forget();

@@ -8,6 +8,10 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         .score-btn { transition: all 0.2s ease; }
+        .skill-group > summary { list-style: none; }
+        .skill-group > summary::-webkit-details-marker { display: none; }
+        .skill-group .chev { transition: transform 0.2s ease; transform: rotate(-90deg); }
+        .skill-group[open] > summary .chev { transform: rotate(0deg); }
     </style>
 <script>
 /************************************************************
@@ -42,6 +46,9 @@ if (VT_ENV) {
     });
 }
 </script>
+<script src="demo-backend.js"></script>
+<script src="complexity.js"></script>
+<script src="accessibility.js"></script>
 </head>
 
 <body class="bg-slate-100 text-slate-900 font-sans pb-20">
@@ -144,6 +151,7 @@ if (VT_ENV) {
                             class="w-full p-3 border rounded-lg bg-slate-50">
                         <option>Loading...</option>
                     </select>
+                    <div id="siteComplexityBadge" class="mt-1 min-h-[1rem]"></div>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -159,15 +167,35 @@ if (VT_ENV) {
             </div>
         </div>
 
-        <!-- SCORING KEY -->
-        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-            <h3 class="text-xs font-bold uppercase text-blue-800 mb-3 text-center">Scoring Key</h3>
-            <div class="grid grid-cols-5 gap-1 text-center text-[10px]">
-                <div><span class="font-bold text-red-500">0</span><div>Not at All</div></div>
-                <div><span class="font-bold text-orange-500">1</span><div>Direct Prompting</div></div>
-                <div><span class="font-bold text-yellow-600">2</span><div>Indirect Prompting</div></div>
-                <div><span class="font-bold text-blue-500">3</span><div>Independent</div></div>
-                <div><span class="font-bold text-green-600">4</span><div>Helping/Teaching</div></div>
+        <!-- SCORING KEY (quick reference: the rubric's top row) -->
+        <div class="p-3 rounded-xl border border-slate-200 bg-white" aria-label="Scoring key">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2 text-center">Scoring Key</h3>
+            <div class="grid grid-cols-5 gap-1 text-center">
+                <div class="rounded-lg border border-red-200 bg-red-100 p-1.5">
+                    <div class="font-extrabold text-slate-900 text-sm">0</div>
+                    <div class="font-bold text-slate-900 text-[11px] leading-tight">Incomplete</div>
+                    <div class="hidden sm:block italic text-slate-700 text-[11px] leading-tight mt-1">Does not perform the skill or requires full assistance.</div>
+                </div>
+                <div class="rounded-lg border border-amber-200 bg-amber-100 p-1.5">
+                    <div class="font-extrabold text-slate-900 text-sm">1</div>
+                    <div class="font-bold text-slate-900 text-[11px] leading-tight">Direct Support</div>
+                    <div class="hidden sm:block italic text-slate-700 text-[11px] leading-tight mt-1">Requires directives, modeling, or frequent oversight.</div>
+                </div>
+                <div class="rounded-lg border border-amber-200 bg-amber-100 p-1.5">
+                    <div class="font-extrabold text-slate-900 text-sm">2</div>
+                    <div class="font-bold text-slate-900 text-[11px] leading-tight">Minimal Support</div>
+                    <div class="hidden sm:block italic text-slate-700 text-[11px] leading-tight mt-1">Requires cues, reminders, or occasional oversight.</div>
+                </div>
+                <div class="rounded-lg border border-green-200 bg-green-100 p-1.5">
+                    <div class="font-extrabold text-slate-900 text-sm">3</div>
+                    <div class="font-bold text-slate-900 text-[11px] leading-tight">Independent</div>
+                    <div class="hidden sm:block italic text-slate-700 text-[11px] leading-tight mt-1">Performs the skill without support.</div>
+                </div>
+                <div class="rounded-lg border border-green-200 bg-green-100 p-1.5">
+                    <div class="font-extrabold text-slate-900 text-sm">4</div>
+                    <div class="font-bold text-slate-900 text-[11px] leading-tight">Advanced</div>
+                    <div class="hidden sm:block italic text-slate-700 text-[11px] leading-tight mt-1">Performs the skill beyond expectation.</div>
+                </div>
             </div>
         </div>
 
@@ -186,42 +214,26 @@ if (VT_ENV) {
             <h2 class="text-lg font-bold text-slate-800 mb-6 border-b pb-2 flex items-center gap-2">
                 <span class="material-icons text-purple-600">psychology</span> Behavioral Skills
             </h2>
-
-        <details class="bg-white border border-blue-200 rounded-xl shadow-sm mb-6 overflow-hidden">
-            <summary class="cursor-pointer px-5 py-4 font-bold text-blue-900 flex items-center gap-2">
-                <span class="material-icons text-blue-700">fact_check</span>
-                Scoring Rubric Reference
-            </summary>
-            <div class="px-5 pb-5 text-sm text-slate-700">
-                <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
-                    <div class="rounded-lg border border-red-200 bg-red-50 p-3">
-                        <strong class="text-red-800">0 · Not at All</strong>
-                        <div class="mt-1">Did not perform the skill.</div>
-                    </div>
-                    <div class="rounded-lg border border-orange-200 bg-orange-50 p-3">
-                        <strong class="text-orange-800">1 · Direct Prompting</strong>
-                        <div class="mt-1">Required direct or step-by-step prompting.</div>
-                    </div>
-                    <div class="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                        <strong class="text-amber-800">2 · Indirect Prompting</strong>
-                        <div class="mt-1">Needed a reminder, cue, or gesture.</div>
-                    </div>
-                    <div class="rounded-lg border border-blue-200 bg-blue-50 p-3">
-                        <strong class="text-blue-800">3 · Independent</strong>
-                        <div class="mt-1">Performed without prompting.</div>
-                    </div>
-                    <div class="rounded-lg border border-green-200 bg-green-50 p-3">
-                        <strong class="text-green-800">4 · Helping / Teaching</strong>
-                        <div class="mt-1">Performed independently and helped or modeled for others.</div>
-                    </div>
-                </div>
-                <p class="mt-3 text-slate-500">
-                    Job tasks can be marked N/A when the task did not occur during the shift.
-                </p>
-            </div>
-        </details>
+            <p class="text-sm text-slate-600 mb-5 flex items-start gap-2">
+                <span class="material-icons text-blue-700 text-base" aria-hidden="true">info</span>
+                <span>Tap any underlined skill name to see the full 0–4 rubric for that skill.</span>
+            </p>
 
             <div id="skillsContainer" class="space-y-6"></div>
+        </div>
+
+        <!-- RUBRIC POPUP (opened by tapping a skill name) -->
+        <div id="rubricModal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4"
+             onclick="if(event.target===this)hideRubric()">
+            <div role="dialog" aria-modal="true" aria-labelledby="rubricTitle"
+                 class="bg-white w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl shadow-xl p-5">
+                <div class="flex items-start justify-between gap-3 mb-3">
+                    <h3 id="rubricTitle" class="text-lg font-bold text-slate-800"></h3>
+                    <button type="button" id="rubricClose" onclick="hideRubric()" aria-label="Close rubric"
+                            class="px-3 py-1 rounded-lg border bg-slate-50 font-bold text-slate-700">Close</button>
+                </div>
+                <div id="rubricBody" class="space-y-2"></div>
+            </div>
         </div>
 
         <!-- NOTES -->
@@ -234,12 +246,21 @@ if (VT_ENV) {
                       class="w-full p-3 border rounded-lg bg-slate-50"></textarea>
         </div>
 
-        <button type="submit" id="submitBtn"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg 
-                       transition flex justify-center items-center gap-2 text-lg">
-            <span class="material-icons">send</span>
-            SUBMIT ENTRY
-        </button>
+        <!-- Stays visible while scrolling: progress + submit -->
+        <div class="sticky bottom-0 z-40 -mx-4 pr-4 pl-[4.25rem] sm:px-4 pt-3 pb-3 bg-slate-100 border-t border-slate-200">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="flex-1 h-2 rounded-full bg-slate-200 overflow-hidden" aria-hidden="true">
+                    <div id="progressBar" class="h-2 bg-blue-600 transition-all" style="width:0%"></div>
+                </div>
+                <div id="progressText" class="text-xs font-bold text-slate-600" role="status" aria-live="polite">0 of 16 skills scored</div>
+            </div>
+            <button type="submit" id="submitBtn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg
+                           transition flex justify-center items-center gap-2 text-lg">
+                <span class="material-icons">send</span>
+                SUBMIT ENTRY
+            </button>
+        </div>
 
     </form>
 </div>
@@ -259,6 +280,159 @@ const SKILLS_LIST = [
     "Accepts constructive criticism", "Demonstrates a positive attitude",
     "Asks for help appropriately", "Demonstrates self-reflection"
 ];
+
+/* Detailed rubric per skill. DISPLAY ONLY: keys are the existing SKILLS_LIST names
+   (which are the stored data keys), so adding/changing text here never affects saved data.
+   Skills without an entry here simply have no rubric button. */
+const LEVELS = [
+    { n: 0, name: "Incomplete",      desc: "Does not perform the skill or requires full assistance.",        box: "border-red-200 bg-red-50",       head: "text-red-800" },
+    { n: 1, name: "Direct Support",  desc: "Requires directives, modeling, or frequent oversight.",          box: "border-orange-200 bg-orange-50", head: "text-orange-800" },
+    { n: 2, name: "Minimal Support", desc: "Requires cues, reminders, or occasional oversight.",             box: "border-amber-200 bg-amber-50",   head: "text-amber-800" },
+    { n: 3, name: "Independent",     desc: "Performs the skill without support.",                            box: "border-blue-200 bg-blue-50",     head: "text-blue-800" },
+    { n: 4, name: "Advanced",        desc: "Performs the skill beyond expectation.",                         box: "border-green-200 bg-green-50",   head: "text-green-800" }
+];
+
+const SKILL_RUBRICS = {
+    "Punctual": { title: "Punctual", rows: [
+        "Not on time even with directives, or modeling.",
+        "On time with directives, or modeling.",
+        "On time with cues or reminders.",
+        "On time independently.",
+        "Early independently."] },
+    "Prepared with Necessary Materials": { title: "Prepared", rows: [
+        "Does not collect required materials to perform the job task(s) even with directives, or modeling.",
+        "Collects required materials to perform the job task(s) with directives, or modeling.",
+        "Collects required materials to perform the job task(s) with cues or reminders.",
+        "Collects required materials to perform the job task(s) independently.",
+        "Collects required materials to perform the job task(s) independently and models preparedness to others."] },
+    "Demonstrates appropriate hygiene/dress": { title: "Appearance", rows: [
+        "Does not correct hygiene or dress errors even with directives, or modeling.",
+        "Corrects hygiene or dress errors with directives, or modeling.",
+        "Corrects hygiene or dress errors with cues or reminders.",
+        "Demonstrates proper hygiene and appropriate dress independently.",
+        "Demonstrates proper hygiene and dress independently and models hygiene/dress standards to others."] },
+    "Initiates familiar tasks": { title: "Task Initiation", rows: [
+        "Does not start familiar tasks promptly even with directives, or modeling.",
+        "Initiates familiar tasks promptly with directives or modeling.",
+        "Initiates familiar tasks promptly with cues or reminders.",
+        "Initiates familiar tasks promptly independently.",
+        "Initiates familiar tasks promptly independently and models initiative to others."] },
+    "Complete tasks in a logical order": { title: "Logical Order", rows: [
+        "Does not complete tasks in a logical order even with directives or modeling.",
+        "Completes tasks in a logical order with directives or modeling.",
+        "Completes tasks in a logical order with cues or reminders.",
+        "Completes tasks in a logical order independently. Self-corrects when necessary.",
+        "Completes tasks in a logical order independently without error."] },
+    "Work is completed to quality standards": { title: "Quality Work", rows: [
+        "Does not complete tasks thoroughly and accurately even with directives or modeling.",
+        "Completes tasks thoroughly and accurately with directives or modeling.",
+        "Completes tasks thoroughly and accurately with cues or reminders.",
+        "Completes tasks thoroughly and accurately. Self-corrects when necessary.",
+        "Completes tasks thoroughly and accurately independently with no errors."] },
+    "Maintains a productive work rate": { title: "Work Rate", rows: [
+        "Does not continuously work at a productive rate even with directives or modeling.",
+        "Continuously works at a productive rate with directives or modeling.",
+        "Continuously works at a productive rate with cues or reminders.",
+        "Continuously works at a productive rate independently.",
+        "Exceeds expected productivity."] },
+    "Demonstrates adaptability": { title: "Adaptability", rows: [
+        "Does not adapt to changes to assigned tasks, environment, or personnel even with directives or modeling.",
+        "Adapts to changes to assigned tasks, environment, or personnel with directives or modeling.",
+        "Adapts to changes to assigned tasks, environment, or personnel with cues or reminders.",
+        "Adapts to changes to assigned tasks, environment, or personnel independently.",
+        "Adapts to changes in assigned tasks, environment, or personnel independently and enthusiastically."] },
+    "Maintains clean and organized work space": { title: "Organization", rows: [
+        "Does not clean or organize workspace even with directives or modeling.",
+        "Cleans and organizes workspace with directives or modeling.",
+        "Relies on cues or reminders to clean and organize workspace.",
+        "Cleans and organizes workspace.",
+        "Cleans and organizes workspace beyond expectation."] },
+    "Awareness of surroundings and good decision making": { title: "Safety", rows: [
+        "Does not safely navigate the environment, use equipment, nor respond to novel situations even with directives or modeling.",
+        "Safely navigates the environment, uses equipment, and responds to novel situations with directives or modeling.",
+        "Safely navigates the environment, uses equipment, and responds to novel situations with cues or reminders.",
+        "Safely navigates the environment, uses equipment, and responds to novel situations.",
+        "Safely navigates the environment, uses equipment, and responds to novel situations. Demonstrates exceptional judgment."] },
+    "Demonstrates a positive attitude": { title: "Attitude", rows: [
+        "Does not maintain a positive attitude by completing tasks without complaint nor uses positive self-talk or other coping strategies to persevere even with directives, or modeling.",
+        "Maintains a positive attitude by completing tasks without complaint and uses positive self-talk or other coping strategies to persevere with directives or modeling.",
+        "Maintains a positive attitude by completing tasks without complaint and uses positive self-talk or other coping strategies to persevere with cues or reminders.",
+        "Maintains a positive attitude by completing tasks without complaint and uses positive self-talk or other coping strategies to persevere.",
+        "Maintains a positive attitude by completing tasks without complaint and uses positive self-talk or other coping strategies to persevere exceeding expectations."] },
+    "Accepts constructive criticism": { title: "Constructive Feedback", rows: [
+        "Does not respond positively to feedback or make adjustments to improve performance even with directives or modeling.",
+        "Responds positively to feedback and makes adjustments to improve performance with directives or modeling.",
+        "Responds positively to feedback and makes adjustments to improve performance with cues or reminders.",
+        "Responds positively to feedback and makes adjustments to improve performance.",
+        "Responds positively to feedback and makes adjustments to improve performance and actively seeks feedback."] },
+    "Demonstrates self-reflection": { title: "Self-Reflection", rows: [
+        "Does not identify strengths, weaknesses, nor generates suggestions for improvement even with directives or modeling.",
+        "Identifies strengths, weaknesses, and generates suggestions for improvement with directives or modeling.",
+        "Identifies strengths, weaknesses, and generates suggestions for improvement with cues or reminders.",
+        "Identifies strengths, weaknesses, and generates suggestions for improvement independently.",
+        "Identifies strengths, weaknesses, and generates suggestions for improvement independently. Reflection is comprehensive and insightful."] },
+    "Asks for help appropriately": { title: "Resourcefulness", rows: [
+        "Does not request additional tasks when assigned tasks are complete even with directives or modeling.",
+        "Requests additional tasks when assigned tasks are complete with directives or modeling.",
+        "Requests additional tasks when assigned tasks are complete with cues or reminders.",
+        "Requests additional tasks when assigned tasks are complete.",
+        "Requests additional tasks when assigned tasks are complete or identifies additional tasks independently."] },
+    /* One skill, more than one rubric section (arrays) */
+    "Appropriate and respectful social interactions": [
+        { title: "Respect", rows: [
+            "Does not demonstrate respectful social interactions or respect for personal space and property, even with directives or modeling.",
+            "Demonstrates respectful social interactions and respect for personal space and property, with directives or modeling.",
+            "Demonstrates respectful social interactions and respect for personal space and property with cues or reminders.",
+            "Demonstrates respectful social interactions and respect for personal space and property independently.",
+            "Demonstrates respectful social interactions and respect for personal space and property independently and additional care for the rights of others."] },
+        { title: "Conversation Skills", rows: [
+            "Does not engage in conversation or does not follow social norms even with directives or modeling.",
+            "Engages in conversation following social norms (eye contact, active listening, appropriate topics, volume) with directives or modeling.",
+            "Engages in conversation following social norms (eye contact, active listening, appropriate topics, volume) with cues or reminders.",
+            "Engages in conversation following social norms (eye contact, active listening, appropriate topics, volume) independently.",
+            "Engages in conversation following social norms (eye contact, active listening, appropriate topics, volume) independently and adjusts based on the partner's interests, responses, and cues."] }
+    ],
+    "Displays effective communication skills": [
+        { title: "Expressive Communication", rows: [
+            "Does not clearly express thoughts, respond to questions, or requests help, even with directives, or modeling.",
+            "Clearly expresses thoughts, responds to questions, and requests help, with directives or modeling.",
+            "Clearly expresses thoughts, responds to questions, and requests help with cues or reminders.",
+            "Clearly expresses thoughts, responds to questions, and requests help independently.",
+            "Clearly expresses thoughts, responds to questions, and requests help independently and with additional clarifying details or questions."] },
+        { title: "Receptive Communication", rows: [
+            "Does not follow directions (visual or verbal) even with, directives or modeling.",
+            "Follows 2-3 step directions (visual or verbal) with directives or modeling.",
+            "Follows 2-3 step directions (visual or verbal) with cues or reminders.",
+            "Follows 2-3 step directions (visual or verbal) independently.",
+            "Follows 4+ step directions (visual or verbal) independently."] }
+    ]
+};
+
+function showRubric(idx) {
+    const skill = SKILLS_LIST[idx];
+    const r = SKILL_RUBRICS[skill];
+    if (!r) return;
+    const cur = skillScores[`skill:${skill}`];
+    const secs = Array.isArray(r) ? r : [r];
+    document.getElementById("rubricTitle").textContent =
+        (secs.length === 1 && secs[0].title !== skill) ? `${secs[0].title} — ${skill}` : skill;
+    document.getElementById("rubricBody").innerHTML = secs.map(sec => `
+        ${secs.length > 1 ? `<h4 class="font-bold text-slate-800 mt-3 first:mt-0">${sec.title}</h4>` : ""}
+        ` + LEVELS.map(L => `
+        <div class="rounded-lg border p-3 ${L.box} ${cur === L.n ? "ring-2 ring-offset-1 ring-slate-700" : ""}">
+            <div class="flex items-center justify-between gap-2">
+                <strong class="${L.head}">${L.n} · ${L.name}</strong>
+                ${cur === L.n ? '<span class="text-xs font-bold text-slate-700">Currently selected</span>' : ""}
+            </div>
+            <div class="text-xs italic text-slate-600">${L.desc}</div>
+            <div class="mt-1 text-sm text-slate-800">${sec.rows[L.n]}</div>
+        </div>`).join("")).join("");
+    const m = document.getElementById("rubricModal");
+    m.classList.remove("hidden");
+    document.getElementById("rubricClose").focus();
+}
+function hideRubric() { document.getElementById("rubricModal").classList.add("hidden"); }
+document.addEventListener("keydown", e => { if (e.key === "Escape") hideRubric(); });
 
 const SCORE_STYLES = {
     0:    "bg-red-500 text-white border-red-600",
@@ -443,23 +617,37 @@ if (document.readyState === "loading") {
 
 /************************************************************
  * SHARED SCORE GROUP RENDERER
- * allowNA=true adds an N/A button and defaults score to null
+ * Every score starts as null.
+ *   Behavioral skill: null = "not scored yet" (must be chosen before submit)
+ *   Job task:         null = N/A (the task did not occur)
  ************************************************************/
-function renderScoreGroup(container, label, key, allowNA = false) {
-    skillScores[key] = allowNA ? null : 2;
+function renderScoreGroup(container, label, key, allowNA = false, extraHtml = "") {
+    skillScores[key] = null;
 
     const safeId = key.replace(/[^a-zA-Z0-9]/g, "_");
+    const jsKey  = key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+    // Behavioral skills with a detailed rubric: tapping the name opens it (display only)
+    const rubricIdx = key.startsWith("skill:") ? SKILLS_LIST.indexOf(label) : -1;
+    const labelHtml = (rubricIdx >= 0 && SKILL_RUBRICS[label])
+        ? `<button type="button" onclick="showRubric(${rubricIdx})" aria-haspopup="dialog"
+                   class="text-left text-blue-800 underline decoration-dotted underline-offset-4 inline-flex items-center gap-1">
+               ${label}<span class="material-icons text-base" aria-hidden="true">info</span>
+               <span class="sr-only">— view rubric</span></button>`
+        : label;
 
     let html = `
-        <div>
-            <label class="block text-sm font-bold mb-2">${label}</label>
-            <div class="grid grid-cols-6 gap-2">
+        <div id="row_${safeId}" class="score-row rounded-lg" role="group" aria-labelledby="lbl_${safeId}">
+            <div id="lbl_${safeId}" class="block text-sm font-bold mb-2">${labelHtml}${extraHtml ? ' <span class="ml-1 align-middle font-normal">' + extraHtml + '</span>' : ""}</div>
+            <div class="grid ${allowNA ? "grid-cols-6" : "grid-cols-5"} gap-2">
     `;
     for (let i = 0; i <= 4; i++) {
         html += `
             <button type="button"
                     id="btn_${safeId}_${i}"
-                    onclick="setScore('${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', ${i})"
+                    aria-pressed="false"
+                    aria-label="${label.replace(/"/g, "&quot;")}: ${i}, ${LEVELS[i].name}"
+                    onclick="setScore('${jsKey}', ${i})"
                     class="score-btn py-3 rounded-lg border font-bold text-lg shadow-sm">
                 ${i}
             </button>
@@ -469,27 +657,115 @@ function renderScoreGroup(container, label, key, allowNA = false) {
         html += `
             <button type="button"
                     id="btn_${safeId}_null"
-                    onclick="setScore('${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', null)"
-                    class="score-btn py-3 rounded-lg border font-bold text-xs shadow-sm">
+                    aria-pressed="false"
+                    aria-label="${label.replace(/"/g, "&quot;")}: not applicable"
+                    onclick="setScore('${jsKey}', null)"
+                    class="score-btn py-3 rounded-lg border font-bold text-sm shadow-sm">
                 N/A
             </button>
         `;
-    } else {
-        // Placeholder to keep grid alignment on behavioral skills (5 cols only)
-        html = html.replace('grid-cols-6', 'grid-cols-5');
     }
-    html += "</div></div>";
+    html += `</div>
+            <div id="lvl_${safeId}" class="mt-1 text-xs font-semibold min-h-[1rem]" aria-live="polite"></div>
+        </div>`;
     container.innerHTML += html;
     updateButtons(key);
 }
 
 /************************************************************
  * BEHAVIORAL SKILLS
+ * Display grouping only. Scores are still keyed by the skill name and
+ * submitted in SKILLS_LIST order, so saved data is unaffected.
  ************************************************************/
+const SKILL_GROUPS = [
+    { title: "Work Habits", skills: [
+        "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
+        "Initiates familiar tasks", "Maintains a productive work rate", "Complete tasks in a logical order",
+        "Work is completed to quality standards"] },
+    { title: "On the Job", skills: [
+        "Demonstrates adaptability", "Maintains clean and organized work space",
+        "Awareness of surroundings and good decision making", "Asks for help appropriately"] },
+    { title: "Communication", skills: [
+        "Appropriate and respectful social interactions", "Displays effective communication skills",
+        "Accepts constructive criticism"] },
+    { title: "Attitude & Growth", skills: [
+        "Demonstrates a positive attitude", "Demonstrates self-reflection"] }
+];
+
+const groupEls = [];            // [{ el, skills }]
+const groupWasComplete = [];    // per group: was it complete after the last update?
+const skillGroupIndex = {};     // skill name -> group index
+
 function renderSkills() {
     const container = document.getElementById("skillsContainer");
     container.innerHTML = "";
-    SKILLS_LIST.forEach(skill => renderScoreGroup(container, skill, `skill:${skill}`));
+    groupEls.length = 0;
+    groupWasComplete.length = 0;
+
+    const groups = SKILL_GROUPS.map(g => ({ title: g.title, skills: g.skills.slice() }));
+    const placed = new Set(groups.flatMap(g => g.skills));
+    // Safety net: a skill missing from the groups still gets a row (never silently dropped)
+    const extra = SKILLS_LIST.filter(sk => !placed.has(sk));
+    if (extra.length) groups.push({ title: "Other", skills: extra });
+
+    groups.forEach((g, gi) => {
+        const d = document.createElement("details");
+        d.open = true;
+        d.className = "skill-group scroll-mt-20 border border-slate-200 rounded-xl bg-white";
+        d.innerHTML = `
+            <summary class="cursor-pointer select-none flex items-center gap-3 px-4 py-4 rounded-xl">
+                <span class="material-icons chev text-slate-500" aria-hidden="true">expand_more</span>
+                <span class="flex-1 text-xl font-extrabold text-slate-800">${g.title}</span>
+                <span id="grpStatus_${gi}" class="text-sm font-bold text-slate-600"></span>
+            </summary>
+            <div class="px-4 pb-5 pt-2 space-y-6"></div>`;
+        container.appendChild(d);
+        groupEls.push({ el: d, skills: g.skills });
+        groupWasComplete.push(false);
+        const body = d.lastElementChild;
+        g.skills.forEach(skill => {
+            skillGroupIndex[skill] = gi;
+            renderScoreGroup(body, skill, `skill:${skill}`);
+        });
+        updateGroup(gi);
+    });
+    updateProgress();
+}
+
+function groupIsComplete(gi) {
+    const g = groupEls[gi];
+    return !!g && g.skills.every(sk => Number.isInteger(skillScores[`skill:${sk}`]));
+}
+
+function updateGroup(gi) {
+    const g = groupEls[gi];
+    if (!g) return;
+    const done  = g.skills.filter(sk => Number.isInteger(skillScores[`skill:${sk}`])).length;
+    const total = g.skills.length;
+    const complete = done === total;
+    const st = document.getElementById("grpStatus_" + gi);
+    if (st) {
+        st.textContent = complete ? "✓ Complete" : `${done} of ${total} scored`;
+        st.className = "text-sm font-bold " + (complete ? "text-green-700" : "text-slate-600");
+    }
+    groupWasComplete[gi] = complete;
+}
+
+// After the last skill in a section is scored: fold it shut, then bring the next unfinished one into view.
+function advanceFrom(gi) {
+    setTimeout(() => {
+        if (!groupIsComplete(gi)) return;          // changed their mind in the meantime
+        groupEls[gi].el.open = false;
+        const next = groupEls.findIndex((g, i) => i !== gi && !groupIsComplete(i));
+        if (next >= 0) {
+            groupEls[next].el.open = true;
+            groupEls[next].el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    }, 700);
+}
+
+function collapseCompleteGroups() {
+    groupEls.forEach((g, i) => { if (groupIsComplete(i)) g.el.open = false; });
 }
 
 /************************************************************
@@ -519,14 +795,19 @@ function renderTasks(tasks) {
  * SCORE MANAGEMENT
  ************************************************************/
 function setScore(key, score) {
+    const gi  = key.startsWith("skill:") ? skillGroupIndex[key.slice(6)] : undefined;
+    const was = gi !== undefined && groupWasComplete[gi];
     skillScores[key] = score;
     updateButtons(key);
     saveDraft();
+    if (gi !== undefined && !was && groupWasComplete[gi]) advanceFrom(gi);
 }
 
 function updateButtons(key) {
     const selected = skillScores[key];
+    const isSkill  = key.startsWith("skill:");
     const safeId = key.replace(/[^a-zA-Z0-9]/g, "_");
+    const unscoredSkill = isSkill && (selected === null || selected === undefined);
 
     // Update numeric buttons 0-4
     for (let i = 0; i <= 4; i++) {
@@ -535,21 +816,65 @@ function updateButtons(key) {
         btn.className = (selected === i)
             ? `score-btn py-3 rounded-lg border font-bold text-lg shadow-md ${SCORE_STYLES[i]}`
             : `score-btn py-3 rounded-lg border font-bold text-lg shadow-sm ${INACTIVE}`;
+        btn.setAttribute("aria-pressed", selected === i ? "true" : "false");
     }
 
     // Update N/A button if present
     const naBtn = document.getElementById(`btn_${safeId}_null`);
     if (naBtn) {
         naBtn.className = (selected === null)
-            ? `score-btn py-3 rounded-lg border font-bold text-xs shadow-md ${SCORE_STYLES[null]}`
-            : `score-btn py-3 rounded-lg border font-bold text-xs shadow-sm ${INACTIVE}`;
+            ? `score-btn py-3 rounded-lg border font-bold text-sm shadow-md ${SCORE_STYLES[null]}`
+            : `score-btn py-3 rounded-lg border font-bold text-sm shadow-sm ${INACTIVE}`;
+        naBtn.setAttribute("aria-pressed", selected === null ? "true" : "false");
     }
+
+    // Plain-language confirmation of what was chosen
+    const lvl = document.getElementById(`lvl_${safeId}`);
+    if (lvl) {
+        if (Number.isInteger(selected) && LEVELS[selected]) {
+            lvl.textContent = `${selected} · ${LEVELS[selected].name}`;
+            lvl.className = "mt-1 text-xs font-semibold text-slate-700 min-h-[1rem]";
+        } else if (isSkill) {
+            lvl.textContent = "Not scored yet";
+            lvl.className = "mt-1 text-xs font-semibold text-amber-700 min-h-[1rem]";
+        } else {
+            lvl.textContent = "N/A (task did not occur)";
+            lvl.className = "mt-1 text-xs font-semibold text-slate-500 min-h-[1rem]";
+        }
+    }
+
+    // A skill that now has a score is no longer flagged as missing
+    const row = document.getElementById(`row_${safeId}`);
+    if (row && !unscoredSkill) row.classList.remove("ring-2", "ring-red-400", "ring-offset-2");
+
+    if (isSkill) { updateGroup(skillGroupIndex[key.slice(6)]); updateProgress(); }
+}
+
+function skillsMissingScore() {
+    return SKILLS_LIST.filter(sk => {
+        const v = skillScores[`skill:${sk}`];
+        return v === null || v === undefined;
+    });
+}
+
+function updateProgress() {
+    const total = SKILLS_LIST.length;
+    const done  = total - skillsMissingScore().length;
+    const text  = document.getElementById("progressText");
+    const bar   = document.getElementById("progressBar");
+    if (!text || !bar) return;
+    text.textContent = done === total ? "All skills scored" : `${done} of ${total} skills scored`;
+    text.className = done === total ? "text-xs font-bold text-green-700" : "text-xs font-bold text-slate-600";
+    bar.style.width = Math.round(done / total * 100) + "%";
 }
 
 /************************************************************
  * DROPDOWNS
  ************************************************************/
+let siteComplexity = {};
+
 function fillDropdowns(boot) {
+    siteComplexity = boot.siteComplexity || {};
     // Students
     const sSel = document.getElementById("studentSelect");
     sSel.innerHTML = `<option value="">Select Student…</option>`;
@@ -583,6 +908,8 @@ function fillDropdowns(boot) {
 
 function handleSiteChange() {
     const site = document.getElementById("siteSelect").value;
+    const badgeBox = document.getElementById("siteComplexityBadge");
+    if (badgeBox) badgeBox.innerHTML = site ? VTComplexity.badge(siteComplexity[site]) : "";
     renderTasks(site ? (allTasks[site] || []) : []);
 }
 
@@ -591,6 +918,22 @@ function handleSiteChange() {
  ************************************************************/
 async function submitEntry(e) {
     e.preventDefault();
+
+    // Every behavioral skill needs an explicit score (nothing is assumed).
+    const missing = skillsMissingScore();
+    if (missing.length) {
+        missing.forEach(sk => {
+            const row = document.getElementById("row_" + `skill:${sk}`.replace(/[^a-zA-Z0-9]/g, "_"));
+            if (row) row.classList.add("ring-2", "ring-red-400", "ring-offset-2");
+        });
+        missing.forEach(sk => { const g = groupEls[skillGroupIndex[sk]]; if (g) g.el.open = true; });
+        const first = document.getElementById("row_" + `skill:${missing[0]}`.replace(/[^a-zA-Z0-9]/g, "_"));
+        if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+        const t = document.getElementById("progressText");
+        t.textContent = `Please score ${missing.length} more skill${missing.length === 1 ? "" : "s"} (marked in red)`;
+        t.className = "text-xs font-bold text-red-700";
+        return;
+    }
 
     const btn = document.getElementById("submitBtn");
     const original = btn.innerHTML;
@@ -601,7 +944,7 @@ async function submitEntry(e) {
     // N/A tasks (null) are excluded entirely — not recorded in the sheet
     const scores = {};
     SKILLS_LIST.forEach(skill => {
-        scores[skill] = skillScores[`skill:${skill}`] ?? 2;
+        scores[skill] = skillScores[`skill:${skill}`];
     });
     currentTasks.forEach(task => {
         const val = skillScores[`task:${task}`];
@@ -739,6 +1082,9 @@ function restoreDraft() {
             updateButtons(key);
         }
     });
+    updateProgress();
+    groupEls.forEach((g, i) => updateGroup(i));
+    collapseCompleteGroups();
 
     // "sending" means the page closed before the server answered.
     draftStatus = draft.status === "editing" ? "editing" : "failed";

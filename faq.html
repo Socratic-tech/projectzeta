@@ -64,6 +64,7 @@
         });
     }
     </script>
+<script src="accessibility.js"></script>
 </head>
 
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen pb-16">
@@ -281,12 +282,40 @@
                 <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
                         <ul class="space-y-2">
-                            <li><strong class="text-red-700">0 — Not at All:</strong> Student did not perform the skill.</li>
-                            <li><strong class="text-orange-700">1 — Direct Prompting:</strong> Required direct or step-by-step prompting.</li>
-                            <li><strong class="text-amber-700">2 — Indirect Prompting:</strong> Needed a verbal reminder, cue, or gesture.</li>
-                            <li><strong class="text-blue-700">3 — Independent:</strong> Performed the skill without prompting.</li>
-                            <li><strong class="text-green-700">4 — Helping/Teaching:</strong> Performed the skill and helped or modeled it for others.</li>
+                            <li><strong class="text-red-700">0 — Incomplete:</strong> Does not perform the skill or requires full assistance.</li>
+                            <li><strong class="text-orange-700">1 — Direct Support:</strong> Requires directives, modeling, or frequent oversight.</li>
+                            <li><strong class="text-amber-700">2 — Minimal Support:</strong> Requires cues, reminders, or occasional oversight.</li>
+                            <li><strong class="text-blue-700">3 — Independent:</strong> Performs the skill without support.</li>
+                            <li><strong class="text-green-700">4 — Advanced:</strong> Performs the skill beyond expectation.</li>
                         </ul>
+                        <p class="mt-3">Tap a skill's name on the entry form to see what each level looks like for that specific skill.</p>
+                        <p class="mt-2">These are the levels used on and after <strong>November 23, 2026</strong>. Earlier entries were scored on the original scale
+                        (Not at All, Direct Prompting, Indirect Prompting, Independent, Helping / Teaching). Reports keep the two apart. See
+                        <em>Why do Reports have two rubric tabs?</em> below.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">How do I score the behavioral skills?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        The 16 skills are grouped into four sections. Choose a level from 0 to 4 for every skill; nothing is pre-selected, so a skill you skip stays unscored. The bar at the bottom shows how many of the 16 are scored, and <strong>Submit</strong> stays unavailable until all are done. A section closes by itself once every skill in it is scored, and you can reopen it by tapping its heading.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">What does the underlined skill name do?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        Tapping it opens the rubric for that skill, with a description for each level from 0 to 4. It is only a reference and does not change the score.
                     </div>
                 </div>
             </div>
@@ -376,12 +405,71 @@
 
             <div class="faq-item" onclick="toggle(this)">
                 <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">My connection dropped while submitting. Did I lose the entry?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        No. If an entry cannot be saved, it is kept on that device as a draft and a message appears at the top of the form. Tap <strong>Retry</strong> once you have a connection. Choose <strong>Discard and start over</strong> only if you do not want the entry. The form never shows Saved! until the tracker confirms it.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
                     <span class="faq-question font-semibold text-sm text-slate-900">Can I edit a submitted entry?</span>
                     <span class="material-icons faq-chevron text-slate-500">expand_more</span>
                 </button>
                 <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
                     <div class="pb-4">
                         Not from the entry form. Contact your program coordinator if a submitted record needs correction.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="mb-8">
+        <div class="flex items-center gap-2 mb-3 px-1">
+            <span class="material-icons text-blue-700">analytics</span>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-600">Reports</h2>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden divide-y divide-slate-200">
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">How do I build a student report?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        Open <strong>Reports</strong>, enter your viewer or administrator code, choose a student, and optionally narrow by date range or job site. Use <strong>Print Report</strong> for a printable copy with signature lines.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">Why do Reports have two rubric tabs?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        The scoring rubric was redesigned. Entries dated before <strong>November 23, 2026</strong> appear under <strong>Original rubric</strong>; entries from that date on appear under <strong>New rubric</strong>. The scale strip and report period follow the tab you are on. The two are not blended because the levels were reworded, so a 2 on one is not the same as a 2 on the other.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <button class="w-full flex justify-between items-center gap-4 px-5 py-4 text-left">
+                    <span class="faq-question font-semibold text-sm text-slate-900">What does the Customize button do?</span>
+                    <span class="material-icons faq-chevron text-slate-500">expand_more</span>
+                </button>
+                <div class="faq-answer px-5 text-sm text-slate-700 leading-relaxed">
+                    <div class="pb-4">
+                        Customize lets you reorder, hide and rename report sections, and add your own charts, tables, text, evaluator notes and page breaks. Changes apply while you are on the page. Administrators can save a layout for the whole school and choose which one opens first. Saving shared layouts needs the 3.1.0 tracker update; on an older tracker the standard report is used.
                     </div>
                 </div>
             </div>

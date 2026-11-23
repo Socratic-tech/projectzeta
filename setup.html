@@ -38,6 +38,7 @@
     }
     </script>
     <script src="tracker-switcher.js"></script>
+<script src="accessibility.js"></script>
 </head>
 
 <body class="bg-slate-100 text-slate-900 min-h-screen font-sans">
@@ -59,7 +60,7 @@
 <header class="bg-blue-900 text-white py-10 px-4">
     <div class="max-w-4xl mx-auto text-center">
         <div class="inline-flex items-center gap-2 bg-blue-800 border border-blue-700 rounded-full px-3 py-1 text-xs font-bold mb-4">
-            Production release 3.0.0
+            Production release 3.1.1
         </div>
 
         <h1 class="text-4xl font-extrabold">Setup & Upgrade</h1>
@@ -279,6 +280,21 @@
                         Upgrade the existing school spreadsheet in place. Student records, entries, job sites,
                         tasks, and existing report-viewer codes are preserved. V3 deliberately replaces the old
                         security model.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 text-blue-950 rounded-2xl p-5 mb-6">
+            <div class="flex gap-3">
+                <span class="material-icons text-blue-700">update</span>
+                <div>
+                    <h2 class="font-extrabold text-lg">Already on v3? You only need the 3.1.1 update</h2>
+                    <p class="text-sm mt-1 leading-relaxed">
+                        If your tracker already reports API v3, replace the contents of <strong>Code.gs</strong> with the
+                        current copy, save, then redeploy: <strong>Deploy → Manage deployments → pencil icon → New version → Deploy</strong>.
+                        Keep the same /exec URL. Entry QR codes, admin codes and student data are not affected.
+                        3.1.1 keeps report dates on the correct day for any spreadsheet time zone and finds the Students, Sites and other tabs even if their capitalization differs. 3.1.0 added shared report layouts. Steps 3 to 5 and 8 below are only needed when upgrading from a pre-v3 tracker.
                     </p>
                 </div>
             </div>
