@@ -35,7 +35,7 @@
     var DEMO_CODE = "DEMO";
     var API_VERSION = 3;
     var RELEASE = "3.1.0";
-    var DB_KEY = key("demo_db_v2");
+    var DB_KEY = key("demo_db_v3");
 
     var SKILLS = [
         "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
@@ -125,18 +125,13 @@
             }
         });
 
-        var sample = [
-            { tasks: 0, productivity: 0, decision: 0, social: 0, environment: 0 },
-            { tasks: 1, productivity: 1, decision: 1, social: 1, environment: 1 },
-            { tasks: 2, productivity: 2, decision: 2, social: 2, environment: 2 },
-            { tasks: 3, productivity: 3, decision: 2, social: 3, environment: 3 },
-            { tasks: 4, productivity: 3, decision: 4, social: 3, environment: 4 }
-        ];
-        tasks.forEach(function (t, i) {
-            if (i % 3 !== 2) t.complexity = clone(sample[(i * 2) % sample.length]); // leave some unrated
-        });
+        var siteComplexity = {
+            "Riverside Cafe": { tasks: 2, productivity: 2, decision: 2, social: 3, environment: 2 },
+            "Goodwill Store": { tasks: 1, productivity: 1, decision: 1, social: 2, environment: 1 }
+            // ACE Hardware left unrated on purpose
+        };
 
-        return { students: students, sites: sites, tasks: tasks, entries: entries, layouts: [], nextId: 6 };
+        return { students: students, sites: sites, tasks: tasks, siteComplexity: siteComplexity, entries: entries, layouts: [], nextId: 6 };
     }
 
     /* ---------- Storage ---------- */
@@ -198,7 +193,7 @@
         // Entry page (token instead of a code)
         if (action === "entryBootstrap") {
             if (p.token !== ENTRY_TOKEN) return fail("This entry link is no longer valid.", "denied");
-            return ok({ students: clone(db.students), sites: clone(db.sites), tasks: clone(db.tasks) });
+            return ok({ students: clone(db.students), sites: clone(db.sites), tasks: clone(db.tasks), siteComplexity: clone(db.siteComplexity || {}) });
         }
         if (action === "addEntry") {
             if (p.token !== ENTRY_TOKEN) return fail("This entry link is no longer valid.", "denied");
@@ -221,7 +216,8 @@
             case "getEntries":
                 return ok({
                     role: "admin", viewer: "Demo viewer",
-                    data: clone(db.entries), students: clone(db.students), tasks: clone(db.tasks)
+                    data: clone(db.entries), students: clone(db.students), tasks: clone(db.tasks),
+                    siteComplexity: clone(db.siteComplexity || {})
                 });
             case "verifyAdmin":
                 return ok({
@@ -231,6 +227,7 @@
             case "adminBootstrap":
                 return ok({
                     students: clone(db.students), sites: clone(db.sites), tasks: clone(db.tasks),
+                    siteComplexity: clone(db.siteComplexity || {}),
                     adminEmail: "demo.admin@example.com", supportEmail: "support@example.com",
                     entryPageUrl: new URL("entry.html", location.href).href,
                     publicSiteBaseUrl: new URL("./", location.href).href
@@ -265,18 +262,16 @@
                 break;
             case "deleteSite":
                 db.sites = db.sites.filter(function (s) { return s !== p.site_name; });
+                if (db.siteComplexity) delete db.siteComplexity[p.site_name];
                 db.tasks = db.tasks.filter(function (t) { return t.site_name !== p.site_name; });
                 break;
             case "addTask":
                 db.tasks.push({ site_name: p.site_name, task_name: p.task_name });
                 break;
-            case "setTaskComplexity":
-                db.tasks.forEach(function (t) {
-                    if (t.site_name === p.site_name && t.task_name === p.task_name) {
-                        if (p.complexity && Object.keys(p.complexity).length) t.complexity = clone(p.complexity);
-                        else delete t.complexity;
-                    }
-                });
+            case "setSiteComplexity":
+                db.siteComplexity = db.siteComplexity || {};
+                if (p.complexity && Object.keys(p.complexity).length) db.siteComplexity[p.site_name] = clone(p.complexity);
+                else delete db.siteComplexity[p.site_name];
                 break;
             case "deleteTask":
                 db.tasks = db.tasks.filter(function (t) {

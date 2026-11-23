@@ -1,16 +1,17 @@
 /************************************************************
  * JOB COMPLEXITY (shared)
  *
- * The "Vocational Readiness Tracker: Job Complexity" rubric. Each job
- * task is rated 0-4 on five rows. The overall level is the average of
- * the rows that were rated, rounded to the nearest whole level.
+ * The "Vocational Readiness Tracker: Job Complexity" rubric. There is ONE
+ * rubric per job site: the site is rated 0-4 on five rows, and the
+ * overall level is the average of the rows that were rated, rounded to
+ * the nearest whole level.
  *
- * A task's rating travels with the task as
- *   complexity: { tasks, productivity, decision, social, environment }
- * (numbers 0-4; a missing row means "not rated"). Pages that don't
- * get a rating simply show nothing, so older backends keep working.
+ * A site's rating travels as
+ *   siteComplexity: { "<site name>": { tasks, productivity, decision, social, environment } }
+ * (numbers 0-4; a missing row means "not rated"). Pages that get no
+ * rating simply show nothing, so older backends keep working.
  *
- * Loaded by admin.html (rate tasks), entry.html and report.html (show).
+ * Loaded by admin.html (rate sites), entry.html and report.html (show).
  ************************************************************/
 window.VTComplexity = (function () {
     "use strict";

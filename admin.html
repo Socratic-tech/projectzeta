@@ -1287,7 +1287,11 @@ async function loadSites(openSiteName = "", prefetched = null) {
             .sort((a, b) => a.localeCompare(b));
 
         allTasks = Object.create(null);
-        taskComplexity = Object.create(null);
+        siteComplexity = Object.create(null);
+        Object.keys(boot.siteComplexity || {}).forEach(name => {
+            const rating = VTComplexity.normalize(boot.siteComplexity[name]);
+            if (rating) siteComplexity[name] = rating;
+        });
 
         (taskJson.data || []).forEach(t => {
             const siteName = asText(t.site_name);
@@ -1300,9 +1304,6 @@ async function loadSites(openSiteName = "", prefetched = null) {
             if (!allTasks[siteName].includes(taskName)) {
                 allTasks[siteName].push(taskName);
             }
-
-            const rating = VTComplexity.normalize(t.complexity);
-            if (rating) taskComplexity[siteName + "\u0000" + taskName] = rating;
         });
 
         renderSites(openSiteName);
@@ -1367,7 +1368,28 @@ function createSiteCard(siteName, tasks, startOpen = false) {
         deleteSite(siteName);
     });
 
+    const rateButton = document.createElement("button");
+    rateButton.type = "button";
+    rateButton.className = "inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-bold ml-2";
+    function paintRate() {
+        const rating = siteComplexity[siteName];
+        if (rating) {
+            rateButton.className = "inline-flex items-center rounded-full px-0.5 py-0.5 text-[11px] font-bold ml-2";
+            rateButton.innerHTML = VTComplexity.badge(rating);
+        } else {
+            rateButton.className = "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ml-2 border border-dashed border-slate-300 text-slate-500 hover:bg-white";
+            rateButton.textContent = "Rate complexity";
+        }
+    }
+    paintRate();
+    rateButton.title = "Rate this job site's complexity";
+    rateButton.addEventListener("click", event => {
+        event.stopPropagation();
+        openComplexityEditor(siteName, paintRate);
+    });
+
     header.appendChild(toggleButton);
+    header.appendChild(rateButton);
     header.appendChild(deleteButton);
 
     const panel = document.createElement("div");
@@ -1454,40 +1476,22 @@ function renderTaskList(taskList, siteName, countLabel) {
             deleteTask(siteName, taskName);
         });
 
-        const rating = taskComplexity[siteName + "\u0000" + taskName];
-
-        const rateButton = document.createElement("button");
-        rateButton.type = "button";
-        rateButton.className = "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-bold " +
-            (rating ? "" : "border border-dashed border-slate-300 text-slate-500 hover:bg-white");
-        rateButton.title = "Rate this task's job complexity";
-        if (rating) {
-            rateButton.innerHTML = VTComplexity.badge(rating);
-        } else {
-            rateButton.textContent = "Rate complexity";
-        }
-        rateButton.addEventListener("click", () => openComplexityEditor(siteName, taskName, countLabel, taskList));
-
-        const right = document.createElement("div");
-        right.className = "flex items-center gap-2";
-        right.appendChild(rateButton);
-        right.appendChild(deleteButton);
-
         li.appendChild(label);
-        li.appendChild(right);
+        li.appendChild(deleteButton);
 
         taskList.appendChild(li);
     });
 }
 
-let taskComplexity = Object.create(null);
+let siteComplexity = Object.create(null);
 
 /************************************************************
  * JOB COMPLEXITY EDITOR
- * One rating (0-4) per rubric row for a job task. Saved with the task.
+ * One rubric per job site: a 0-4 rating on each of five rows. The site's
+ * overall level is their average. Saved with the site.
  ************************************************************/
-function openComplexityEditor(siteName, taskName, countLabel, taskList) {
-    const existing = taskComplexity[siteName + "\u0000" + taskName] || {};
+function openComplexityEditor(siteName, onSaved) {
+    const existing = siteComplexity[siteName] || {};
     const chosen = Object.assign({}, existing);
 
     const overlay = document.createElement("div");
@@ -1501,8 +1505,8 @@ function openComplexityEditor(siteName, taskName, countLabel, taskList) {
     head.innerHTML = `
         <div>
             <h3 class="font-bold text-slate-900">Job Complexity</h3>
-            <p class="text-xs text-slate-500 mt-0.5">${VTComplexity.esc(taskName)} <span class="text-slate-400">at</span> ${VTComplexity.esc(siteName)}.
-            Pick the description that best fits this task on each row.</p>
+            <p class="text-xs text-slate-500 mt-0.5">${VTComplexity.esc(siteName)}.
+            Pick the description that best fits this job site on each row. The skills combine into one complexity level for the site.</p>
         </div>`;
     const summary = document.createElement("div");
     summary.className = "text-sm font-semibold shrink-0";
@@ -1601,14 +1605,12 @@ function openComplexityEditor(siteName, taskName, countLabel, taskList) {
         save.textContent = "Saving…";
         try {
             await postAction({
-                action: "setTaskComplexity",
+                action: "setSiteComplexity",
                 site_name: siteName,
-                task_name: taskName,
                 complexity: chosen
             });
-            const k = siteName + "\u0000" + taskName;
-            if (Object.keys(chosen).length) taskComplexity[k] = chosen; else delete taskComplexity[k];
-            renderTaskList(taskList, siteName, countLabel);
+            if (Object.keys(chosen).length) siteComplexity[siteName] = chosen; else delete siteComplexity[siteName];
+            if (onSaved) onSaved();
             close();
         } catch (err) {
             save.disabled = false;
@@ -1721,7 +1723,6 @@ async function deleteTask(siteName, taskName) {
             task_name: taskName
         });
 
-        delete taskComplexity[siteName + "\u0000" + taskName];
         if (allTasks[siteName]) {
             allTasks[siteName] = allTasks[siteName].filter(task => task !== taskName);
         }

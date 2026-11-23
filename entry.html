@@ -146,6 +146,7 @@ if (VT_ENV) {
                             class="w-full p-3 border rounded-lg bg-slate-50">
                         <option>Loading...</option>
                     </select>
+                    <div id="siteComplexityBadge" class="mt-1 min-h-[1rem]"></div>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -514,11 +515,7 @@ function renderTasks(tasks) {
 
     siteLabel.textContent = `— ${document.getElementById("siteSelect").value}`;
     section.classList.remove("hidden");
-    const site = document.getElementById("siteSelect").value;
-    tasks.forEach(task => {
-        const rating = taskComplexity[site + "\u0000" + task];
-        renderScoreGroup(container, task, `task:${task}`, true, rating ? VTComplexity.badge(rating) : "");
-    });
+    tasks.forEach(task => renderScoreGroup(container, task, `task:${task}`, true));
 }
 
 /************************************************************
@@ -555,10 +552,10 @@ function updateButtons(key) {
 /************************************************************
  * DROPDOWNS
  ************************************************************/
-let taskComplexity = {};
+let siteComplexity = {};
 
 function fillDropdowns(boot) {
-    taskComplexity = {};
+    siteComplexity = boot.siteComplexity || {};
     // Students
     const sSel = document.getElementById("studentSelect");
     sSel.innerHTML = `<option value="">Select Student…</option>`;
@@ -587,13 +584,13 @@ function fillDropdowns(boot) {
     (boot.tasks || []).forEach(t => {
         if (!allTasks[t.site_name]) allTasks[t.site_name] = [];
         allTasks[t.site_name].push(t.task_name);
-        const rating = VTComplexity.normalize(t.complexity);
-        if (rating) taskComplexity[t.site_name + "\u0000" + t.task_name] = rating;
     });
 }
 
 function handleSiteChange() {
     const site = document.getElementById("siteSelect").value;
+    const badgeBox = document.getElementById("siteComplexityBadge");
+    if (badgeBox) badgeBox.innerHTML = site ? VTComplexity.badge(siteComplexity[site]) : "";
     renderTasks(site ? (allTasks[site] || []) : []);
 }
 

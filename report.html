@@ -495,7 +495,6 @@
             </div>
 
             <div id="taskTiles" data-part="tiles" class="tile-grid mt-5"></div>
-            <div id="taskComplexity" data-part="tiles" class="mt-5"></div>
         </section>
     </template>
 
@@ -507,6 +506,7 @@
             </h3>
             <p class="text-xs text-slate-500 mb-4">Average of all scores (behavioral and job task) recorded at each job site.</p>
             <div id="siteTiles" class="tile-grid"></div>
+            <div id="siteComplexity" class="mt-5"></div>
         </section>
     </template>
 
@@ -595,6 +595,7 @@ let viewerRole = "viewer";
 let allEntries = [];
 let allStudents = [];
 let allTasks = [];
+let siteComplexityMap = {};
 let progressChart = null;
 let skillChart = null;
 let taskChart = null;
@@ -930,6 +931,7 @@ function applyEntries(json) {
     allEntries = Array.isArray(json.data) ? json.data : [];
     allStudents = Array.isArray(json.students) ? json.students : [];
     allTasks = Array.isArray(json.tasks) ? json.tasks : [];
+    siteComplexityMap = (json.siteComplexity && typeof json.siteComplexity === "object") ? json.siteComplexity : {};
 
     buildStudentOptions();
     buildSiteOptions();
@@ -1240,7 +1242,6 @@ const BLOCK_FILLERS = {
             taskChart = renderBarChart(null, "taskChart", "taskChartWrap", "taskEmpty", ctx.tasks);
         }
         renderTiles("taskTiles", ctx.tasks);
-        renderTaskComplexity(ctx.tasks);
     },
 
     sites(ctx) {
@@ -1479,6 +1480,7 @@ function renderSiteAverages(entries) {
         return `
             <div class="score-tile" style="background:${b.bg};border-color:${b.border}">
                 <div class="score-tile-name">${escapeHTML(row.name)}</div>
+                <div>${VTComplexity.badge(siteComplexityMap[row.name], true)}</div>
                 <div class="score-tile-foot">
                     <span class="score-tile-value" style="color:${b.text}">${row.average.toFixed(2)}</span>
                     <span class="score-tile-count">${row.visits} evaluation${row.visits === 1 ? "" : "s"}</span>
@@ -1486,17 +1488,18 @@ function renderSiteAverages(entries) {
                 <div class="score-tile-count">${split.join("  |  ")}</div>
             </div>`;
     }).join("");
+
+    renderSiteComplexity(rows);
 }
 
-/** Job complexity for the tasks in this report (rated by admins; blank if none are rated). */
-function renderTaskComplexity(rows) {
-    const el = document.getElementById("taskComplexity");
+/** Job complexity of the sites in this report (one rubric per site, set by admins; blank if none are rated). */
+function renderSiteComplexity(rows) {
+    const el = document.getElementById("siteComplexity");
     if (!el) return;
 
-    const rated = rows.map(row => {
-        const match = allTasks.find(t => t && t.task_name === row.name && VTComplexity.normalize(t.complexity));
-        return match ? { name: row.name, site: match.site_name, c: VTComplexity.normalize(match.complexity) } : null;
-    }).filter(Boolean);
+    const rated = rows
+        .map(row => ({ name: row.name, c: VTComplexity.normalize(siteComplexityMap[row.name]) }))
+        .filter(r => r.c);
 
     if (!rated.length) { el.innerHTML = ""; return; }
 
@@ -1517,9 +1520,9 @@ function renderTaskComplexity(rows) {
 
     el.innerHTML =
         '<h4 class="font-semibold text-slate-800 text-sm mb-1">Job complexity</h4>' +
-        '<p class="text-xs text-slate-500 mb-2">How demanding each task is (0 Supported – 4 Advanced), so a score can be read in context.</p>' +
+        '<p class="text-xs text-slate-500 mb-2">How demanding each job site is (0 Supported – 4 Advanced). The overall level is the average of the five rows.</p>' +
         '<div class="overflow-x-auto"><table class="w-full text-xs"><thead class="text-slate-500"><tr>' +
-        '<th class="px-2 py-1 text-left font-semibold">Task</th><th class="px-2 py-1 text-left font-semibold">Overall</th>' +
+        '<th class="px-2 py-1 text-left font-semibold">Job site</th><th class="px-2 py-1 text-left font-semibold">Overall</th>' +
         head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
 }
 
