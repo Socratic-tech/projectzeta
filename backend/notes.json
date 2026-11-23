@@ -1,0 +1,12 @@
+{
+  "version": "3.1.0",
+  "date": "2026-11-23",
+  "minLoader": 1,
+  "notes": "Shared report layouts: arrange the student report your way and add your own charts and tables. Administrators can save layouts for the whole school.",
+  "changes": [
+    "Reports has a new Customize button: reorder, hide and rename report sections",
+    "Add your own charts and tables from any of a student's scores, plus text, evaluator notes and page breaks",
+    "Administrators can save layouts for the whole school and choose which one opens first",
+    "Student data, codes and QR links are not affected"
+  ]
+}

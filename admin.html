@@ -151,6 +151,7 @@ if (VT_ENV) {
             </div>
             <div class="flex items-center gap-3 text-xs">
                 <a href="report.html" class="text-blue-700 font-bold hover:underline">Open Reports</a>
+                <button type="button" onclick="checkForBackendUpdate(true)" class="text-blue-700 font-bold hover:underline">Check for updates</button>
                 <button onclick="signOutAdmin()" class="text-slate-500 hover:text-red-700 font-bold">Sign out</button>
             </div>
         </div>
@@ -834,8 +835,185 @@ async function refreshBackendRelease() {
     backendRelease = String(health.release || "");
 }
 
+// Schools on the self-updating loader answer "updateStatus"; older backends
+// answer "Unknown action" and keep the manual steps below.
+let loaderMode; // undefined = not asked yet, true/false afterwards
+
+async function fetchLoaderStatus() {
+    if (loaderMode === false) return null;
+    try {
+        const json = await postAction({ action: "updateStatus" });
+        loaderMode = true;
+        return json.update;
+    } catch (err) {
+        if (loaderMode === undefined) loaderMode = false;
+        return null;
+    }
+}
+
+function loaderBox(box, tone, title, lines, buttons) {
+    const tones = {
+        green: ["#f0fdf4", "#86efac", "#166534", "#166534"],
+        amber: ["#fffbeb", "#fcd34d", "#78350f", "#92400e"],
+        red:   ["#fef2f2", "#fca5a5", "#7f1d1d", "#b91c1c"],
+        slate: ["#f8fafc", "#cbd5e1", "#334155", "#334155"]
+    }[tone];
+    clearChildren(box);
+    box.style.background = tones[0];
+    box.style.borderColor = tones[1];
+    box.style.color = tones[2];
+
+    const head = document.createElement("div");
+    head.className = "flex items-start gap-3";
+    head.appendChild(makeIcon(tone === "green" ? "check_circle" : tone === "red" ? "error_outline" : "system_update_alt", "text-2xl"));
+
+    const body = document.createElement("div");
+    body.className = "flex-1";
+    const h = document.createElement("h2");
+    h.className = "font-extrabold text-lg";
+    h.textContent = title;
+    body.appendChild(h);
+
+    (lines || []).forEach(line => {
+        if (Array.isArray(line)) {
+            const ul = document.createElement("ul");
+            ul.className = "list-disc ml-5 mt-1 text-sm";
+            line.forEach(c => { const li = document.createElement("li"); li.textContent = String(c); ul.appendChild(li); });
+            body.appendChild(ul);
+        } else {
+            const p = document.createElement("p");
+            p.className = "text-sm mt-1";
+            p.textContent = line;
+            body.appendChild(p);
+        }
+    });
+
+    if (buttons && buttons.length) {
+        const row = document.createElement("div");
+        row.className = "flex flex-wrap gap-2 mt-4";
+        buttons.forEach(b => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.textContent = b.label;
+            if (b.primary) {
+                btn.className = "text-white font-bold px-4 py-2 rounded-lg text-sm";
+                btn.style.background = tones[3];
+            } else if (b.link) {
+                btn.className = "font-bold px-4 py-2 rounded-lg text-sm underline";
+            } else {
+                btn.className = "bg-white border font-bold px-4 py-2 rounded-lg text-sm";
+                btn.style.borderColor = tones[1];
+            }
+            btn.addEventListener("click", async () => {
+                const all = row.querySelectorAll("button");
+                all.forEach(x => { x.disabled = true; });
+                const original = btn.textContent;
+                if (b.busy) btn.textContent = b.busy;
+                try { await b.run(); }
+                catch (err) {
+                    all.forEach(x => { x.disabled = false; });
+                    btn.textContent = original;
+                    if (err && err.message === "Cancelled.") return;
+                    loaderBox(box, "red", "That did not work", [(err && err.message) || String(err), "Nothing was changed."],
+                        [{ label: "Check again", run: () => checkForBackendUpdate(true) }]);
+                }
+            });
+            row.appendChild(btn);
+        });
+        body.appendChild(row);
+    }
+
+    head.appendChild(body);
+    box.appendChild(head);
+    box.classList.remove("hidden");
+}
+
+function renderLoaderStatus(box, st, manual) {
+    const undoButton = () => ({
+        label: "Undo last update (back to " + st.previous + ")",
+        busy: "Going back…",
+        run: async () => {
+            if (!confirm("Go back from " + st.installed + " to " + st.previous + "? Student data is not affected.")) throw new Error("Cancelled.");
+            const json = await postAction({ action: "undoUpdate" });
+            backendRelease = String(json.undone && json.undone.version || backendRelease);
+            loaderBox(box, "green", "Back on version " + backendRelease,
+                ["The update was undone. It will not be offered again until a newer release is published."],
+                json.update && json.update.canUndo ? [{ label: "Redo the update", busy: "Working…", run: async () => {
+                    await postAction({ action: "undoUpdate" });
+                    await checkForBackendUpdate(true);
+                } }] : []);
+        }
+    });
+
+    if (st.latestError) {
+        if (manual) loaderBox(box, "slate", "Couldn't check right now", [st.latestError, "Your tracker keeps working. Try again in a minute."], st.canUndo ? [undoButton()] : []);
+        else box.classList.add("hidden");
+        return;
+    }
+
+    if (!st.updateAvailable) {
+        if (!manual) { box.classList.add("hidden"); return; }
+        loaderBox(box, "green", "This school's tracker is up to date",
+            ["Installed version: " + st.installed + (st.undone ? ". You undid version " + st.undone + "; it will not be offered again until a newer release is published." : "") + "."],
+            st.canUndo ? [undoButton()] : []);
+        return;
+    }
+
+    const latest = st.latest;
+    if (!manual) {
+        try {
+            const until = Number(localStorage.getItem(snoozeKey(latest.version)) || 0);
+            if (until > Date.now()) return;
+        } catch (e) { /* ignore */ }
+    }
+
+    const lines = [
+        "This school is on version " + (st.installed || "unknown") + ". The new version is " + latest.version +
+            (latest.date ? " (" + latest.date + ")" : "") + ".",
+        latest.notes
+    ].filter(Boolean);
+    if (latest.changes && latest.changes.length) lines.push(latest.changes);
+    lines.push("Student data, admin and viewer codes and QR links are not affected. Before anything is installed it is verified, and you can undo the update afterward.");
+
+    const buttons = [{
+        label: "Update now", primary: true, busy: "Installing…",
+        run: async () => {
+            const json = await postAction({ action: "installUpdate", expectVersion: latest.version });
+            backendRelease = String(json.installed && json.installed.version || latest.version);
+            const after = json.update || {};
+            loaderBox(box, "green", "Updated to version " + backendRelease,
+                ["Reload the page to use the new version. Everything else stays the same."],
+                [{ label: "Reload now", primary: true, run: async () => { location.reload(); } }]
+                    .concat(after.canUndo ? [{
+                        label: "Undo this update", busy: "Going back…",
+                        run: async () => {
+                            await postAction({ action: "undoUpdate" });
+                            await checkForBackendUpdate(true);
+                        }
+                    }] : []));
+        }
+    }];
+    buttons.push({
+        label: "Remind me in " + SNOOZE_DAYS + " days", link: true,
+        run: async () => {
+            try { localStorage.setItem(snoozeKey(latest.version), String(Date.now() + SNOOZE_DAYS * 86400000)); } catch (e) { /* ignore */ }
+            box.classList.add("hidden");
+        }
+    });
+    if (st.canUndo) buttons.push(undoButton());
+
+    loaderBox(box, "amber", "Update available for this school's tracker", lines, buttons);
+}
+
 async function checkForBackendUpdate(manual = false) {
     const box = document.getElementById("updateNotice");
+
+    const loaderStatus = await fetchLoaderStatus();
+    if (loaderStatus) {
+        renderLoaderStatus(box, loaderStatus, manual);
+        return;
+    }
+
     let release;
 
     try {
