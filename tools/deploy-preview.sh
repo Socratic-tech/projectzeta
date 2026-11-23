@@ -34,6 +34,10 @@ cd "$TMP"
 
 perl -pi -e 's/const VT_ENV = "";/const VT_ENV = "PREVIEW";/' ./*.html
 
+# Version the local script links (demo-backend.js?v=<sha>) in the published copy
+# only, so browsers don't keep running an older cached script after a deploy.
+SHA="$SHA" perl -pi -e 's/src="([\w-]+\.js)"/src="$1?v=$ENV{SHA}"/g' ./*.html
+
 # Every page that defines VT_ENV must now be PREVIEW; otherwise stop, so a
 # page can't share storage with the live site.
 MISSED="$(grep -L 'const VT_ENV = "PREVIEW";' $(grep -l 'const VT_ENV' ./*.html) || true)"
