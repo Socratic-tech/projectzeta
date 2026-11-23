@@ -1384,7 +1384,7 @@ const BLOCK_FILLERS = {
 
     behavior(ctx, block) {
         if (block.options.showChart !== false) {
-            skillChart = renderBarChart(null, "skillChart", "skillChartWrap", "skillEmpty", ctx.skills);
+            skillChart = renderBarChart(null, "skillChart", "skillChartWrap", "skillEmpty", ctx.skills, true);
         }
         renderTiles("skillTiles", ctx.skills, true);
     },
@@ -1472,7 +1472,8 @@ function snList(title, icon, iconColor, rows) {
             <ul class="space-y-2">
                 ${rows.map(r => `
                     <li class="flex justify-between items-start gap-3 text-sm">
-                        <span class="text-slate-800">${escapeHTML(r.name)}</span>
+                        <span class="text-slate-800">${escapeHTML(r.name)}${SKILL_ORDER.includes(r.name)
+                            ? `<span class="block text-[11px] font-semibold text-slate-500">${escapeHTML(skillGroupTitle(r.name))}</span>` : ""}</span>
                         ${scorePill(r.average)}
                     </li>`).join("")}
             </ul>
@@ -1532,6 +1533,18 @@ function barChartHeight(count) {
     return Math.max(140, count * 32 + 50);
 }
 
+/* Inserts a heading row before each section (same four sections as the entry form). */
+function withGroupHeaders(rows) {
+    const out = [];
+    let last = null;
+    rows.forEach(r => {
+        const title = skillGroupTitle(r.name);
+        if (title !== last) { out.push({ header: true, name: title }); last = title; }
+        out.push(r);
+    });
+    return out;
+}
+
 function drawBarChart(existing, canvasId, wrapId, emptyId, rows) {
     if (existing) existing.destroy();
 
@@ -1548,15 +1561,15 @@ function drawBarChart(existing, canvasId, wrapId, emptyId, rows) {
     empty.classList.add("hidden");
     wrap.style.height = barChartHeight(rows.length) + "px";
 
-    const colors = rows.map(r => bandFor(r.average).fill);
+    const colors = rows.map(r => r.header ? "rgba(0,0,0,0)" : bandFor(r.average).fill);
 
     return new Chart(document.getElementById(canvasId), {
         type: "bar",
         data: {
-            labels: rows.map(r => wrapLabel(r.name)),
+            labels: rows.map(r => r.header ? [r.name.toUpperCase()] : wrapLabel(r.name)),
             datasets: [{
                 label: "Average",
-                data: rows.map(r => round2(r.average)),
+                data: rows.map(r => r.header ? null : round2(r.average)),
                 backgroundColor: colors,
                 borderColor: colors,
                 borderWidth: 1,
@@ -1576,12 +1589,17 @@ function drawBarChart(existing, canvasId, wrapId, emptyId, rows) {
                     ticks: { stepSize: 1 }
                 },
                 y: {
-                    ticks: { autoSkip: false, font: { size: 11 } }
+                    ticks: {
+                        autoSkip: false,
+                        // Section headings are bold; skill labels stay regular.
+                        font: ctx => ({ size: 11, weight: rows[ctx.index] && rows[ctx.index].header ? "bold" : "normal" })
+                    }
                 }
             },
             plugins: {
                 legend: { display: false },
                 tooltip: {
+                    filter: item => !rows[item.dataIndex].header,
                     callbacks: {
                         title: items => rows[items[0].dataIndex].name,
                         label: item => {
@@ -1740,11 +1758,12 @@ function renderProgressChart(entries) {
     progressChart.$vtPrintHeight = 240;
 }
 
-function renderBarChart(existing, canvasId, wrapId, emptyId, rows) {
-    const chart = drawBarChart(existing, canvasId, wrapId, emptyId, rows);
+function renderBarChart(existing, canvasId, wrapId, emptyId, rows, grouped) {
+    const shown = grouped ? withGroupHeaders(rows) : rows;
+    const chart = drawBarChart(existing, canvasId, wrapId, emptyId, shown);
     if (chart) {
-        chart.$vtScreenHeight = barChartHeight(rows.length);
-        chart.$vtPrintHeight = printBarHeight(rows.length);
+        chart.$vtScreenHeight = barChartHeight(shown.length);
+        chart.$vtPrintHeight = printBarHeight(shown.length);
     }
     return chart;
 }
