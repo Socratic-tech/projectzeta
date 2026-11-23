@@ -747,11 +747,14 @@ function buildDemoData() {
         const taskBase = {};
         Object.values(sites).flat().forEach(task => taskBase[task] = pick([1, 2, 3, 3, 4]));
 
+        // Dates straddle RUBRIC_CUTOFF (about half before, half on/after, every 4 days)
+        // so both rubric tabs have sample data no matter what day the demo is opened.
         const visits = 12 - sIndex * 3;
+        const before = Math.ceil(visits / 2);
+        const [cy, cm, cd] = RUBRIC_CUTOFF.split("-").map(Number);
         for (let i = 0; i < visits; i++) {
             const site = Object.keys(sites)[i % 3];
-            const date = new Date(today);
-            date.setDate(today.getDate() - (visits - i) * 4);
+            const date = new Date(Date.UTC(cy, cm - 1, cd + (i - before) * 4 + 1, 12));
 
             const growth = i / visits;              // scores drift up over time
             const scores = {};

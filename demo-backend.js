@@ -35,7 +35,7 @@
     var DEMO_CODE = "DEMO";
     var API_VERSION = 3;
     var RELEASE = "3.1.0";
-    var DB_KEY = key("demo_db_v3");
+    var DB_KEY = key("demo_db_v4");
 
     var SKILLS = [
         "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
@@ -99,11 +99,13 @@
             var taskBase = {};
             tasks.forEach(function (t) { taskBase[t.task_name] = pick([1, 2, 3, 3, 4]); });
 
+            // Dates straddle the rubric cutoff (same day as RUBRIC_CUTOFF in report.html):
+            // about half before, half on/after, every 4 days, so both report tabs have data.
             var visits = 14 - sIndex * 2;
+            var before = Math.ceil(visits / 2);
             for (var i = 0; i < visits; i++) {
                 var site = sites[i % sites.length];
-                var date = new Date(today);
-                date.setDate(today.getDate() - (visits - i) * 4);
+                var date = new Date(Date.UTC(2026, 10, 23 + (i - before) * 4 + 1, 12));
                 var growth = i / visits;
                 var scores = {};
                 SKILLS.forEach(function (sk) {
