@@ -301,8 +301,9 @@ function showRubric(idx) {
     if (!r) return;
     const cur = skillScores[`skill:${skill}`];
     const secs = Array.isArray(r) ? r : [r];
+    const shownName = vtSkillTitle(skill);
     document.getElementById("rubricTitle").textContent =
-        (secs.length === 1 && secs[0].title !== skill) ? `${secs[0].title} — ${skill}` : skill;
+        shownName !== skill ? `${shownName} — ${skill}` : skill;
     document.getElementById("rubricBody").innerHTML = secs.map(sec => `
         ${secs.length > 1 ? `<h4 class="font-bold text-slate-800 mt-3 first:mt-0">${sec.title}</h4>` : ""}
         ` + LEVELS.map(L => `
@@ -516,12 +517,15 @@ function renderScoreGroup(container, label, key, allowNA = false, extraHtml = ""
 
     // Behavioral skills with a detailed rubric: tapping the name opens it (display only)
     const rubricIdx = key.startsWith("skill:") ? SKILLS_LIST.indexOf(label) : -1;
+    // Shown name: the designer's rubric name for skills; tasks keep their own name.
+    // (label stays the stored name, which is what lookups and saved scores use.)
+    const shown = key.startsWith("skill:") ? vtSkillTitle(label) : label;
     const labelHtml = (rubricIdx >= 0 && SKILL_RUBRICS[label])
         ? `<button type="button" onclick="showRubric(${rubricIdx})" aria-haspopup="dialog"
                    class="text-left text-blue-800 underline decoration-dotted underline-offset-4 inline-flex items-center gap-1">
-               ${label}<span class="material-icons text-base" aria-hidden="true">info</span>
+               ${shown}<span class="material-icons text-base" aria-hidden="true">info</span>
                <span class="sr-only">— view rubric</span></button>`
-        : label;
+        : shown;
 
     let html = `
         <div id="row_${safeId}" class="score-row rounded-lg" role="group" aria-labelledby="lbl_${safeId}">
@@ -533,7 +537,7 @@ function renderScoreGroup(container, label, key, allowNA = false, extraHtml = ""
             <button type="button"
                     id="btn_${safeId}_${i}"
                     aria-pressed="false"
-                    aria-label="${label.replace(/"/g, "&quot;")}: ${i}, ${LEVELS[i].name}"
+                    aria-label="${shown.replace(/"/g, "&quot;")}: ${i}, ${LEVELS[i].name}"
                     onclick="setScore('${jsKey}', ${i})"
                     class="score-btn py-3 rounded-lg border font-bold text-lg shadow-sm">
                 ${i}
@@ -545,7 +549,7 @@ function renderScoreGroup(container, label, key, allowNA = false, extraHtml = ""
             <button type="button"
                     id="btn_${safeId}_null"
                     aria-pressed="false"
-                    aria-label="${label.replace(/"/g, "&quot;")}: not applicable"
+                    aria-label="${shown.replace(/"/g, "&quot;")}: not applicable"
                     onclick="setScore('${jsKey}', null)"
                     class="score-btn py-3 rounded-lg border font-bold text-sm shadow-sm">
                 N/A

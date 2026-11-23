@@ -149,3 +149,12 @@ const VT_SKILL_RUBRICS = {
             "Follows 4+ step directions (visual or verbal) independently."] }
     ]
 };
+
+/* The name people see for a behavioral skill: the designer's rubric row name(s)
+   (Appearance, Task Initiation, Respect & Conversation Skills ...). Display only;
+   scores are always read and saved under the stored skill name. */
+function vtSkillTitle(name) {
+    const r = VT_SKILL_RUBRICS[name];
+    if (!r) return name;
+    return (Array.isArray(r) ? r : [r]).map(row => row.title).join(" & ");
+}

@@ -660,9 +660,7 @@ const SKILL_ORDER = SKILL_GROUPS.flatMap(g => g.skills);
    Display only; scores are always read and saved under the stored name. */
 function skillLabel(name) {
     if (rubricTab === "original") return name;
-    const r = VT_SKILL_RUBRICS[name];
-    if (!r) return name;
-    return (Array.isArray(r) ? r : [r]).map(row => row.title).join(" & ");
+    return vtSkillTitle(name);
 }
 
 function skillGroupTitle(name) {
