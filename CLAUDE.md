@@ -30,6 +30,7 @@ Static HTML/JS app (no build step) where teachers score students on 16 job skill
 - entry.html: `SKILL_RUBRICS` maps each existing skill key to the designer's rubric row(s) (display-only popup opened by tapping the skill name). Mapping: hygiene/dress→Appearance, Initiates→Task Initiation, logical order→Logical Order, quality→Quality Work, work rate→Work Rate, materials→Prepared, "Asks for help"→Resourcefulness, social interactions→Respect + Conversation Skills, communication→Expressive + Receptive, constructive criticism→Constructive Feedback, plus the same-named ones.
 - entry.html UX: compact scoring key (top rubric row), 4 collapsible skill groups (`SKILL_GROUPS`, display only) that auto-close when complete, selected-level label, aria labels, sticky progress + submit bar (left gutter on phones for the accessibility button).
 - report.html: two tabs, **Original rubric** / **New rubric**, split by entry `date` at `RUBRIC_CUTOFF = "2026-11-23"` (undated entries → Original). No blended view (only ~6 students span the change). Scale strip and "Report period" line follow the tab. No backend/tagging needed.
+- report.html also mirrors the entry form's four skill groups (`SKILL_GROUPS`, copy of entry.html's; keep the two identical): behavioral tiles/chart are ordered and headed by group. Score band labels (`SCORE_BANDS.label`) follow the active rubric tab.
 - demo data (report.html `buildDemoData`, demo-backend.js) is dated around the cutoff so both tabs show data; demo DB key is `demo_db_v4`.
 
 ## Decisions

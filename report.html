@@ -24,6 +24,14 @@
         }
         @media (min-width: 640px)  { .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (min-width: 1024px) { .tile-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        /* Group heading inside a tile grid (behavioral skills, same groups as the entry form) */
+        .tile-group-title {
+            grid-column: 1 / -1;
+            font-size: .75rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+            color: #475569; padding-top: .35rem; border-bottom: 1px solid #e2e8f0; padding-bottom: .25rem;
+            break-after: avoid;
+        }
+        .tile-group-title:first-child { padding-top: 0; }
 
         .cover-grid {
             display: grid;
@@ -632,6 +640,29 @@ const CORE_SKILLS = [
     "Demonstrates self-reflection"
 ];
 
+/* Display-only grouping, the same four headings as the entry form (SKILL_GROUPS in
+   entry.html). Stored skill names are untouched; this only orders and labels them. */
+const SKILL_GROUPS = [
+    { title: "Work Habits", skills: [
+        "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
+        "Initiates familiar tasks", "Maintains a productive work rate", "Complete tasks in a logical order",
+        "Work is completed to quality standards"] },
+    { title: "On the Job", skills: [
+        "Demonstrates adaptability", "Maintains clean and organized work space",
+        "Awareness of surroundings and good decision making", "Asks for help appropriately"] },
+    { title: "Communication", skills: [
+        "Appropriate and respectful social interactions", "Displays effective communication skills",
+        "Accepts constructive criticism"] },
+    { title: "Attitude & Growth", skills: [
+        "Demonstrates a positive attitude", "Demonstrates self-reflection"] }
+];
+const SKILL_ORDER = SKILL_GROUPS.flatMap(g => g.skills);
+
+function skillGroupTitle(name) {
+    const g = SKILL_GROUPS.find(group => group.skills.includes(name));
+    return g ? g.title : "Other";
+}
+
 function escapeHTML(value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, c => ({
         "&": "&amp;",
@@ -1174,7 +1205,11 @@ function behaviorRows(entries) {
         });
         const avg = average(values);
         return avg === null ? null : { name: skill, average: avg, count: values.length };
-    }).filter(Boolean);
+    }).filter(Boolean).sort((a, b) => {
+        // Same order as the entry form's groups (a skill outside the groups goes last).
+        const ia = SKILL_ORDER.indexOf(a.name), ib = SKILL_ORDER.indexOf(b.name);
+        return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+    });
 }
 
 function taskRows(entries) {
@@ -1314,7 +1349,7 @@ const BLOCK_FILLERS = {
         if (block.options.showChart !== false) {
             skillChart = renderBarChart(null, "skillChart", "skillChartWrap", "skillEmpty", ctx.skills);
         }
-        renderTiles("skillTiles", ctx.skills);
+        renderTiles("skillTiles", ctx.skills, true);
     },
 
     tasks(ctx, block) {
@@ -1606,8 +1641,17 @@ function renderSiteComplexity(rows) {
         head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
 }
 
-function renderTiles(containerId, rows) {
-    document.getElementById(containerId).innerHTML = rows.map(scoreTile).join("");
+function renderTiles(containerId, rows, grouped) {
+    const box = document.getElementById(containerId);
+    if (!grouped) { box.innerHTML = rows.map(scoreTile).join(""); return; }
+
+    let last = null;
+    box.innerHTML = rows.map(row => {
+        const title = skillGroupTitle(row.name);
+        const heading = title !== last ? `<div class="tile-group-title">${escapeHTML(title)}</div>` : "";
+        last = title;
+        return heading + scoreTile(row);
+    }).join("");
 }
 
 function renderProgressChart(entries) {
