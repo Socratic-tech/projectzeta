@@ -1048,10 +1048,16 @@ function filteredEntriesForStudent(studentId) {
 /* ---------- Score bands (single source of truth for color coding) ---------- */
 // Averages are rounded to 2 decimals before banding so the number shown
 // always matches its color (0.996 shows as 1.00 and is yellow).
+// `label` follows the active rubric tab: original wording on the Original tab,
+// the new rubric's level names on the New tab (getter, so every legend,
+// tooltip and summary that reads b.label picks up the right words).
 const SCORE_BANDS = [
-    { key: "green",  min: 3, label: "Independent",          range: "3.0–4.0", fill: "#16a34a", bg: "#f0fdf4", border: "#86efac", text: "#166534" },
-    { key: "yellow", min: 1, label: "Needs prompting",      range: "1.0–2.9", fill: "#eab308", bg: "#fefce8", border: "#fde047", text: "#854d0e" },
-    { key: "red",    min: 0, label: "Not yet performing",   range: "0–0.9",   fill: "#dc2626", bg: "#fef2f2", border: "#fca5a5", text: "#991b1b" }
+    { key: "green",  min: 3, labelOriginal: "Independent",        labelNew: "Independent or Advanced", range: "3.0–4.0", fill: "#16a34a", bg: "#f0fdf4", border: "#86efac", text: "#166534",
+      get label() { return rubricTab === "original" ? this.labelOriginal : this.labelNew; } },
+    { key: "yellow", min: 1, labelOriginal: "Needs prompting",    labelNew: "Needs support",           range: "1.0–2.9", fill: "#eab308", bg: "#fefce8", border: "#fde047", text: "#854d0e",
+      get label() { return rubricTab === "original" ? this.labelOriginal : this.labelNew; } },
+    { key: "red",    min: 0, labelOriginal: "Not yet performing", labelNew: "Incomplete",              range: "0–0.9",   fill: "#dc2626", bg: "#fef2f2", border: "#fca5a5", text: "#991b1b",
+      get label() { return rubricTab === "original" ? this.labelOriginal : this.labelNew; } }
 ];
 
 /* Rubric versions. Scores are the same 0-4 numbers under the same skill names in both;
