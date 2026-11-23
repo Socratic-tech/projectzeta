@@ -8,6 +8,10 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         .score-btn { transition: all 0.2s ease; }
+        .skill-group > summary { list-style: none; }
+        .skill-group > summary::-webkit-details-marker { display: none; }
+        .skill-group .chev { transition: transform 0.2s ease; transform: rotate(-90deg); }
+        .skill-group[open] > summary .chev { transform: rotate(0deg); }
     </style>
 <script>
 /************************************************************
@@ -688,18 +692,80 @@ const SKILL_GROUPS = [
         "Demonstrates a positive attitude", "Demonstrates self-reflection"] }
 ];
 
+const groupEls = [];            // [{ el, skills }]
+const groupWasComplete = [];    // per group: was it complete after the last update?
+const skillGroupIndex = {};     // skill name -> group index
+
 function renderSkills() {
     const container = document.getElementById("skillsContainer");
     container.innerHTML = "";
-    const placed = new Set();
-    SKILL_GROUPS.forEach(g => {
-        container.innerHTML += `<h3 class="text-xs font-bold uppercase tracking-wide text-slate-500 border-b pb-1 pt-2">${g.title}</h3>`;
-        g.skills.forEach(skill => { placed.add(skill); renderScoreGroup(container, skill, `skill:${skill}`); });
-    });
+    groupEls.length = 0;
+    groupWasComplete.length = 0;
+
+    const groups = SKILL_GROUPS.map(g => ({ title: g.title, skills: g.skills.slice() }));
+    const placed = new Set(groups.flatMap(g => g.skills));
     // Safety net: a skill missing from the groups still gets a row (never silently dropped)
-    SKILLS_LIST.filter(sk => !placed.has(sk)).forEach(skill =>
-        renderScoreGroup(container, skill, `skill:${skill}`));
+    const extra = SKILLS_LIST.filter(sk => !placed.has(sk));
+    if (extra.length) groups.push({ title: "Other", skills: extra });
+
+    groups.forEach((g, gi) => {
+        const d = document.createElement("details");
+        d.open = true;
+        d.className = "skill-group scroll-mt-20 border border-slate-200 rounded-xl bg-white";
+        d.innerHTML = `
+            <summary class="cursor-pointer select-none flex items-center gap-3 px-4 py-4 rounded-xl">
+                <span class="material-icons chev text-slate-500" aria-hidden="true">expand_more</span>
+                <span class="flex-1 text-xl font-extrabold text-slate-800">${g.title}</span>
+                <span id="grpStatus_${gi}" class="text-sm font-bold text-slate-600"></span>
+            </summary>
+            <div class="px-4 pb-5 pt-2 space-y-6"></div>`;
+        container.appendChild(d);
+        groupEls.push({ el: d, skills: g.skills });
+        groupWasComplete.push(false);
+        const body = d.lastElementChild;
+        g.skills.forEach(skill => {
+            skillGroupIndex[skill] = gi;
+            renderScoreGroup(body, skill, `skill:${skill}`);
+        });
+        updateGroup(gi);
+    });
     updateProgress();
+}
+
+function groupIsComplete(gi) {
+    const g = groupEls[gi];
+    return !!g && g.skills.every(sk => Number.isInteger(skillScores[`skill:${sk}`]));
+}
+
+function updateGroup(gi) {
+    const g = groupEls[gi];
+    if (!g) return;
+    const done  = g.skills.filter(sk => Number.isInteger(skillScores[`skill:${sk}`])).length;
+    const total = g.skills.length;
+    const complete = done === total;
+    const st = document.getElementById("grpStatus_" + gi);
+    if (st) {
+        st.textContent = complete ? "✓ Complete" : `${done} of ${total} scored`;
+        st.className = "text-sm font-bold " + (complete ? "text-green-700" : "text-slate-600");
+    }
+    groupWasComplete[gi] = complete;
+}
+
+// After the last skill in a section is scored: fold it shut, then bring the next unfinished one into view.
+function advanceFrom(gi) {
+    setTimeout(() => {
+        if (!groupIsComplete(gi)) return;          // changed their mind in the meantime
+        groupEls[gi].el.open = false;
+        const next = groupEls.findIndex((g, i) => i !== gi && !groupIsComplete(i));
+        if (next >= 0) {
+            groupEls[next].el.open = true;
+            groupEls[next].el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    }, 700);
+}
+
+function collapseCompleteGroups() {
+    groupEls.forEach((g, i) => { if (groupIsComplete(i)) g.el.open = false; });
 }
 
 /************************************************************
@@ -729,9 +795,12 @@ function renderTasks(tasks) {
  * SCORE MANAGEMENT
  ************************************************************/
 function setScore(key, score) {
+    const gi  = key.startsWith("skill:") ? skillGroupIndex[key.slice(6)] : undefined;
+    const was = gi !== undefined && groupWasComplete[gi];
     skillScores[key] = score;
     updateButtons(key);
     saveDraft();
+    if (gi !== undefined && !was && groupWasComplete[gi]) advanceFrom(gi);
 }
 
 function updateButtons(key) {
@@ -778,7 +847,7 @@ function updateButtons(key) {
     const row = document.getElementById(`row_${safeId}`);
     if (row && !unscoredSkill) row.classList.remove("ring-2", "ring-red-400", "ring-offset-2");
 
-    if (isSkill) updateProgress();
+    if (isSkill) { updateGroup(skillGroupIndex[key.slice(6)]); updateProgress(); }
 }
 
 function skillsMissingScore() {
@@ -857,6 +926,7 @@ async function submitEntry(e) {
             const row = document.getElementById("row_" + `skill:${sk}`.replace(/[^a-zA-Z0-9]/g, "_"));
             if (row) row.classList.add("ring-2", "ring-red-400", "ring-offset-2");
         });
+        missing.forEach(sk => { const g = groupEls[skillGroupIndex[sk]]; if (g) g.el.open = true; });
         const first = document.getElementById("row_" + `skill:${missing[0]}`.replace(/[^a-zA-Z0-9]/g, "_"));
         if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
         const t = document.getElementById("progressText");
@@ -1013,6 +1083,8 @@ function restoreDraft() {
         }
     });
     updateProgress();
+    groupEls.forEach((g, i) => updateGroup(i));
+    collapseCompleteGroups();
 
     // "sending" means the page closed before the server answered.
     draftStatus = draft.status === "editing" ? "editing" : "failed";
