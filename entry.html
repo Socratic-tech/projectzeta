@@ -163,6 +163,38 @@ if (VT_ENV) {
             </div>
         </div>
 
+        <!-- SCORING KEY (quick reference: the rubric's top row) -->
+        <div class="p-3 rounded-xl border border-slate-200 bg-white" aria-label="Scoring key">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2 text-center">Scoring Key</h3>
+            <div class="grid grid-cols-5 gap-1 text-center">
+                <div class="rounded-lg border border-red-200 bg-red-100 p-1.5">
+                    <div class="font-extrabold text-slate-900 text-sm">0</div>
+                    <div class="font-bold text-slate-900 text-[11px] leading-tight">Incomplete</div>
+                    <div class="hidden sm:block italic text-slate-700 text-[11px] leading-tight mt-1">Does not perform the skill or requires full assistance.</div>
+                </div>
+                <div class="rounded-lg border border-amber-200 bg-amber-100 p-1.5">
+                    <div class="font-extrabold text-slate-900 text-sm">1</div>
+                    <div class="font-bold text-slate-900 text-[11px] leading-tight">Direct Support</div>
+                    <div class="hidden sm:block italic text-slate-700 text-[11px] leading-tight mt-1">Requires directives, modeling, or frequent oversight.</div>
+                </div>
+                <div class="rounded-lg border border-amber-200 bg-amber-100 p-1.5">
+                    <div class="font-extrabold text-slate-900 text-sm">2</div>
+                    <div class="font-bold text-slate-900 text-[11px] leading-tight">Minimal Support</div>
+                    <div class="hidden sm:block italic text-slate-700 text-[11px] leading-tight mt-1">Requires cues, reminders, or occasional oversight.</div>
+                </div>
+                <div class="rounded-lg border border-green-200 bg-green-100 p-1.5">
+                    <div class="font-extrabold text-slate-900 text-sm">3</div>
+                    <div class="font-bold text-slate-900 text-[11px] leading-tight">Independent</div>
+                    <div class="hidden sm:block italic text-slate-700 text-[11px] leading-tight mt-1">Performs the skill without support.</div>
+                </div>
+                <div class="rounded-lg border border-green-200 bg-green-100 p-1.5">
+                    <div class="font-extrabold text-slate-900 text-sm">4</div>
+                    <div class="font-bold text-slate-900 text-[11px] leading-tight">Advanced</div>
+                    <div class="hidden sm:block italic text-slate-700 text-[11px] leading-tight mt-1">Performs the skill beyond expectation.</div>
+                </div>
+            </div>
+        </div>
+
         <!-- JOB TASKS (shown only when selected site has tasks) -->
         <div id="tasksSection" class="hidden bg-white p-5 rounded-xl shadow-sm border border-orange-100">
             <h2 class="text-lg font-bold text-slate-800 mb-6 border-b pb-2 flex items-center gap-2">
