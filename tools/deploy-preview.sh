@@ -45,7 +45,7 @@ fi
 
 git -c user.name="preview-bot" -c user.email="preview-bot@users.noreply.github.com" \
   commit --quiet -am "Preview build of $LABEL @ $SHA"
-git push --quiet --force "$PREVIEW_REMOTE_URL" HEAD:main
+git push --quiet --force "$PREVIEW_REMOTE_URL" HEAD:refs/heads/main
 
 echo "Published $LABEL @ $SHA to the preview site:"
 echo "  $PREVIEW_SITE"
