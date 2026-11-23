@@ -24,6 +24,14 @@
         }
         @media (min-width: 640px)  { .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (min-width: 1024px) { .tile-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        /* Group heading inside a tile grid (behavioral skills, same groups as the entry form) */
+        .tile-group-title {
+            grid-column: 1 / -1;
+            font-size: .75rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+            color: #475569; padding-top: .35rem; border-bottom: 1px solid #e2e8f0; padding-bottom: .25rem;
+            break-after: avoid;
+        }
+        .tile-group-title:first-child { padding-top: 0; }
 
         .cover-grid {
             display: grid;
@@ -44,6 +52,10 @@
             grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: .375rem;
         }
+        .guide-group > summary { cursor: pointer; user-select: none; }
+        .guide-skill { break-inside: avoid; }
+        .guide-level { display: grid; grid-template-columns: 7.5rem 1fr; gap: .5rem; padding: .25rem 0; border-top: 1px solid #f1f5f9; font-size: .8125rem; }
+        @media (max-width: 520px) { .guide-level { grid-template-columns: 1fr; gap: .125rem; } }
 
         .score-tile {
             border: 1px solid;
@@ -163,6 +175,7 @@
         return VT_ENV ? VT_ENV + ":" + name : name;
     }
     </script>
+    <script src="rubric-data.js"></script>
     <script src="demo-backend.js"></script>
     <script src="complexity.js"></script>
     <script src="tracker-switcher.js"></script>
@@ -452,6 +465,12 @@
                 <p id="bandLegend" class="text-xs text-slate-600 mt-2 flex flex-wrap gap-x-4 gap-y-1"></p>
             </div>
 
+            <!-- Skill-by-skill guide: same four sections as the entry form (New rubric only) -->
+            <details id="rubricGuide" class="hidden mt-4 border border-slate-200 rounded-xl">
+                <summary class="cursor-pointer select-none px-4 py-3 font-bold text-slate-800 text-sm">Skill-by-skill rubric guide</summary>
+                <div id="rubricGuideBody" class="px-4 pb-4 space-y-3"></div>
+            </details>
+
 
         </section>
     </template>
@@ -631,6 +650,23 @@ const CORE_SKILLS = [
     "Asks for help appropriately",
     "Demonstrates self-reflection"
 ];
+
+/* Groups come from rubric-data.js (shared with the entry form). */
+const SKILL_GROUPS = VT_SKILL_GROUPS;
+const SKILL_ORDER = SKILL_GROUPS.flatMap(g => g.skills);
+
+/* Name shown to people. New rubric: the designer's rubric row name(s) (Appearance, Task Initiation,
+   Respect & Conversation Skills ...). Original rubric, tasks and anything unknown: the stored name.
+   Display only; scores are always read and saved under the stored name. */
+function skillLabel(name) {
+    if (rubricTab === "original") return name;
+    return vtSkillTitle(name);
+}
+
+function skillGroupTitle(name) {
+    const g = SKILL_GROUPS.find(group => group.skills.includes(name));
+    return g ? g.title : "Other";
+}
 
 function escapeHTML(value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, c => ({
@@ -1048,10 +1084,16 @@ function filteredEntriesForStudent(studentId) {
 /* ---------- Score bands (single source of truth for color coding) ---------- */
 // Averages are rounded to 2 decimals before banding so the number shown
 // always matches its color (0.996 shows as 1.00 and is yellow).
+// `label` follows the active rubric tab: original wording on the Original tab,
+// the new rubric's level names on the New tab (getter, so every legend,
+// tooltip and summary that reads b.label picks up the right words).
 const SCORE_BANDS = [
-    { key: "green",  min: 3, label: "Independent",          range: "3.0–4.0", fill: "#16a34a", bg: "#f0fdf4", border: "#86efac", text: "#166534" },
-    { key: "yellow", min: 1, label: "Needs prompting",      range: "1.0–2.9", fill: "#eab308", bg: "#fefce8", border: "#fde047", text: "#854d0e" },
-    { key: "red",    min: 0, label: "Not yet performing",   range: "0–0.9",   fill: "#dc2626", bg: "#fef2f2", border: "#fca5a5", text: "#991b1b" }
+    { key: "green",  min: 3, labelOriginal: "Independent",        labelNew: "Independent or Advanced", range: "3.0–4.0", fill: "#16a34a", bg: "#f0fdf4", border: "#86efac", text: "#166534",
+      get label() { return rubricTab === "original" ? this.labelOriginal : this.labelNew; } },
+    { key: "yellow", min: 1, labelOriginal: "Needs prompting",    labelNew: "Needs support",           range: "1.0–2.9", fill: "#eab308", bg: "#fefce8", border: "#fde047", text: "#854d0e",
+      get label() { return rubricTab === "original" ? this.labelOriginal : this.labelNew; } },
+    { key: "red",    min: 0, labelOriginal: "Not yet performing", labelNew: "Incomplete",              range: "0–0.9",   fill: "#dc2626", bg: "#fef2f2", border: "#fca5a5", text: "#991b1b",
+      get label() { return rubricTab === "original" ? this.labelOriginal : this.labelNew; } }
 ];
 
 /* Rubric versions. Scores are the same 0-4 numbers under the same skill names in both;
@@ -1133,7 +1175,7 @@ function scoreTile(row) {
     const b = bandFor(row.average);
     return `
         <div class="score-tile" style="background:${b.bg};border-color:${b.border}">
-            <div class="score-tile-name">${escapeHTML(row.name)}</div>
+            <div class="score-tile-name">${escapeHTML(row.skill ? skillLabel(row.name) : row.name)}</div>
             <div class="score-tile-foot">
                 <span class="score-tile-value" style="color:${b.text}">${row.average.toFixed(2)}</span>
                 <span class="score-tile-count">${row.count} score${row.count === 1 ? "" : "s"}</span>
@@ -1142,19 +1184,60 @@ function scoreTile(row) {
 }
 
 function renderScaleKey() {
-    const levels = rubricTab === "original" ? SCALE_ORIGINAL : SCALE_NEW;
+    const isNew = rubricTab !== "original";
+    const levels = isNew ? SCALE_NEW : SCALE_ORIGINAL;
     document.getElementById("scaleStrip").innerHTML = levels.map(level => {
         const b = bandFor(level.score);
+        // New rubric: same level names and one-line descriptions as the entry form's scoring key.
+        const desc = isNew ? (VT_LEVELS.find(L => L.n === level.score) || {}).desc : "";
         return `
             <div class="rounded-lg border px-2 py-2 text-center" style="background:${b.bg};border-color:${b.border}">
                 <div class="text-lg font-extrabold leading-none" style="color:${b.text}">${level.score}</div>
-                <div class="text-[11px] leading-tight mt-1 text-slate-800">${level.name}</div>
+                <div class="text-[11px] leading-tight mt-1 text-slate-800 font-semibold">${level.name}</div>
+                ${desc ? `<div class="text-[10px] leading-tight mt-1 italic text-slate-600">${escapeHTML(desc)}</div>` : ""}
             </div>`;
     }).join("");
 
     document.getElementById("bandLegend").innerHTML = SCORE_BANDS.map(b => `
         <span><span class="band-dot" style="background:${b.fill}"></span>
         <strong>${b.range}</strong> ${b.label}</span>`).join("");
+
+    renderRubricGuide(isNew);
+}
+
+/* Skill-by-skill guide: the designer's rubric rows, in the entry form's four sections.
+   Only for the New rubric (the original scale had no per-skill rubric). */
+function renderRubricGuide(isNew) {
+    const box = document.getElementById("rubricGuide");
+    const body = document.getElementById("rubricGuideBody");
+    if (!box || !body) return;
+    if (!isNew) { box.classList.add("hidden"); return; }
+
+    const levelColor = { 0: "#991b1b", 1: "#c2410c", 2: "#854d0e", 3: "#1e40af", 4: "#166534" };
+    body.innerHTML = SKILL_GROUPS.map(group => `
+        <details class="guide-group border border-slate-200 rounded-lg" open>
+            <summary class="px-3 py-2 font-extrabold text-slate-800 text-sm">${escapeHTML(group.title)}</summary>
+            <div class="px-3 pb-3 space-y-3">
+                ${group.skills.map(skill => {
+                    const r = VT_SKILL_RUBRICS[skill];
+                    if (!r) return "";
+                    const rows = Array.isArray(r) ? r : [r];
+                    return `<div class="guide-skill">
+                        <div class="font-bold text-slate-900 text-sm mt-2">${escapeHTML(skillLabel(skill))}</div>
+                        ${skillLabel(skill) !== skill ? `<div class="text-[11px] text-slate-500">${escapeHTML(skill)}</div>` : ""}
+                        ${rows.map(row => `
+                            ${rows.length > 1 ? `<div class="text-xs font-bold text-slate-600 mt-1">${escapeHTML(row.title)}</div>` : ""}
+                            ${VT_LEVELS.map(L => `
+                                <div class="guide-level">
+                                    <div class="font-bold" style="color:${levelColor[L.n]}">${L.n} · ${escapeHTML(L.name)}</div>
+                                    <div class="text-slate-800">${escapeHTML(row.rows[L.n] || "")}</div>
+                                </div>`).join("")}
+                        `).join("")}
+                    </div>`;
+                }).join("")}
+            </div>
+        </details>`).join("");
+    box.classList.remove("hidden");
 }
 
 /* ---------- Data shaping ---------- */
@@ -1167,8 +1250,12 @@ function behaviorRows(entries) {
             if (Number.isFinite(value)) values.push(value);
         });
         const avg = average(values);
-        return avg === null ? null : { name: skill, average: avg, count: values.length };
-    }).filter(Boolean);
+        return avg === null ? null : { name: skill, average: avg, count: values.length, skill: true };
+    }).filter(Boolean).sort((a, b) => {
+        // Same order as the entry form's groups (a skill outside the groups goes last).
+        const ia = SKILL_ORDER.indexOf(a.name), ib = SKILL_ORDER.indexOf(b.name);
+        return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+    });
 }
 
 function taskRows(entries) {
@@ -1306,9 +1393,9 @@ const BLOCK_FILLERS = {
 
     behavior(ctx, block) {
         if (block.options.showChart !== false) {
-            skillChart = renderBarChart(null, "skillChart", "skillChartWrap", "skillEmpty", ctx.skills);
+            skillChart = renderBarChart(null, "skillChart", "skillChartWrap", "skillEmpty", ctx.skills, true);
         }
-        renderTiles("skillTiles", ctx.skills);
+        renderTiles("skillTiles", ctx.skills, true);
     },
 
     tasks(ctx, block) {
@@ -1394,7 +1481,8 @@ function snList(title, icon, iconColor, rows) {
             <ul class="space-y-2">
                 ${rows.map(r => `
                     <li class="flex justify-between items-start gap-3 text-sm">
-                        <span class="text-slate-800">${escapeHTML(r.name)}</span>
+                        <span class="text-slate-800">${escapeHTML(r.skill ? skillLabel(r.name) : r.name)}${SKILL_ORDER.includes(r.name)
+                            ? `<span class="block text-[11px] font-semibold text-slate-500">${escapeHTML(skillGroupTitle(r.name))}</span>` : ""}</span>
                         ${scorePill(r.average)}
                     </li>`).join("")}
             </ul>
@@ -1454,6 +1542,18 @@ function barChartHeight(count) {
     return Math.max(140, count * 32 + 50);
 }
 
+/* Inserts a heading row before each section (same four sections as the entry form). */
+function withGroupHeaders(rows) {
+    const out = [];
+    let last = null;
+    rows.forEach(r => {
+        const title = skillGroupTitle(r.name);
+        if (title !== last) { out.push({ header: true, name: title }); last = title; }
+        out.push(r);
+    });
+    return out;
+}
+
 function drawBarChart(existing, canvasId, wrapId, emptyId, rows) {
     if (existing) existing.destroy();
 
@@ -1470,15 +1570,15 @@ function drawBarChart(existing, canvasId, wrapId, emptyId, rows) {
     empty.classList.add("hidden");
     wrap.style.height = barChartHeight(rows.length) + "px";
 
-    const colors = rows.map(r => bandFor(r.average).fill);
+    const colors = rows.map(r => r.header ? "rgba(0,0,0,0)" : bandFor(r.average).fill);
 
     return new Chart(document.getElementById(canvasId), {
         type: "bar",
         data: {
-            labels: rows.map(r => wrapLabel(r.name)),
+            labels: rows.map(r => r.header ? [r.name.toUpperCase()] : wrapLabel(r.skill ? skillLabel(r.name) : r.name)),
             datasets: [{
                 label: "Average",
-                data: rows.map(r => round2(r.average)),
+                data: rows.map(r => r.header ? null : round2(r.average)),
                 backgroundColor: colors,
                 borderColor: colors,
                 borderWidth: 1,
@@ -1498,14 +1598,19 @@ function drawBarChart(existing, canvasId, wrapId, emptyId, rows) {
                     ticks: { stepSize: 1 }
                 },
                 y: {
-                    ticks: { autoSkip: false, font: { size: 11 } }
+                    ticks: {
+                        autoSkip: false,
+                        // Section headings are bold; skill labels stay regular.
+                        font: ctx => ({ size: 11, weight: rows[ctx.index] && rows[ctx.index].header ? "bold" : "normal" })
+                    }
                 }
             },
             plugins: {
                 legend: { display: false },
                 tooltip: {
+                    filter: item => !rows[item.dataIndex].header,
                     callbacks: {
-                        title: items => rows[items[0].dataIndex].name,
+                        title: items => { const r = rows[items[0].dataIndex]; return r.skill ? skillLabel(r.name) : r.name; },
                         label: item => {
                             const r = rows[item.dataIndex];
                             return `${r.average.toFixed(2)} / 4 (${bandFor(r.average).label})`;
@@ -1600,8 +1705,17 @@ function renderSiteComplexity(rows) {
         head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
 }
 
-function renderTiles(containerId, rows) {
-    document.getElementById(containerId).innerHTML = rows.map(scoreTile).join("");
+function renderTiles(containerId, rows, grouped) {
+    const box = document.getElementById(containerId);
+    if (!grouped) { box.innerHTML = rows.map(scoreTile).join(""); return; }
+
+    let last = null;
+    box.innerHTML = rows.map(row => {
+        const title = skillGroupTitle(row.name);
+        const heading = title !== last ? `<div class="tile-group-title">${escapeHTML(title)}</div>` : "";
+        last = title;
+        return heading + scoreTile(row);
+    }).join("");
 }
 
 function renderProgressChart(entries) {
@@ -1653,11 +1767,12 @@ function renderProgressChart(entries) {
     progressChart.$vtPrintHeight = 240;
 }
 
-function renderBarChart(existing, canvasId, wrapId, emptyId, rows) {
-    const chart = drawBarChart(existing, canvasId, wrapId, emptyId, rows);
+function renderBarChart(existing, canvasId, wrapId, emptyId, rows, grouped) {
+    const shown = grouped ? withGroupHeaders(rows) : rows;
+    const chart = drawBarChart(existing, canvasId, wrapId, emptyId, shown);
     if (chart) {
-        chart.$vtScreenHeight = barChartHeight(rows.length);
-        chart.$vtPrintHeight = printBarHeight(rows.length);
+        chart.$vtScreenHeight = barChartHeight(shown.length);
+        chart.$vtPrintHeight = printBarHeight(shown.length);
     }
     return chart;
 }
