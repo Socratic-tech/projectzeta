@@ -35,7 +35,7 @@
     var DEMO_CODE = "DEMO";
     var API_VERSION = 3;
     var RELEASE = "3.1.0";
-    var DB_KEY = key("demo_db");
+    var DB_KEY = key("demo_db_v2");
 
     var SKILLS = [
         "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
@@ -123,6 +123,17 @@
                     scores: scores
                 });
             }
+        });
+
+        var sample = [
+            { tasks: 0, productivity: 0, decision: 0, social: 0, environment: 0 },
+            { tasks: 1, productivity: 1, decision: 1, social: 1, environment: 1 },
+            { tasks: 2, productivity: 2, decision: 2, social: 2, environment: 2 },
+            { tasks: 3, productivity: 3, decision: 2, social: 3, environment: 3 },
+            { tasks: 4, productivity: 3, decision: 4, social: 3, environment: 4 }
+        ];
+        tasks.forEach(function (t, i) {
+            if (i % 3 !== 2) t.complexity = clone(sample[(i * 2) % sample.length]); // leave some unrated
         });
 
         return { students: students, sites: sites, tasks: tasks, entries: entries, layouts: [], nextId: 6 };
@@ -258,6 +269,14 @@
                 break;
             case "addTask":
                 db.tasks.push({ site_name: p.site_name, task_name: p.task_name });
+                break;
+            case "setTaskComplexity":
+                db.tasks.forEach(function (t) {
+                    if (t.site_name === p.site_name && t.task_name === p.task_name) {
+                        if (p.complexity && Object.keys(p.complexity).length) t.complexity = clone(p.complexity);
+                        else delete t.complexity;
+                    }
+                });
                 break;
             case "deleteTask":
                 db.tasks = db.tasks.filter(function (t) {

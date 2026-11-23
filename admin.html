@@ -41,6 +41,7 @@ if (VT_ENV) {
 }
 </script>
     <script src="demo-backend.js"></script>
+    <script src="complexity.js"></script>
     <script src="tracker-switcher.js"></script>
 </head>
 
@@ -1286,6 +1287,7 @@ async function loadSites(openSiteName = "", prefetched = null) {
             .sort((a, b) => a.localeCompare(b));
 
         allTasks = Object.create(null);
+        taskComplexity = Object.create(null);
 
         (taskJson.data || []).forEach(t => {
             const siteName = asText(t.site_name);
@@ -1298,6 +1300,9 @@ async function loadSites(openSiteName = "", prefetched = null) {
             if (!allTasks[siteName].includes(taskName)) {
                 allTasks[siteName].push(taskName);
             }
+
+            const rating = VTComplexity.normalize(t.complexity);
+            if (rating) taskComplexity[siteName + "\u0000" + taskName] = rating;
         });
 
         renderSites(openSiteName);
@@ -1449,10 +1454,168 @@ function renderTaskList(taskList, siteName, countLabel) {
             deleteTask(siteName, taskName);
         });
 
+        const rating = taskComplexity[siteName + "\u0000" + taskName];
+
+        const rateButton = document.createElement("button");
+        rateButton.type = "button";
+        rateButton.className = "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-bold " +
+            (rating ? "" : "border border-dashed border-slate-300 text-slate-500 hover:bg-white");
+        rateButton.title = "Rate this task's job complexity";
+        if (rating) {
+            rateButton.innerHTML = VTComplexity.badge(rating);
+        } else {
+            rateButton.textContent = "Rate complexity";
+        }
+        rateButton.addEventListener("click", () => openComplexityEditor(siteName, taskName, countLabel, taskList));
+
+        const right = document.createElement("div");
+        right.className = "flex items-center gap-2";
+        right.appendChild(rateButton);
+        right.appendChild(deleteButton);
+
         li.appendChild(label);
-        li.appendChild(deleteButton);
+        li.appendChild(right);
 
         taskList.appendChild(li);
+    });
+}
+
+let taskComplexity = Object.create(null);
+
+/************************************************************
+ * JOB COMPLEXITY EDITOR
+ * One rating (0-4) per rubric row for a job task. Saved with the task.
+ ************************************************************/
+function openComplexityEditor(siteName, taskName, countLabel, taskList) {
+    const existing = taskComplexity[siteName + "\u0000" + taskName] || {};
+    const chosen = Object.assign({}, existing);
+
+    const overlay = document.createElement("div");
+    overlay.className = "fixed inset-0 z-50 bg-black/50 flex items-start justify-center overflow-y-auto p-4";
+
+    const box = document.createElement("div");
+    box.className = "bg-white rounded-2xl shadow-xl w-full max-w-5xl my-4";
+
+    const head = document.createElement("div");
+    head.className = "px-5 py-4 border-b flex items-start justify-between gap-3";
+    head.innerHTML = `
+        <div>
+            <h3 class="font-bold text-slate-900">Job Complexity</h3>
+            <p class="text-xs text-slate-500 mt-0.5">${VTComplexity.esc(taskName)} <span class="text-slate-400">at</span> ${VTComplexity.esc(siteName)}.
+            Pick the description that best fits this task on each row.</p>
+        </div>`;
+    const summary = document.createElement("div");
+    summary.className = "text-sm font-semibold shrink-0";
+    head.appendChild(summary);
+
+    const body = document.createElement("div");
+    body.className = "px-5 py-4 overflow-x-auto";
+
+    const table = document.createElement("table");
+    table.className = "w-full text-xs border-separate border-spacing-1";
+    let thead = '<thead><tr><th class="w-28"></th>';
+    VTComplexity.LEVELS.forEach(L => {
+        thead += `<th class="rounded p-2 text-center" style="background:${L.bg};color:${L.fg}">${L.n} – ${L.name}</th>`;
+    });
+    table.innerHTML = thead + "</tr></thead>";
+    const tbody = document.createElement("tbody");
+
+    const cells = {};
+    function refresh() {
+        VTComplexity.ROWS.forEach(row => {
+            VTComplexity.LEVELS.forEach(L => {
+                const cell = cells[row.key + L.n];
+                const on = chosen[row.key] === L.n;
+                cell.style.outline = on ? "3px solid #1e293b" : "none";
+                cell.style.opacity = (chosen[row.key] === undefined || on) ? "1" : "0.55";
+            });
+        });
+        const lvl = VTComplexity.overall(chosen);
+        summary.innerHTML = lvl === null
+            ? '<span class="text-slate-400">Not rated yet</span>'
+            : "Overall: " + VTComplexity.badge(chosen);
+    }
+
+    VTComplexity.ROWS.forEach(row => {
+        const tr = document.createElement("tr");
+        const th = document.createElement("th");
+        th.className = "bg-slate-900 text-white rounded p-2 text-left align-middle";
+        th.textContent = row.label;
+        tr.appendChild(th);
+        row.levels.forEach((text, i) => {
+            const L = VTComplexity.LEVELS[i];
+            const td = document.createElement("td");
+            td.className = "align-top";
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "w-full h-full text-left rounded p-2 leading-snug";
+            btn.style.background = L.bg;
+            btn.style.color = "#1e293b";
+            btn.textContent = text;
+            btn.addEventListener("click", () => {
+                if (chosen[row.key] === i) delete chosen[row.key]; else chosen[row.key] = i;
+                refresh();
+            });
+            cells[row.key + i] = btn;
+            td.appendChild(btn);
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    body.appendChild(table);
+
+    const foot = document.createElement("div");
+    foot.className = "px-5 py-3 border-t flex items-center justify-between gap-3";
+    const hint = document.createElement("span");
+    hint.className = "text-xs text-slate-500";
+    hint.textContent = "Click a selected box again to clear that row. The overall level is the average of the rows you rate.";
+    const buttons = document.createElement("div");
+    buttons.className = "flex gap-2";
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.className = "px-4 py-2 rounded-lg border text-sm font-semibold";
+    cancel.textContent = "Cancel";
+    const save = document.createElement("button");
+    save.type = "button";
+    save.className = "px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold";
+    save.textContent = "Save rating";
+    buttons.appendChild(cancel);
+    buttons.appendChild(save);
+    foot.appendChild(hint);
+    foot.appendChild(buttons);
+
+    box.appendChild(head);
+    box.appendChild(body);
+    box.appendChild(foot);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    refresh();
+
+    const close = () => overlay.remove();
+    cancel.addEventListener("click", close);
+    overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+
+    save.addEventListener("click", async () => {
+        save.disabled = true;
+        save.textContent = "Saving…";
+        try {
+            await postAction({
+                action: "setTaskComplexity",
+                site_name: siteName,
+                task_name: taskName,
+                complexity: chosen
+            });
+            const k = siteName + "\u0000" + taskName;
+            if (Object.keys(chosen).length) taskComplexity[k] = chosen; else delete taskComplexity[k];
+            renderTaskList(taskList, siteName, countLabel);
+            close();
+        } catch (err) {
+            save.disabled = false;
+            save.textContent = "Save rating";
+            alert("Could not save the rating: " + err.message +
+                "\n\nIf this says the action is unknown, this school's Code.gs needs the job-complexity update.");
+        }
     });
 }
 
@@ -1558,6 +1721,7 @@ async function deleteTask(siteName, taskName) {
             task_name: taskName
         });
 
+        delete taskComplexity[siteName + "\u0000" + taskName];
         if (allTasks[siteName]) {
             allTasks[siteName] = allTasks[siteName].filter(task => task !== taskName);
         }

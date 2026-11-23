@@ -164,6 +164,7 @@
     }
     </script>
     <script src="demo-backend.js"></script>
+    <script src="complexity.js"></script>
     <script src="tracker-switcher.js"></script>
 </head>
 
@@ -494,6 +495,7 @@
             </div>
 
             <div id="taskTiles" data-part="tiles" class="tile-grid mt-5"></div>
+            <div id="taskComplexity" data-part="tiles" class="mt-5"></div>
         </section>
     </template>
 
@@ -1238,6 +1240,7 @@ const BLOCK_FILLERS = {
             taskChart = renderBarChart(null, "taskChart", "taskChartWrap", "taskEmpty", ctx.tasks);
         }
         renderTiles("taskTiles", ctx.tasks);
+        renderTaskComplexity(ctx.tasks);
     },
 
     sites(ctx) {
@@ -1483,6 +1486,41 @@ function renderSiteAverages(entries) {
                 <div class="score-tile-count">${split.join("  |  ")}</div>
             </div>`;
     }).join("");
+}
+
+/** Job complexity for the tasks in this report (rated by admins; blank if none are rated). */
+function renderTaskComplexity(rows) {
+    const el = document.getElementById("taskComplexity");
+    if (!el) return;
+
+    const rated = rows.map(row => {
+        const match = allTasks.find(t => t && t.task_name === row.name && VTComplexity.normalize(t.complexity));
+        return match ? { name: row.name, site: match.site_name, c: VTComplexity.normalize(match.complexity) } : null;
+    }).filter(Boolean);
+
+    if (!rated.length) { el.innerHTML = ""; return; }
+
+    const head = VTComplexity.ROWS.map(r =>
+        '<th class="px-2 py-1 text-left font-semibold">' + VTComplexity.esc(r.label) + "</th>").join("");
+    const body = rated.map(r => {
+        const cells = VTComplexity.ROWS.map(row => {
+            const v = r.c[row.key];
+            if (v === undefined) return '<td class="px-2 py-1 text-slate-300">–</td>';
+            const L = VTComplexity.LEVELS[v];
+            return '<td class="px-2 py-1"><span style="display:inline-block;min-width:1.5rem;text-align:center;border-radius:4px;font-weight:700;' +
+                "background:" + L.bg + ";color:" + L.fg + ';-webkit-print-color-adjust:exact;print-color-adjust:exact" title="' +
+                VTComplexity.esc(L.name) + '">' + v + "</span></td>";
+        }).join("");
+        return '<tr class="border-t border-slate-100"><td class="px-2 py-1 font-medium text-slate-800">' +
+            VTComplexity.esc(r.name) + '</td><td class="px-2 py-1">' + VTComplexity.badge(r.c) + "</td>" + cells + "</tr>";
+    }).join("");
+
+    el.innerHTML =
+        '<h4 class="font-semibold text-slate-800 text-sm mb-1">Job complexity</h4>' +
+        '<p class="text-xs text-slate-500 mb-2">How demanding each task is (0 Supported – 4 Advanced), so a score can be read in context.</p>' +
+        '<div class="overflow-x-auto"><table class="w-full text-xs"><thead class="text-slate-500"><tr>' +
+        '<th class="px-2 py-1 text-left font-semibold">Task</th><th class="px-2 py-1 text-left font-semibold">Overall</th>' +
+        head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
 }
 
 function renderTiles(containerId, rows) {
