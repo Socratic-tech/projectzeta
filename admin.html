@@ -490,6 +490,15 @@ function adminCode() {
     return "";
 }
 let entryToken = "";
+
+// An admin signed in on this device can open the Entry page without
+// scanning the QR: keep this device's saved entry code in step with the
+// current one (the admin already sees it under Share Entry Form).
+function rememberEntryToken() {
+    try {
+        if (entryToken) localStorage.setItem(vtKey("vt_entry_token"), entryToken);
+    } catch (e) {}
+}
 let currentAdminEmail = "";
 let currentSupportEmail = "";
 let configuredEntryPageUrl = "";
@@ -754,6 +763,7 @@ async function verifyAdminCode(silent = false) {
     if (!silent && window.VTTrackers) window.VTTrackers.afterSignIn();
 
     entryToken = json.entryToken || "";
+    rememberEntryToken();
     currentAdminEmail = json.adminEmail || "";
 
     const featureEmail = document.getElementById("featureEmail");
@@ -1801,6 +1811,7 @@ async function rotateEntryToken() {
     try {
         const json = await postAction({ action: "rotateEntryToken" });
         entryToken = json.entryToken;
+        rememberEntryToken();
         generateQR();
         alert("Entry code rotated. Reprint and redistribute the new QR code.");
     } catch (err) {
