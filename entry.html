@@ -242,12 +242,21 @@ if (VT_ENV) {
                       class="w-full p-3 border rounded-lg bg-slate-50"></textarea>
         </div>
 
-        <button type="submit" id="submitBtn"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg 
-                       transition flex justify-center items-center gap-2 text-lg">
-            <span class="material-icons">send</span>
-            SUBMIT ENTRY
-        </button>
+        <!-- Stays visible while scrolling: progress + submit -->
+        <div class="sticky bottom-0 z-40 -mx-4 pr-4 pl-[4.25rem] sm:px-4 pt-3 pb-3 bg-slate-100 border-t border-slate-200">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="flex-1 h-2 rounded-full bg-slate-200 overflow-hidden" aria-hidden="true">
+                    <div id="progressBar" class="h-2 bg-blue-600 transition-all" style="width:0%"></div>
+                </div>
+                <div id="progressText" class="text-xs font-bold text-slate-600" role="status" aria-live="polite">0 of 16 skills scored</div>
+            </div>
+            <button type="submit" id="submitBtn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg
+                           transition flex justify-center items-center gap-2 text-lg">
+                <span class="material-icons">send</span>
+                SUBMIT ENTRY
+            </button>
+        </div>
 
     </form>
 </div>
@@ -604,12 +613,15 @@ if (document.readyState === "loading") {
 
 /************************************************************
  * SHARED SCORE GROUP RENDERER
- * allowNA=true adds an N/A button and defaults score to null
+ * Every score starts as null.
+ *   Behavioral skill: null = "not scored yet" (must be chosen before submit)
+ *   Job task:         null = N/A (the task did not occur)
  ************************************************************/
 function renderScoreGroup(container, label, key, allowNA = false, extraHtml = "") {
-    skillScores[key] = allowNA ? null : 2;
+    skillScores[key] = null;
 
     const safeId = key.replace(/[^a-zA-Z0-9]/g, "_");
+    const jsKey  = key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
     // Behavioral skills with a detailed rubric: tapping the name opens it (display only)
     const rubricIdx = key.startsWith("skill:") ? SKILLS_LIST.indexOf(label) : -1;
@@ -621,15 +633,17 @@ function renderScoreGroup(container, label, key, allowNA = false, extraHtml = ""
         : label;
 
     let html = `
-        <div>
-            <label class="block text-sm font-bold mb-2">${labelHtml}${extraHtml ? ' <span class="ml-1 align-middle font-normal">' + extraHtml + '</span>' : ""}</label>
-            <div class="grid grid-cols-6 gap-2">
+        <div id="row_${safeId}" class="score-row rounded-lg" role="group" aria-labelledby="lbl_${safeId}">
+            <div id="lbl_${safeId}" class="block text-sm font-bold mb-2">${labelHtml}${extraHtml ? ' <span class="ml-1 align-middle font-normal">' + extraHtml + '</span>' : ""}</div>
+            <div class="grid ${allowNA ? "grid-cols-6" : "grid-cols-5"} gap-2">
     `;
     for (let i = 0; i <= 4; i++) {
         html += `
             <button type="button"
                     id="btn_${safeId}_${i}"
-                    onclick="setScore('${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', ${i})"
+                    aria-pressed="false"
+                    aria-label="${label.replace(/"/g, "&quot;")}: ${i}, ${LEVELS[i].name}"
+                    onclick="setScore('${jsKey}', ${i})"
                     class="score-btn py-3 rounded-lg border font-bold text-lg shadow-sm">
                 ${i}
             </button>
@@ -639,27 +653,53 @@ function renderScoreGroup(container, label, key, allowNA = false, extraHtml = ""
         html += `
             <button type="button"
                     id="btn_${safeId}_null"
-                    onclick="setScore('${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', null)"
-                    class="score-btn py-3 rounded-lg border font-bold text-xs shadow-sm">
+                    aria-pressed="false"
+                    aria-label="${label.replace(/"/g, "&quot;")}: not applicable"
+                    onclick="setScore('${jsKey}', null)"
+                    class="score-btn py-3 rounded-lg border font-bold text-sm shadow-sm">
                 N/A
             </button>
         `;
-    } else {
-        // Placeholder to keep grid alignment on behavioral skills (5 cols only)
-        html = html.replace('grid-cols-6', 'grid-cols-5');
     }
-    html += "</div></div>";
+    html += `</div>
+            <div id="lvl_${safeId}" class="mt-1 text-xs font-semibold min-h-[1rem]" aria-live="polite"></div>
+        </div>`;
     container.innerHTML += html;
     updateButtons(key);
 }
 
 /************************************************************
  * BEHAVIORAL SKILLS
+ * Display grouping only. Scores are still keyed by the skill name and
+ * submitted in SKILLS_LIST order, so saved data is unaffected.
  ************************************************************/
+const SKILL_GROUPS = [
+    { title: "Work Habits", skills: [
+        "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
+        "Initiates familiar tasks", "Maintains a productive work rate", "Complete tasks in a logical order",
+        "Work is completed to quality standards"] },
+    { title: "On the Job", skills: [
+        "Demonstrates adaptability", "Maintains clean and organized work space",
+        "Awareness of surroundings and good decision making", "Asks for help appropriately"] },
+    { title: "Communication", skills: [
+        "Appropriate and respectful social interactions", "Displays effective communication skills",
+        "Accepts constructive criticism"] },
+    { title: "Attitude & Growth", skills: [
+        "Demonstrates a positive attitude", "Demonstrates self-reflection"] }
+];
+
 function renderSkills() {
     const container = document.getElementById("skillsContainer");
     container.innerHTML = "";
-    SKILLS_LIST.forEach(skill => renderScoreGroup(container, skill, `skill:${skill}`));
+    const placed = new Set();
+    SKILL_GROUPS.forEach(g => {
+        container.innerHTML += `<h3 class="text-xs font-bold uppercase tracking-wide text-slate-500 border-b pb-1 pt-2">${g.title}</h3>`;
+        g.skills.forEach(skill => { placed.add(skill); renderScoreGroup(container, skill, `skill:${skill}`); });
+    });
+    // Safety net: a skill missing from the groups still gets a row (never silently dropped)
+    SKILLS_LIST.filter(sk => !placed.has(sk)).forEach(skill =>
+        renderScoreGroup(container, skill, `skill:${skill}`));
+    updateProgress();
 }
 
 /************************************************************
@@ -696,7 +736,9 @@ function setScore(key, score) {
 
 function updateButtons(key) {
     const selected = skillScores[key];
+    const isSkill  = key.startsWith("skill:");
     const safeId = key.replace(/[^a-zA-Z0-9]/g, "_");
+    const unscoredSkill = isSkill && (selected === null || selected === undefined);
 
     // Update numeric buttons 0-4
     for (let i = 0; i <= 4; i++) {
@@ -705,15 +747,56 @@ function updateButtons(key) {
         btn.className = (selected === i)
             ? `score-btn py-3 rounded-lg border font-bold text-lg shadow-md ${SCORE_STYLES[i]}`
             : `score-btn py-3 rounded-lg border font-bold text-lg shadow-sm ${INACTIVE}`;
+        btn.setAttribute("aria-pressed", selected === i ? "true" : "false");
     }
 
     // Update N/A button if present
     const naBtn = document.getElementById(`btn_${safeId}_null`);
     if (naBtn) {
         naBtn.className = (selected === null)
-            ? `score-btn py-3 rounded-lg border font-bold text-xs shadow-md ${SCORE_STYLES[null]}`
-            : `score-btn py-3 rounded-lg border font-bold text-xs shadow-sm ${INACTIVE}`;
+            ? `score-btn py-3 rounded-lg border font-bold text-sm shadow-md ${SCORE_STYLES[null]}`
+            : `score-btn py-3 rounded-lg border font-bold text-sm shadow-sm ${INACTIVE}`;
+        naBtn.setAttribute("aria-pressed", selected === null ? "true" : "false");
     }
+
+    // Plain-language confirmation of what was chosen
+    const lvl = document.getElementById(`lvl_${safeId}`);
+    if (lvl) {
+        if (Number.isInteger(selected) && LEVELS[selected]) {
+            lvl.textContent = `${selected} · ${LEVELS[selected].name}`;
+            lvl.className = "mt-1 text-xs font-semibold text-slate-700 min-h-[1rem]";
+        } else if (isSkill) {
+            lvl.textContent = "Not scored yet";
+            lvl.className = "mt-1 text-xs font-semibold text-amber-700 min-h-[1rem]";
+        } else {
+            lvl.textContent = "N/A (task did not occur)";
+            lvl.className = "mt-1 text-xs font-semibold text-slate-500 min-h-[1rem]";
+        }
+    }
+
+    // A skill that now has a score is no longer flagged as missing
+    const row = document.getElementById(`row_${safeId}`);
+    if (row && !unscoredSkill) row.classList.remove("ring-2", "ring-red-400", "ring-offset-2");
+
+    if (isSkill) updateProgress();
+}
+
+function skillsMissingScore() {
+    return SKILLS_LIST.filter(sk => {
+        const v = skillScores[`skill:${sk}`];
+        return v === null || v === undefined;
+    });
+}
+
+function updateProgress() {
+    const total = SKILLS_LIST.length;
+    const done  = total - skillsMissingScore().length;
+    const text  = document.getElementById("progressText");
+    const bar   = document.getElementById("progressBar");
+    if (!text || !bar) return;
+    text.textContent = done === total ? "All skills scored" : `${done} of ${total} skills scored`;
+    text.className = done === total ? "text-xs font-bold text-green-700" : "text-xs font-bold text-slate-600";
+    bar.style.width = Math.round(done / total * 100) + "%";
 }
 
 /************************************************************
@@ -767,6 +850,21 @@ function handleSiteChange() {
 async function submitEntry(e) {
     e.preventDefault();
 
+    // Every behavioral skill needs an explicit score (nothing is assumed).
+    const missing = skillsMissingScore();
+    if (missing.length) {
+        missing.forEach(sk => {
+            const row = document.getElementById("row_" + `skill:${sk}`.replace(/[^a-zA-Z0-9]/g, "_"));
+            if (row) row.classList.add("ring-2", "ring-red-400", "ring-offset-2");
+        });
+        const first = document.getElementById("row_" + `skill:${missing[0]}`.replace(/[^a-zA-Z0-9]/g, "_"));
+        if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+        const t = document.getElementById("progressText");
+        t.textContent = `Please score ${missing.length} more skill${missing.length === 1 ? "" : "s"} (marked in red)`;
+        t.className = "text-xs font-bold text-red-700";
+        return;
+    }
+
     const btn = document.getElementById("submitBtn");
     const original = btn.innerHTML;
     btn.disabled = true;
@@ -776,7 +874,7 @@ async function submitEntry(e) {
     // N/A tasks (null) are excluded entirely — not recorded in the sheet
     const scores = {};
     SKILLS_LIST.forEach(skill => {
-        scores[skill] = skillScores[`skill:${skill}`] ?? 2;
+        scores[skill] = skillScores[`skill:${skill}`];
     });
     currentTasks.forEach(task => {
         const val = skillScores[`task:${task}`];
@@ -914,6 +1012,7 @@ function restoreDraft() {
             updateButtons(key);
         }
     });
+    updateProgress();
 
     // "sending" means the page closed before the server answered.
     draftStatus = draft.status === "editing" ? "editing" : "failed";
