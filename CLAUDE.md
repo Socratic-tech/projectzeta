@@ -12,7 +12,6 @@ Static HTML/JS app (no build step) where teachers score students on 16 job skill
 - `index.html` — home/dashboard, connection status
 - `entry.html` — daily score entry form (offline draft + retry queue)
 - `report.html` + `report-builder.js` — student report, charts, customizable layouts, demo mode
-- `backend/` + `tools/build-backend.js`, `tools/test-backend.js`, `loader-code.html` — self-updating backend (see below)
 - `admin.html` — roster, job sites, codes/QR, update notices (reads `release.json`)
 - `setup.html`, `setup-tour.html`, `sidebar-code.html` — school setup / upgrade guides
 - `faq.html` — help page
@@ -33,13 +32,9 @@ Static HTML/JS app (no build step) where teachers score students on 16 job skill
 - report.html: two tabs, **Original rubric** / **New rubric**, split by entry `date` at `RUBRIC_CUTOFF = "2026-11-23"` (undated entries → Original). No blended view (only ~6 students span the change). Scale strip and "Report period" line follow the tab. No backend/tagging needed.
 - demo data (report.html `buildDemoData`, demo-backend.js) is dated around the cutoff so both tabs show data; demo DB key is `demo_db_v4`.
 
-## Self-updating backend (prototype on `demo`, not live)
-- `backend/Code.gs` is now the source of truth for the Apps Script backend (3.1.0, copied from the user's paste). `tools/build-backend.js` generates `backend/bundle.js`, `backend/version.json` (version, notes, SHA-256) and `backend/Loader.gs`, plus `loader-code.html`. **Never hand-edit generated files**; edit `Code.gs` + `backend/notes.json`, bump `VT_RELEASE`, run `node tools/build-backend.js`, commit all together.
-- A school pastes `Loader.gs` once (`loader-code.html`), runs `vtbInstallNow`, redeploys once. After that the Admin page (`updateStatus` / `installUpdate` / `undoUpdate`, handled in the loader, admin code required) offers **Update now**, **Undo last update**, **Remind me**. Also in the Sheet menu. Updates are never automatic and install only if the SHA-256 matches, it compiles, exposes the required functions and passes a liveness check on that Sheet. Previous version kept in Script Properties (`VTB_*`).
-- Data safety: undo reverts code only, not sheet data. Keep releases additive; do not bump `VT_SCHEMA_VERSION` casually (it rotates the entry token).
-- Schools without the loader still get the old manual notice from `release.json` (admin.html falls back when `updateStatus` returns Unknown action).
-- Test offline with `node tools/test-backend.js` (fake Apps Script; 33 checks). Not yet tested in a real Sheet or in the browser Admin page.
-- Security: the loader runs code downloaded from the site inside a Sheet holding student records. `main` is PR-gated; keep it that way, and show the hash/notes to the program designer before releasing.
+## Decisions
+- **No self-updating backend / remote-code loader.** A prototype (commit a8e4553, reverted) let admins click "Update now" to install Code.gs from the website. Rejected 2026-11-23: it would let whoever controls the site or repo change code in every school's Sheet (student data). Schools keep updating by pasting Code.gs themselves. Do not reintroduce without the user asking.
+- The Google Doc linked from `release.json` was still release 3.0.1 on 2026-11-23, behind the 3.1.0 the user pasted. Update the Doc so setup pages hand out current code.
 
 ## Open items
 - Set `RUBRIC_CUTOFF` to the real go-live date of the new entry form if it is later than 2026-11-23 (entries dated in between were scored on the old form).
