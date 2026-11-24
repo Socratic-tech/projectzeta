@@ -295,13 +295,17 @@ const LEVELS = [
 
 const SKILL_RUBRICS = VT_SKILL_RUBRICS;   // shared with the report (rubric-data.js)
 
-function showRubric(idx) {
+function showRubric(idx, secIdx) {
     const skill = SKILLS_LIST[idx];
     const r = SKILL_RUBRICS[skill];
     if (!r) return;
-    const cur = skillScores[`skill:${skill}`];
-    const secs = Array.isArray(r) ? r : [r];
-    const shownName = vtSkillTitle(skill);
+    const allSecs = Array.isArray(r) ? r : [r];
+    // A two-rubric skill is scored one rubric at a time: show just the tapped one
+    const secs = (secIdx !== undefined && allSecs[secIdx]) ? [allSecs[secIdx]] : allSecs;
+    const cur = (secs.length === 1 && allSecs.length > 1)
+        ? skillScores[partKey(skill, secs[0].title)]
+        : skillScores[`skill:${skill}`];
+    const shownName = (secs.length === 1 && allSecs.length > 1) ? secs[0].title : vtSkillTitle(skill);
     document.getElementById("rubricTitle").textContent =
         shownName !== skill ? `${shownName} — ${skill}` : skill;
     document.getElementById("rubricBody").innerHTML = secs.map(sec => `
@@ -509,6 +513,28 @@ if (document.readyState === "loading") {
  *   Behavioral skill: null = "not scored yet" (must be chosen before submit)
  *   Job task:         null = N/A (the task did not occur)
  ************************************************************/
+/* Skills that cover two designer rubrics (social interactions, communication) are scored
+   once per rubric. Each rubric score is saved as an extra "part:<skill>::<rubric>" entry; the
+   skill's own stored key ("skill name") still holds ONE 0-4 number (the lower of the two),
+   so existing data, the Sheet and reports keep working. */
+function partKey(skill, title) { return `part:${skill}::${title}`; }
+function skillOfKey(key) {
+    if (key.startsWith("skill:")) return key.slice(6);
+    if (key.startsWith("part:"))  return key.slice(5).split("::")[0];
+    return undefined;
+}
+function skillParts(skill) {
+    const r = SKILL_RUBRICS[skill];
+    return Array.isArray(r) ? r.map((sec, i) => ({ title: sec.title, key: partKey(skill, sec.title), secIdx: i })) : null;
+}
+function syncCombined(skill) {
+    const parts = skillParts(skill);
+    if (!parts) return;
+    const vals = parts.map(p => skillScores[p.key]);
+    skillScores[`skill:${skill}`] = vals.every(Number.isInteger) ? Math.min(...vals) : null;
+    updateButtons(`skill:${skill}`);   // refreshes section status + progress
+}
+
 function renderScoreGroup(container, label, key, allowNA = false, extraHtml = "") {
     skillScores[key] = null;
 
@@ -516,12 +542,16 @@ function renderScoreGroup(container, label, key, allowNA = false, extraHtml = ""
     const jsKey  = key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
     // Behavioral skills with a detailed rubric: tapping the name opens it (display only)
-    const rubricIdx = key.startsWith("skill:") ? SKILLS_LIST.indexOf(label) : -1;
+    const isPart = key.startsWith("part:");
+    const partSkill = isPart ? skillOfKey(key) : null;
+    const partInfo = isPart ? skillParts(partSkill).find(p => p.key === key) : null;
+    const rubricIdx = key.startsWith("skill:") ? SKILLS_LIST.indexOf(label)
+                    : isPart ? SKILLS_LIST.indexOf(partSkill) : -1;
     // Shown name: the designer's rubric name for skills; tasks keep their own name.
     // (label stays the stored name, which is what lookups and saved scores use.)
-    const shown = key.startsWith("skill:") ? vtSkillTitle(label) : label;
-    const labelHtml = (rubricIdx >= 0 && SKILL_RUBRICS[label])
-        ? `<button type="button" onclick="showRubric(${rubricIdx})" aria-haspopup="dialog"
+    const shown = isPart ? partInfo.title : key.startsWith("skill:") ? vtSkillTitle(label) : label;
+    const labelHtml = (rubricIdx >= 0 && SKILL_RUBRICS[isPart ? partSkill : label])
+        ? `<button type="button" onclick="showRubric(${rubricIdx}${isPart ? ", " + partInfo.secIdx : ""})" aria-haspopup="dialog"
                    class="text-left text-blue-800 underline decoration-dotted underline-offset-4 inline-flex items-center gap-1">
                ${shown}<span class="material-icons text-base" aria-hidden="true">info</span>
                <span class="sr-only">— view rubric</span></button>`
@@ -603,7 +633,16 @@ function renderSkills() {
         const body = d.lastElementChild;
         g.skills.forEach(skill => {
             skillGroupIndex[skill] = gi;
-            renderScoreGroup(body, skill, `skill:${skill}`);
+            const parts = skillParts(skill);
+            if (!parts) { renderScoreGroup(body, skill, `skill:${skill}`); return; }
+            // Two designer rubrics: one scoring row each, under one heading
+            skillScores[`skill:${skill}`] = null;
+            const wrap = document.createElement("div");
+            wrap.className = "space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-3";
+            wrap.innerHTML = `<div class="text-sm font-extrabold text-slate-700">${vtSkillTitle(skill)}
+                <span class="font-normal text-slate-500">— two rubrics, scored separately</span></div>`;
+            body.appendChild(wrap);
+            parts.forEach(p => renderScoreGroup(wrap, skill, p.key));
         });
         updateGroup(gi);
     });
@@ -673,17 +712,19 @@ function renderTasks(tasks) {
  * SCORE MANAGEMENT
  ************************************************************/
 function setScore(key, score) {
-    const gi  = key.startsWith("skill:") ? skillGroupIndex[key.slice(6)] : undefined;
+    const sk  = skillOfKey(key);
+    const gi  = sk !== undefined ? skillGroupIndex[sk] : undefined;
     const was = gi !== undefined && groupWasComplete[gi];
     skillScores[key] = score;
     updateButtons(key);
+    if (key.startsWith("part:")) syncCombined(sk);
     saveDraft();
     if (gi !== undefined && !was && groupWasComplete[gi]) advanceFrom(gi);
 }
 
 function updateButtons(key) {
     const selected = skillScores[key];
-    const isSkill  = key.startsWith("skill:");
+    const isSkill  = key.startsWith("skill:") || key.startsWith("part:");
     const safeId = key.replace(/[^a-zA-Z0-9]/g, "_");
     const unscoredSkill = isSkill && (selected === null || selected === undefined);
 
@@ -725,7 +766,7 @@ function updateButtons(key) {
     const row = document.getElementById(`row_${safeId}`);
     if (row && !unscoredSkill) row.classList.remove("ring-2", "ring-red-400", "ring-offset-2");
 
-    if (isSkill) { updateGroup(skillGroupIndex[key.slice(6)]); updateProgress(); }
+    if (isSkill) { updateGroup(skillGroupIndex[skillOfKey(key)]); updateProgress(); }
 }
 
 function skillsMissingScore() {
@@ -800,12 +841,16 @@ async function submitEntry(e) {
     // Every behavioral skill needs an explicit score (nothing is assumed).
     const missing = skillsMissingScore();
     if (missing.length) {
+        const rowIds = sk => (skillParts(sk) ? skillParts(sk).filter(p => !Number.isInteger(skillScores[p.key])).map(p => p.key) : [`skill:${sk}`])
+            .map(k => "row_" + k.replace(/[^a-zA-Z0-9]/g, "_"));
         missing.forEach(sk => {
-            const row = document.getElementById("row_" + `skill:${sk}`.replace(/[^a-zA-Z0-9]/g, "_"));
-            if (row) row.classList.add("ring-2", "ring-red-400", "ring-offset-2");
+            rowIds(sk).forEach(id => {
+                const row = document.getElementById(id);
+                if (row) row.classList.add("ring-2", "ring-red-400", "ring-offset-2");
+            });
         });
         missing.forEach(sk => { const g = groupEls[skillGroupIndex[sk]]; if (g) g.el.open = true; });
-        const first = document.getElementById("row_" + `skill:${missing[0]}`.replace(/[^a-zA-Z0-9]/g, "_"));
+        const first = document.getElementById(rowIds(missing[0])[0]);
         if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
         const t = document.getElementById("progressText");
         t.textContent = `Please score ${missing.length} more skill${missing.length === 1 ? "" : "s"} (marked in red)`;
@@ -823,6 +868,10 @@ async function submitEntry(e) {
     const scores = {};
     SKILLS_LIST.forEach(skill => {
         scores[skill] = skillScores[`skill:${skill}`];
+        // Two-rubric skills: also keep each rubric's own score (detail only)
+        (skillParts(skill) || []).forEach(p => {
+            if (Number.isInteger(skillScores[p.key])) scores[p.key] = skillScores[p.key];
+        });
     });
     currentTasks.forEach(task => {
         const val = skillScores[`task:${task}`];
@@ -960,6 +1009,8 @@ function restoreDraft() {
             updateButtons(key);
         }
     });
+    // Two-rubric skills: the combined score always follows the per-rubric scores
+    SKILLS_LIST.forEach(syncCombined);
     updateProgress();
     groupEls.forEach((g, i) => updateGroup(i));
     collapseCompleteGroups();
