@@ -1280,7 +1280,7 @@ function taskRows(entries) {
 function valuesWhere(entries, keyTest) {
     return entries.flatMap(entry =>
         Object.entries(entry.scores || {})
-            .filter(([key]) => keyTest(key))
+            .filter(([key]) => !key.startsWith("part:") && keyTest(key))   // part: = per-rubric detail, already in its skill's score
             .map(([, v]) => Number(v))
             .filter(n => Number.isFinite(n))
     );

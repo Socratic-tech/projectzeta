@@ -217,8 +217,10 @@ const ReportBuilder = (function () {
     function measureValues(entry, measure) {
         const s = entry.scores || {};
         const pairs = Object.entries(s);
-        if (measure === "overall") return numbers(pairs.map(p => p[1]));
-        if (measure === "behavior") return numbers(pairs.filter(p => !p[0].startsWith("task:")).map(p => p[1]));
+        // "part:" keys are per-rubric detail already reflected in the skill's own score
+        const own = pairs.filter(p => !p[0].startsWith("part:"));
+        if (measure === "overall") return numbers(own.map(p => p[1]));
+        if (measure === "behavior") return numbers(own.filter(p => !p[0].startsWith("task:")).map(p => p[1]));
         if (measure === "tasks") return numbers(pairs.filter(p => p[0].startsWith("task:")).map(p => p[1]));
         if (measure.startsWith("skill:")) return numbers([s[measure.slice(6)]]);
         if (measure.startsWith("task:")) return numbers([s[measure]]);
@@ -254,6 +256,7 @@ const ReportBuilder = (function () {
 
             if (dim === "skill" || dim === "task") {
                 Object.entries(entry.scores || {}).forEach(([k, v]) => {
+                    if (k.startsWith("part:")) return;
                     const isTask = k.startsWith("task:");
                     if ((dim === "task") !== isTask) return;
                     const stored = isTask ? k.slice(5) : k;
@@ -310,6 +313,7 @@ const ReportBuilder = (function () {
         const tasks = new Set();
         (typeof allTasks !== "undefined" ? allTasks : []).forEach(t => t && t.task_name && tasks.add(String(t.task_name)));
         (typeof allEntries !== "undefined" ? allEntries : []).forEach(e => Object.keys(e.scores || {}).forEach(k => {
+            if (k.startsWith("part:")) return;
             if (k.startsWith("task:")) tasks.add(k.slice(5)); else skills.add(k);
         }));
         return {
