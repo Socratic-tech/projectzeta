@@ -796,6 +796,13 @@ function buildDemoData() {
             const scores = {};
             CORE_SKILLS.forEach(skill => {
                 scores[skill] = clamp(Math.round(skillBase[skill] + growth + (rand() - 0.5) * 1.6));
+                // Entries on/after the cutoff were scored per rubric; the skill score is the lower of the two
+                const secs = VT_SKILL_RUBRICS[skill];
+                if (Array.isArray(secs) && date.toISOString().slice(0, 10) >= RUBRIC_CUTOFF) {
+                    const pv = secs.map(sec => scores[`part:${skill}::${sec.title}`] =
+                        clamp(Math.round(skillBase[skill] + growth + (rand() - 0.5) * 1.6)));
+                    scores[skill] = Math.min(...pv);
+                }
             });
             sites[site].forEach(task => {
                 if (rand() < 0.85) {
@@ -1175,7 +1182,7 @@ function scoreTile(row) {
     const b = bandFor(row.average);
     return `
         <div class="score-tile" style="background:${b.bg};border-color:${b.border}">
-            <div class="score-tile-name">${escapeHTML(row.skill ? skillLabel(row.name) : row.name)}</div>
+            <div class="score-tile-name">${escapeHTML(rowLabel(row))}</div>
             <div class="score-tile-foot">
                 <span class="score-tile-value" style="color:${b.text}">${row.average.toFixed(2)}</span>
                 <span class="score-tile-count">${row.count} score${row.count === 1 ? "" : "s"}</span>
@@ -1242,16 +1249,41 @@ function renderRubricGuide(isNew) {
 
 /* ---------- Data shaping ---------- */
 
+/* New rubric tab: a skill that covers two designer rubrics (social interactions, communication) is shown
+   as two rows, one per rubric, using the "part:" scores saved by the entry form. Entries saved before
+   that change (and the Original tab) only have the combined skill score, so then it stays one row. */
+function behaviorPartRows(skill, entries) {
+    const secs = VT_SKILL_RUBRICS[skill];
+    if (rubricTab !== "new" || !Array.isArray(secs)) return null;
+    const rows = secs.map(sec => {
+        const key = `part:${skill}::${sec.title}`;
+        const values = [];
+        entries.forEach(entry => {
+            const raw = (entry.scores || {})[key];
+            const value = (raw === null || raw === undefined || raw === "") ? NaN : Number(raw);
+            if (Number.isFinite(value)) values.push(value);
+        });
+        const avg = average(values);
+        return avg === null ? null : { name: skill, label: sec.title, average: avg, count: values.length, skill: true };
+    }).filter(Boolean);
+    return rows.length ? rows : null;
+}
+
+/* Text shown for a row: a rubric-part title, else the skill's display name, else the task name. */
+function rowLabel(r) { return r.label || (r.skill ? skillLabel(r.name) : r.name); }
+
 function behaviorRows(entries) {
-    return CORE_SKILLS.map(skill => {
+    return CORE_SKILLS.flatMap(skill => {
+        const parts = behaviorPartRows(skill, entries);
+        if (parts) return parts;
         const values = [];
         entries.forEach(entry => {
             const value = Number((entry.scores || {})[skill]);
             if (Number.isFinite(value)) values.push(value);
         });
         const avg = average(values);
-        return avg === null ? null : { name: skill, average: avg, count: values.length, skill: true };
-    }).filter(Boolean).sort((a, b) => {
+        return avg === null ? [] : [{ name: skill, average: avg, count: values.length, skill: true }];
+    }).sort((a, b) => {
         // Same order as the entry form's groups (a skill outside the groups goes last).
         const ia = SKILL_ORDER.indexOf(a.name), ib = SKILL_ORDER.indexOf(b.name);
         return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
@@ -1481,7 +1513,7 @@ function snList(title, icon, iconColor, rows) {
             <ul class="space-y-2">
                 ${rows.map(r => `
                     <li class="flex justify-between items-start gap-3 text-sm">
-                        <span class="text-slate-800">${escapeHTML(r.skill ? skillLabel(r.name) : r.name)}${SKILL_ORDER.includes(r.name)
+                        <span class="text-slate-800">${escapeHTML(rowLabel(r))}${SKILL_ORDER.includes(r.name)
                             ? `<span class="block text-[11px] font-semibold text-slate-500">${escapeHTML(skillGroupTitle(r.name))}</span>` : ""}</span>
                         ${scorePill(r.average)}
                     </li>`).join("")}
@@ -1575,7 +1607,7 @@ function drawBarChart(existing, canvasId, wrapId, emptyId, rows) {
     return new Chart(document.getElementById(canvasId), {
         type: "bar",
         data: {
-            labels: rows.map(r => r.header ? [r.name.toUpperCase()] : wrapLabel(r.skill ? skillLabel(r.name) : r.name)),
+            labels: rows.map(r => r.header ? [r.name.toUpperCase()] : wrapLabel(rowLabel(r))),
             datasets: [{
                 label: "Average",
                 data: rows.map(r => r.header ? null : round2(r.average)),
@@ -1610,7 +1642,7 @@ function drawBarChart(existing, canvasId, wrapId, emptyId, rows) {
                 tooltip: {
                     filter: item => !rows[item.dataIndex].header,
                     callbacks: {
-                        title: items => { const r = rows[items[0].dataIndex]; return r.skill ? skillLabel(r.name) : r.name; },
+                        title: items => { const r = rows[items[0].dataIndex]; return rowLabel(r); },
                         label: item => {
                             const r = rows[item.dataIndex];
                             return `${r.average.toFixed(2)} / 4 (${bandFor(r.average).label})`;

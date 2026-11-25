@@ -35,7 +35,11 @@
     var DEMO_CODE = "DEMO";
     var API_VERSION = 3;
     var RELEASE = "3.1.0";
-    var DB_KEY = key("demo_db_v4");
+    var DB_KEY = key("demo_db_v5");
+    var TWO_RUBRIC_SKILLS = {
+        "Appropriate and respectful social interactions": ["Respect", "Conversation Skills"],
+        "Displays effective communication skills": ["Expressive Communication", "Receptive Communication"]
+    };
 
     var SKILLS = [
         "Punctual", "Prepared with Necessary Materials", "Demonstrates appropriate hygiene/dress",
@@ -110,6 +114,15 @@
                 var scores = {};
                 SKILLS.forEach(function (sk) {
                     scores[sk] = clamp(Math.round(skillBase[sk] + growth + (rand() - 0.5) * 1.6));
+                    // Entries on/after the cutoff were scored per rubric; the skill score is the lower of the two
+                    var secs = TWO_RUBRIC_SKILLS[sk];   // not read from rubric-data.js: this file loads on pages without it
+                    if (secs && date.toISOString().slice(0, 10) >= "2026-11-23") {
+                        var pv = secs.map(function (sec) {
+                            return (scores["part:" + sk + "::" + sec] =
+                                clamp(Math.round(skillBase[sk] + growth + (rand() - 0.5) * 1.6)));
+                        });
+                        scores[sk] = Math.min.apply(null, pv);
+                    }
                 });
                 siteTasks[site].forEach(function (t) {
                     if (rand() < 0.85) {
